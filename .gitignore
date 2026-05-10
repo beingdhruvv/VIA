@@ -39,6 +39,9 @@ yarn-error.log*
 # Ops notes with real hosts/keys — copy from LOCAL_OPERATIONS.md.template
 LOCAL_OPERATIONS.md
 
+# Presenter-only demo script (never commit)
+DOCS/VIDEO_DEMO_SCRIPT.md
+
 # SQLite dev database — local only, never commit
 *.db
 *.db-journal
