@@ -104,7 +104,6 @@ export default async function PublicTripPage({ params }: Props) {
       {/* Interactive route timeline map */}
       {trip.stops.length >= 1 && (
         <div className="max-w-4xl mx-auto px-6 pb-6">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <TripMapTimeline stops={trip.stops.map((s) => ({
             id: s.id,
             startDate: s.startDate.toISOString(),

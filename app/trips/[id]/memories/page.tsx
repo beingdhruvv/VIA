@@ -16,7 +16,7 @@ export default async function TripMemoriesPage({ params }: Props) {
 
   const { id } = await params;
 
-  const [trip, memoriesResult, user] = await Promise.all([
+  const [trip, memoriesResult] = await Promise.all([
     prisma.trip.findFirst({
       where: { 
         id, 
@@ -31,10 +31,6 @@ export default async function TripMemoriesPage({ params }: Props) {
       where: { tripId: id },
       include: { trip: { select: { name: true } } },
       orderBy: { createdAt: "desc" }
-    }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { storageUsed: true }
     })
   ]);
 

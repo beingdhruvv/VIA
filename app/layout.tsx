@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+export const viewport = {
+  themeColor: "#111111",
+};
+
 export const metadata: Metadata = {
   title: "VIA — Travel Planner",
   description: "Plan multi-city trips, build day-wise itineraries, track budgets, and share your journeys.",
-  themeColor: "#111111",
   appleWebApp: {
     capable: true,
     title: "VIA",

@@ -9,7 +9,7 @@ export default async function MemoriesPage() {
   const session = await auth();
   if (!session) redirect("/auth/login");
 
-  const [memoriesResult, trips, user] = await Promise.all([
+  const [memoriesResult, trips] = await Promise.all([
     prisma.memory.findMany({
       where: { userId: session.user.id },
       include: { trip: { select: { name: true } } },
@@ -18,10 +18,6 @@ export default async function MemoriesPage() {
     prisma.trip.findMany({
       where: { userId: session.user.id },
       select: { id: true, name: true }
-    }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { storageUsed: true }
     })
   ]);
 
