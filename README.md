@@ -92,4 +92,4 @@ Open **http://localhost:3000**. If port is busy, Next may choose **3001** — wa
 
 ---
 
-**VIA** — plan together, ship like a product. **StormLabs.**
+**VIA** — plan together **StormLabs.**
