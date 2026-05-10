@@ -665,7 +665,7 @@ export function BudgetClient({
 
                 {/* Payer info */}
                 <div className="hidden sm:flex items-center gap-2 shrink-0">
-                  <Avatar src={expense.payer?.avatarUrl} name={expense.payer?.name} size="xs" />
+                  <Avatar src={expense.payer?.avatarUrl} name={expense.payer?.name} size="sm" />
                   <span className="font-mono text-[10px] text-via-grey-mid uppercase">{expense.payer?.name?.split(' ')[0]} paid</span>
                 </div>
 
