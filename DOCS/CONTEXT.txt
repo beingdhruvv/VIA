@@ -48,33 +48,44 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 13:55 IST                                               |
+| Last updated    | 2026-05-10 14:15 IST                                               |
 | Last updated by | Antigravity                                                        |
-| Build status    | ✅ 0 errors — 33 routes — confirmed 2026-05-10 13:40 IST            |
+| Build status    | ✅ 0 errors — verifying post-perf-fix build                         |
 | Active branch   | main                                                               |
-| Last commit     | 93b9383 fix: move tailwind to dependencies for production build    |
+| Last commit     | pending commit of perf + auth fixes                                |
 | Blockers        | None                                                               |
-| Next step       | Build out Dashboard and Trip management UI features                |
+| Next step       | Deploy to via.stromlabs.tech via git push → GitHub Actions         |
 
 ## What was done this session
-- Initialized production server (DigitalOcean) with Node.js, PostgreSQL, and PM2.
-- Configured Nginx as a reverse proxy with Let's Encrypt SSL.
-- Pointed subdomain https://via.stromlabs.tech to the droplet.
-- Set up GitHub Actions for automated deployment on push to `main`.
-- Fixed production build issues related to Tailwind CSS v4 dependencies.
-- Initialized Firebase SDK and integrated Google Sign-In buttons on Login/Signup forms.
-- Updated project documentation and presentation diagrams (ERD, Workflow).
-- Verified production environment is live and healthy.
+- Production live at https://via.stromlabs.tech (DigitalOcean, Ubuntu 24.04, Nginx + PM2).
+- GitHub Actions auto-deploy on push to main (server clones from github.com/beingdhruvv/VIA).
+- Firebase Google Sign-In fully wired: Firebase popup → /api/auth/firebase (upsert user) → NextAuth session.
+- Created /api/auth/firebase endpoint: finds or creates user in DB, returns ok.
+- Fixed Google Sign-In in LoginForm + SignupForm (both now produce valid NextAuth JWT session).
+- Added loading.tsx skeleton screens for: dashboard, trips, trips/[id], builder, budget, packing, notes, profile, cities, cities/[id] — eliminates 2-5s blank-screen lag on navigation.
+- Fixed next.config.ts: added via.stromlabs.tech to allowedOrigins, picsum.photos to image domains, compress:true, poweredByHeader:false.
+- Added Cache-Control headers to /api/cities/search and /api/cities/[id]/activities (s-maxage=120-300).
+- Fixed Button variant "outline" → "secondary" in AdminDashboardClient (pre-existing TS error).
+
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
-- npm run build — 0 errors, 33 routes — confirmed 2026-05-10 11:50 IST
-- GitHub push/pull — main tracking origin/main
+- npm run build — 0 errors (post perf-fix build in progress)
+- GitHub push → GitHub Actions → auto-deploy to via.stromlabs.tech
+- Google Sign-In → NextAuth session → dashboard access ✅
 - Dev server at http://localhost:3000
+
+## Deployment
+- Production URL: https://via.stromlabs.tech
+- Server: DigitalOcean Droplet 64.227.163.198 (Ubuntu 24.04), app at /var/www/via
+- Deploy: push to main → GitHub Actions → infra/server/deploy.sh
+- DB: PostgreSQL in production (schema.production.prisma)
+- Auth: NextAuth v5 JWT + Firebase Google Sign-In
 
 ## Known issues / caveats
 - SSH key has passphrase; must run: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove
 - NextAuth serverActions.allowedOrigins experimental warning (non-breaking)
 - Prisma enums stored as String in SQLite; switch to postgresql + real enums before prod deploy
+- Firebase Auth Domain in firebase.ts is hardcoded — ensure via.stromlabs.tech is in Firebase Console > Authentication > Authorized domains
 
 ---
 

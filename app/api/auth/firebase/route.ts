@@ -1,36 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { hash } from "bcryptjs";
+import { randomBytes } from "crypto";
 
-/**
- * API to upsert a user after they sign in with Firebase on the client.
- * This ensures the user exists in our DB and their DP is up to date.
- */
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, name, image } = await request.json();
+    const { email, name, image } = await req.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      return NextResponse.json({ error: "email required" }, { status: 400 });
     }
 
-    // Upsert user based on email
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        name: name || "Google User",
-        avatarUrl: image, // Update the DP
-      },
-      create: {
-        email,
-        name: name || "Google User",
-        avatarUrl: image,
-        passwordHash: "FIREBASE_AUTH", // Placeholder for non-password users
-      },
-    });
+    let user = await prisma.user.findUnique({ where: { email } });
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("Firebase Auth Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    if (!user) {
+      const randomPw = randomBytes(32).toString("hex");
+      const passwordHash = await hash(randomPw, 10);
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: name || email.split("@")[0],
+          passwordHash,
+          avatarUrl: image || null,
+        },
+      });
+    } else if (image && !user.avatarUrl) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { avatarUrl: image },
+      });
+    }
+
+    return NextResponse.json({ ok: true, name: user.name });
+  } catch {
+    return NextResponse.json({ error: "server error" }, { status: 500 });
   }
 }

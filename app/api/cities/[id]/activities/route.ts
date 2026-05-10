@@ -17,5 +17,7 @@ export async function GET(
     orderBy: { rating: "desc" },
   });
 
-  return NextResponse.json(activities);
+  return NextResponse.json(activities, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
+  });
 }

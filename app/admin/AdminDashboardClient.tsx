@@ -329,7 +329,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                   <td className="px-6 py-4 text-right">
                     {currentUserRole === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN" ? (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         disabled={updatingId === user.id}
                         onClick={() => handleRoleUpdate(user.id, user.role)}

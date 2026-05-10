@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "10", 10), 50);
   const countryCode = searchParams.get("countryCode");
 
-  if (!q) return NextResponse.json([]);
+  if (!q) return NextResponse.json([], { headers: { "Cache-Control": "public, max-age=60" } });
 
   const dbResults = await prisma.city.findMany({
     where: {
@@ -88,9 +88,13 @@ export async function GET(req: NextRequest) {
       ...externalCities.filter((c) => !seen.has(`${c.name}|${c.country}`)),
     ].slice(0, limit);
 
-    return NextResponse.json(deduped);
+    return NextResponse.json(deduped, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=60" },
+    });
   } catch {
-    return NextResponse.json(formatted);
+    return NextResponse.json(formatted, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=60" },
+    });
   }
 }
 

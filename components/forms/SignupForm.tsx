@@ -168,9 +168,9 @@ export default function SignupForm() {
       
       router.push("/dashboard");
       router.refresh();
-    } catch (error: any) {
-      console.error(error);
-      setServerError(error.message || "Google sign-in failed.");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Google sign-in failed.";
+      setServerError(msg);
     }
   }
 
