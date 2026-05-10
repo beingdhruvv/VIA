@@ -48,20 +48,20 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 (session: CONTEXT + public /api/config + proxy fix)     |
-| Last updated by | Cursor                                                              |
-| Build status    | Run `npm run build` after pull                                      |
+| Last updated    | 2026-05-10 (session: Build stabilization + next/image migration) |
+| Last updated by | Antigravity                                                        |
+| Build status    | PASSING (confirmed after explicit typing + import fixes)            |
 | Active branch   | main                                                                |
 | Last commit     | (update when committing)                                            |
 | Blockers        | None                                                                |
-| Next step       | Deploy main → confirm `/api/config/firebase` JSON + Google on login |
+| Next step       | Implement collaborative trip invites / sharing module               |
 
 ## What was done this session
 - **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once (PM2 often omits file vars); `GET /api/config/firebase` + `useFirebaseReady` + login/signup `force-dynamic` + server bootstrap prop; **`proxy.ts`** — allow **`/api/config/*`** without session (was blocking client fetch on login → no Google).
+- **Build Stabilization:** Resolved `Unexpected any` in `/api/cities/explore` by implementing `ExploreCityResponse` interface and explicit map return types. Added missing `City` and `MapPin` imports.
+- **Image Optimization:** Migrated all standard `<img>` tags in Profile, Explore, and Admin to `next/image` component. Updated `next.config.ts` with `api.dicebear.com` remote pattern.
+- **Location Engine:** Completed **Location Preferences** card in Profile; wired `homeCity`/`homeCountry` to recommendation scoring (Blinkit-style localized discovery).
 - **Deploy:** `deploy.sh` uses `git reset --hard` after fetch only; GitHub Actions SSH pre-runs hard reset; `postinstall` Prisma generate.
-- **Cities:** `/api/cities/search` is **DB-only** (no GeoDB merge).
-- **Explore:** images via `lib/place-images`; removed Live Discovery strip; mobile sizing; `/api/user/taste`, explore swiper.
-- **Repo hygiene:** secrets scrubbed earlier; `LOCAL_OPERATIONS.md.template`; gitignore `LOCAL_OPERATIONS.md`, `DOCS/VIDEO_DEMO_SCRIPT.md`.
 
 ## What reliably works
 - Prisma + seed (SQLite dev / PostgreSQL prod)
@@ -397,3 +397,4 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent  | Deploy version pipeline, responsive shell tweaks, CONTEXT sync |
 | 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
 | 2026-05-10 | Cursor Agent  | CONTEXT: handoff, FILE MAP, cities/search, Firebase/proxy, WORKING DIRECTORY lib + proxy |
+| 2026-05-10 | Antigravity   | FIXED: Explore API 'any' types, missing imports, Image optimization, Profile Location card |

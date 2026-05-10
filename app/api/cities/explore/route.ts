@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { City } from "@prisma/client";
 
-export async function GET(_req: NextRequest) {
+interface ExploreCityResponse extends City {
+  recScore: number;
+  activities: { id: string; name: string; estimatedCost: number; category: string }[];
+}
+
+export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -12,6 +18,11 @@ export async function GET(_req: NextRequest) {
       where: { userId: session.user.id },
       select: { cityId: true },
     });
+    const likedCities = await prisma.userTaste.findMany({
+      where: { userId: session.user.id, type: "LIKE" },
+      include: { city: true },
+    });
+
     const swipedIds = swiped.map((s) => s.cityId);
 
     const likedCitiesData = likedCities.map(lc => lc.city);
@@ -56,7 +67,7 @@ export async function GET(_req: NextRequest) {
     // 5. Diversity Decay (-2 if too many from same region)
     
     const regionCounts: Record<string, number> = {};
-    const sortedCities = [...cities].map(city => {
+    const sortedCities = [...cities].map((city): ExploreCityResponse => {
       let score = 0;
       
       // Home & Liked region boosts
@@ -76,13 +87,22 @@ export async function GET(_req: NextRequest) {
       
       score += city.popularityScore / 20;
       
-      return { ...city, recScore: score };
+      return { 
+        ...city, 
+        recScore: score,
+        activities: city.activities.map(a => ({
+          id: a.id,
+          name: a.name,
+          estimatedCost: a.estimatedCost,
+          category: a.category
+        }))
+      };
     })
     .sort((a, b) => b.recScore - a.recScore);
 
     // Apply Diversity Decay:
     // Ensure we don't show more than 4 cities from the same region in the final 15
-    const finalCities: any[] = [];
+    const finalCities: ExploreCityResponse[] = [];
     sortedCities.forEach(city => {
       regionCounts[city.region] = (regionCounts[city.region] || 0) + 1;
       if (regionCounts[city.region] <= 4) {
@@ -94,8 +114,8 @@ export async function GET(_req: NextRequest) {
     });
 
     return NextResponse.json(finalCities.sort((a, b) => b.recScore - a.recScore).slice(0, 15));
-  } catch (error) {
-    console.error("Explore API Error:", error);
+  } catch {
+    console.error("Explore API Error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
