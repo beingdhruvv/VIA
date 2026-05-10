@@ -13,6 +13,8 @@ import {
 import { getCityImageUrl } from "@/lib/utils";
 import type { CityData, TripCard } from "@/types";
 
+const EMPTY_RESULTS = { cities: [], trips: [] } satisfies { cities: CityData[]; trips: TripCard[] };
+
 export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -75,7 +77,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
     router.push(`/trips/${trip.id}`);
   }, [onOpenChange, router]);
 
-  const displayedResults = query.length < 2 ? { cities: [], trips: [] } : results;
+  const displayedResults = query.length < 2 ? EMPTY_RESULTS : results;
   const totalResults = displayedResults.cities.length + displayedResults.trips.length;
 
   if (!open) return null;

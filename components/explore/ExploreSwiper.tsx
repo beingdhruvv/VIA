@@ -86,7 +86,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             }}
             className="absolute inset-0 cursor-grab active:cursor-grabbing"
           >
-              <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px var(--foreground)" }}>
+              <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px var(--foreground, #111111)" }}>
                 {/* Image */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
