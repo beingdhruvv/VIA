@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { Heart, X, Star, Globe, MapPin, Bookmark, RotateCcw, SlidersHorizontal } from "lucide-react";
 import type { City } from "@prisma/client";
@@ -136,15 +137,16 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
               >
                 {/* Image Section */}
                 <div className="relative aspect-[4/5] w-full shrink-0 border-b-2 border-via-black">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={exploreCityImageSrc(currentCity)}
-                    alt={currentCity.name}
-                    className="pointer-events-none h-full w-full select-none object-cover"
-                    loading="eager"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={exploreCityImageSrc(currentCity)}
+                      alt={currentCity.name}
+                      fill
+                      className="pointer-events-none select-none object-cover"
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </div>
                   
                   {/* Overlays */}
                   <motion.div
