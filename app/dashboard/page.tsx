@@ -151,6 +151,8 @@ export default async function DashboardPage() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-10">
 
         {/* ── Greeting header ── */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div>
             <h1 className="font-grotesk font-bold text-2xl md:text-4xl text-via-black leading-tight">
               <GreetingText name={user.name.split(" ")[0]} />
             </h1>
