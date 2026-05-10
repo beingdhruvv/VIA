@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/via}"
-APP_REPO="${APP_REPO:-https://github.com/storm-labs/via.git}"
+APP_REPO="${APP_REPO:-https://github.com/beingdhruvv/VIA.git}"
 APP_BRANCH="${APP_BRANCH:-main}"
 APP_USER="${APP_USER:-root}"
 DB_NAME="${DB_NAME:-via_db}"
@@ -45,7 +45,7 @@ BEGIN
 END
 \$\$;
 SELECT 'CREATE DATABASE ${DB_NAME} OWNER ${DB_USER}'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}')\\gexec
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}')\gexec
 SQL
 
 mkdir -p "$(dirname "${APP_DIR}")"

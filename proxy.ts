@@ -13,7 +13,8 @@ export default auth((req) => {
     pathname === "/" ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/trip/") ||
-    pathname.startsWith("/api/auth");
+    pathname.startsWith("/api/auth") ||
+    pathname === "/api/users"; // signup endpoint — no auth needed
 
   if (!isPublic && !isLoggedIn) {
     return Response.redirect(new URL("/auth/login", req.nextUrl));
