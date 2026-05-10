@@ -1,0 +1,390 @@
+# VIA — Agent Context & Handoff
+> Single source of truth for agents and humans.
+> Read before touching anything. Update before leaving.
+
+---
+
+# NAVIGATION
+
+| Goal                              | Go to              |
+|-----------------------------------|--------------------|
+| Resume quickly / what's happening | HANDOFF STATE      |
+| Which file owns what              | FILE MAP           |
+| Directory layout + versions       | WORKING DIRECTORY  |
+| DB / API paths                    | DATA & PATHS       |
+| Build and ship                    | BUILD & DEPLOY     |
+| Rules that must never break       | HARD RULES         |
+| Why we made a choice              | DECISION LOG       |
+| What has been tested              | VALIDATION LOG     |
+| Open tasks                        | BACKLOG            |
+| Server / infra details            | SERVER             |
+
+---
+
+# AGENT PROTOCOL
+
+## Session START — do in order
+1. Read HANDOFF STATE. Understand status, blockers, next step.
+2. Run: git log -5 --oneline to confirm current commit.
+3. Check FILE MAP for areas you will touch.
+4. Never trust stale notes — always verify the actual file first.
+
+## Session END — mandatory before closing
+1. Rewrite HANDOFF STATE: date+time, summary, blockers, next step.
+2. Update WORKING DIRECTORY if files were added/renamed/deleted.
+3. Append a row to DECISION LOG for every non-obvious choice made.
+4. Append a row to VALIDATION LOG if build ran or tests done.
+5. Update CONTEXT FILE LOG at the bottom.
+
+## What agents must never do
+- Never commit secrets, API keys, or credentials.
+- Never write AI/agent/IDE name in commit messages or code comments.
+- Never mark build as passing without actually running: npm run build
+- Never leave HANDOFF STATE blank or with a stale date.
+
+---
+
+# HANDOFF STATE
+
+| Field           | Value                                                              |
+|-----------------|--------------------------------------------------------------------|
+| Last updated    | 2026-05-10 10:53 IST                                               |
+| Last updated by | Cursor Agent                                                       |
+| Build status    | dev server running (not yet production build tested)               |
+| Active branch   | main                                                               |
+| Last commit     | 368ef51 Initial commit                                             |
+| Blockers        | SSH to 168.144.115.156 — id_ed25519 passphrase hanging; need user to resolve |
+| Next step       | Complete Phase 4 feature pages (Dashboard, My Trips, Builder, View, Budget) |
+
+## What was done this session
+- Scaffolded Next.js 16.2.6 with TypeScript, Tailwind CSS v4, App Router
+- Installed all deps: Prisma 5, NextAuth v5 beta, React Hook Form + Zod, Recharts, Leaflet, dnd-kit, Radix UI, Zustand, Framer Motion, Lucide React
+- Built complete design system: globals.css with VIA tokens, all components/ui/ (Button, Input, Textarea, Select, Badge, Card, Modal, Sheet, Skeleton, Avatar, ProgressBar, Tabs), components/layout/ (Sidebar, Navbar, BottomNav, AppShell, PageHeader)
+- Prisma schema (SQLite for local, PostgreSQL for prod) — 9 models, migrated, seeded (57 cities, 295 activities)
+- NextAuth v5 credentials provider + bcryptjs + JWT sessions
+- Auth pages: /auth/login, /auth/signup, /auth/forgot-password + forms
+- Landing page /
+- Middleware for route protection
+- API routes: /api/auth/signup, /api/trips (GET/POST), /api/trips/[id] (GET/PATCH/DELETE), /api/trips/[id]/stops, /api/stops/[id], /api/stops/[id]/activities, /api/trips/[id]/expenses, /api/trips/[id]/packing, /api/packing/[id], /api/trips/[id]/notes
+- Dev server running at http://localhost:3000
+- DigitalOcean droplet created: 168.144.115.156 (blr1, 2vCPU/4GB, Ubuntu 24.04)
+
+## What reliably works
+- Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
+- Dev server starts and serves pages — confirmed 2026-05-10
+
+## Known issues / caveats
+- SSH to droplet hangs — id_ed25519 likely has passphrase; user needs to unlock or provide key without passphrase
+- Next.js 16 deprecation warning: "middleware" file → rename to "proxy" (non-breaking, deferred)
+- NextAuth `serverActions.allowedOrigins` experimental warning (non-breaking)
+- No production build tested yet
+- All Prisma enum types are stored as String in SQLite; production PostgreSQL schema will use real enums
+
+---
+
+# PROJECT SNAPSHOT
+
+Purpose: VIA — personalized multi-city travel planning web app for Odoo Hackathon 2026 (Team StormLabs)
+
+Stack:
+- Frontend: Next.js 16.2.6 (App Router), TypeScript, Tailwind CSS v4
+- Auth: NextAuth v5 beta (Credentials + JWT)
+- DB (local): SQLite via Prisma 5
+- DB (production): PostgreSQL via Prisma 5
+- UI: Custom Tailwind components + Radix UI headless primitives
+- Charts: Recharts
+- Maps: react-leaflet + Leaflet
+- Drag/Drop: dnd-kit
+- Forms: React Hook Form + Zod
+- State: Zustand
+- Animations: Framer Motion
+- Icons: Lucide React
+- Hosting target: DigitalOcean Droplet (Ubuntu 24.04, Nginx + PM2)
+
+---
+
+# WORKING DIRECTORY
+
+```
+E:\VIA/
+├── app/                        # All Next.js pages + API routes
+│   ├── api/
+│   │   ├── auth/[...nextauth]/ # NextAuth handler
+│   │   ├── auth/signup/        # POST create user
+│   │   ├── trips/              # GET all, POST create
+│   │   ├── trips/[id]/         # GET, PATCH, DELETE trip
+│   │   ├── trips/[id]/stops/   # GET, POST stops
+│   │   ├── trips/[id]/expenses/# GET, POST expenses
+│   │   ├── trips/[id]/packing/ # GET, POST packing items
+│   │   ├── trips/[id]/notes/   # GET, POST notes
+│   │   ├── trips/[id]/share/   # POST generate public slug
+│   │   ├── stops/[id]/         # PATCH, DELETE stop
+│   │   ├── stops/[id]/activities/ # GET, POST (toggle) activities
+│   │   ├── packing/[id]/       # PATCH, DELETE item
+│   │   ├── cities/search/      # GET city search (GeoDB proxy + seed)
+│   │   ├── cities/[id]/activities/ # GET activities for city
+│   │   └── weather/            # GET Open-Meteo weather
+│   ├── auth/login/             # ✅ DONE
+│   ├── auth/signup/            # ✅ DONE
+│   ├── auth/forgot-password/   # ✅ DONE
+│   ├── dashboard/              # ⏳ PENDING
+│   ├── trips/                  # ⏳ PENDING
+│   ├── trips/new/              # ⏳ PENDING
+│   ├── trips/[id]/             # ⏳ PENDING (itinerary view)
+│   ├── trips/[id]/builder/     # ⏳ PENDING
+│   ├── trips/[id]/budget/      # ⏳ PENDING
+│   ├── trips/[id]/packing/     # ⏳ PENDING
+│   ├── trips/[id]/notes/       # ⏳ PENDING
+│   ├── cities/                 # ⏳ PENDING
+│   ├── cities/[id]/            # ⏳ PENDING
+│   ├── trip/[slug]/            # ⏳ PENDING (public view)
+│   ├── profile/                # ⏳ PENDING
+│   ├── admin/                  # ⏳ PENDING
+│   ├── page.tsx                # ✅ Landing page
+│   ├── layout.tsx              # ✅ Root layout + fonts
+│   └── globals.css             # ✅ VIA design tokens
+├── components/
+│   ├── ui/                     # ✅ Button, Input, Textarea, Select, Badge,
+│   │                           #    Card, Modal, Sheet, Skeleton, Avatar,
+│   │                           #    ProgressBar, Tabs
+│   ├── layout/                 # ✅ Sidebar, Navbar, BottomNav, AppShell, PageHeader
+│   ├── trip/                   # ⏳ TripCard, StopCard, ActivityCard etc.
+│   └── forms/                  # ✅ LoginForm, SignupForm (CreateTripForm etc. pending)
+├── lib/
+│   ├── prisma.ts               # ✅ Singleton Prisma client
+│   ├── auth.ts                 # ✅ NextAuth config
+│   └── utils.ts                # ✅ cn, formatDate, formatCurrency, etc.
+├── store/
+│   └── index.ts                # ✅ Zustand UI store
+├── types/
+│   ├── index.ts                # ✅ All shared types
+│   └── next-auth.d.ts          # ✅ Session type extension
+├── prisma/
+│   ├── schema.prisma           # ✅ 9 models (SQLite compatible)
+│   ├── seed.ts                 # ✅ 57 cities + 295 activities
+│   ├── dev.db                  # ✅ SQLite DB (local, gitignored)
+│   └── migrations/             # ✅ 20260510_init
+├── middleware.ts               # ✅ Route protection (deprecation warning in Next.js 16)
+├── next.config.ts              # ✅ Image domains configured
+├── .env                        # ✅ DATABASE_URL=file:./prisma/dev.db
+└── .env.local                  # ✅ NextAuth secrets + GeoDB key placeholder
+```
+
+File status:
+| Path                          | Status      | Last edited  | Notes                                         |
+|-------------------------------|-------------|--------------|-----------------------------------------------|
+| prisma/schema.prisma          | active      | 2026-05-10   | SQLite for dev; switch to postgresql for prod |
+| prisma/seed.ts                | active      | 2026-05-10   | 57 cities, 295 activities                     |
+| app/globals.css               | active      | 2026-05-10   | VIA design tokens via @theme                  |
+| app/layout.tsx                | active      | 2026-05-10   | Space Grotesk + Inter + IBM Plex Mono         |
+| lib/auth.ts                   | active      | 2026-05-10   | NextAuth v5 beta Credentials provider         |
+| middleware.ts                 | active      | 2026-05-10   | Has Next.js 16 deprecation warning            |
+| components/ui/*               | active      | 2026-05-10   | All base UI components                        |
+| components/layout/*           | active      | 2026-05-10   | Sidebar, Navbar, BottomNav, AppShell          |
+
+---
+
+# FILE MAP
+
+| Feature / Area        | Primary file(s)                                   | Notes                               |
+|-----------------------|---------------------------------------------------|-------------------------------------|
+| App entry / routing   | app/page.tsx, middleware.ts                       | Landing + auth guard                |
+| Root layout           | app/layout.tsx, app/globals.css                   | Fonts, design tokens                |
+| Auth pages            | app/auth/*/page.tsx                               | Login, signup, forgot               |
+| Auth forms            | components/forms/LoginForm.tsx, SignupForm.tsx     | RHF + Zod                           |
+| Auth API              | lib/auth.ts, app/api/auth/*/                      | NextAuth + bcryptjs                 |
+| DB client             | lib/prisma.ts                                     | Singleton Prisma 5                  |
+| DB schema             | prisma/schema.prisma                              | 9 models                            |
+| DB seed               | prisma/seed.ts                                    | Cities + activities                 |
+| UI components         | components/ui/*                                   | All custom Tailwind                 |
+| Layout components     | components/layout/*                               | Sidebar, AppShell etc.              |
+| Trip components       | components/trip/*                                 | TripCard, StopCard etc. (pending)   |
+| Shared types          | types/index.ts                                    | TripCard, StopWithCity etc.         |
+| API: trips            | app/api/trips/*/route.ts                          | Full CRUD                           |
+| API: stops            | app/api/stops/[id]/route.ts                       | PATCH, DELETE + reorder             |
+| API: expenses         | app/api/trips/[id]/expenses/route.ts              | GET, POST, DELETE                   |
+| API: packing          | app/api/trips/[id]/packing/route.ts               | GET, POST, bulk                     |
+| API: notes            | app/api/trips/[id]/notes/route.ts                 | GET, POST                           |
+| Utility functions     | lib/utils.ts                                      | formatDate, formatCurrency etc.     |
+
+---
+
+# SERVER
+
+| Field           | Value                                        |
+|-----------------|----------------------------------------------|
+| Provider        | DigitalOcean                                 |
+| Region          | blr1 (Bangalore)                             |
+| Droplet name    | ubuntu-s-2vcpu-4gb-blr1                      |
+| Public IPv4     | 168.144.115.156                              |
+| Private IP      | 10.122.0.2                                   |
+| Size            | s-2vcpu-4gb (2 vCPU, 4GB RAM)               |
+| OS              | Ubuntu 24.04 LTS x64                         |
+| SSH user        | root                                         |
+| SSH key         | C:\Users\pavan\.ssh\id_ed25519               |
+| SSH key ID (DO) | 56212668                                     |
+| Status          | Running — SSH connection hanging (passphrase?)|
+| Installed       | Nothing yet — needs full server setup        |
+| App URL         | TBD — pending server setup                   |
+| Domain          | TBD                                          |
+
+Server setup TODO (run once SSH access is confirmed):
+1. apt update && apt upgrade -y
+2. Install Node.js 20 via nvm
+3. Install PostgreSQL 15
+4. Install PM2, Nginx, Certbot
+5. Clone repo + npm install
+6. Set .env.production
+7. prisma migrate deploy + seed
+8. npm run build
+9. pm2 start + nginx config + certbot SSL
+
+---
+
+# DATA & PATHS
+
+Local (SQLite dev):
+- DATABASE_URL = file:./prisma/dev.db
+- DB file: E:\VIA\prisma\dev.db
+
+Production target (PostgreSQL):
+- DATABASE_URL = postgresql://via_user:PASSWORD@localhost:5432/via_db
+- Must update prisma/schema.prisma: provider = "postgresql"
+- Must re-add @db.Date, @db.Text, and real enum types
+
+API routes:
+| Endpoint                          | Method      | Auth | Purpose                          |
+|-----------------------------------|-------------|------|----------------------------------|
+| /api/auth/signup                  | POST        | No   | Create user account              |
+| /api/auth/[...nextauth]           | GET/POST    | No   | NextAuth handler                 |
+| /api/trips                        | GET, POST   | Yes  | List/create trips                |
+| /api/trips/[id]                   | GET/PATCH/DELETE | Yes | Single trip CRUD             |
+| /api/trips/[id]/stops             | GET, POST   | Yes  | Add/list stops                   |
+| /api/stops/[id]                   | PATCH/DELETE| Yes  | Update/delete stop               |
+| /api/stops/[id]/activities        | GET, POST   | Yes  | Toggle activity on stop          |
+| /api/trips/[id]/expenses          | GET/POST/DELETE | Yes | Expense management           |
+| /api/trips/[id]/packing           | GET, POST   | Yes  | Packing checklist                |
+| /api/packing/[id]                 | PATCH/DELETE| Yes  | Toggle/delete packing item       |
+| /api/trips/[id]/notes             | GET, POST   | Yes  | Trip notes                       |
+| /api/trips/[id]/share             | POST        | Yes  | Generate public slug             |
+| /api/cities/search                | GET         | No   | City search (GeoDB + seed)       |
+| /api/cities/[id]/activities       | GET         | No   | Activities for a city            |
+| /api/weather                      | GET         | No   | Open-Meteo weather               |
+
+External APIs:
+| API              | URL                                              | Key required |
+|------------------|--------------------------------------------------|--------------|
+| GeoDB Cities     | https://wft-geo-db.p.rapidapi.com/v1/geo/cities  | Yes (GEODB_API_KEY) |
+| Open-Meteo       | https://api.open-meteo.com/v1/forecast           | No           |
+| Unsplash Source  | https://source.unsplash.com/800x600/?{query}     | No           |
+| ExchangeRate     | https://open.er-api.com/v6/latest/INR            | No           |
+
+---
+
+# BUILD & DEPLOY
+
+| Command                    | What it does                            |
+|----------------------------|-----------------------------------------|
+| npm run dev                | Dev server at http://localhost:3000     |
+| npm run build              | Production build (tsc + Next.js)        |
+| npm run start              | Start production server                 |
+| npm run db:generate        | npx prisma generate                     |
+| npm run db:migrate         | npx prisma migrate dev (dev only)       |
+| npm run db:seed            | tsx prisma/seed.ts                      |
+| npm run db:push            | npx prisma db push (quick schema push)  |
+
+Dev server start command (includes all required env vars):
+```powershell
+cd E:\VIA
+$env:DATABASE_URL="file:./prisma/dev.db"
+$env:NEXTAUTH_SECRET="dev-secret-stormlabs-via-2026"
+$env:AUTH_SECRET="dev-secret-stormlabs-via-2026"
+$env:NEXTAUTH_URL="http://localhost:3000"
+npm run dev
+```
+
+Pre-ship checklist:
+- [ ] npm run build passes (0 errors)
+- [ ] All Tier 1 pages work end-to-end
+- [ ] No console errors in production build
+- [ ] Responsive at 375px and 768px
+- [ ] SSH to droplet resolved + server setup done
+- [ ] .env.production set with production DATABASE_URL, NEXTAUTH_SECRET, GEODB_API_KEY
+
+---
+
+# HARD RULES
+
+## Never do
+- Never use gradient backgrounds in UI
+- Never use border-radius > 4px (except avatars = 50%)
+- Never use emojis in UI
+- Never use Bootstrap, MUI, Chakra, Ant Design
+- Never use blurry/soft shadows — only 3px offset brutalist shadow
+- Never hardcode city/activity data in components — always from DB
+- Never write AI/agent/IDE name in commit messages
+- Never commit .env.local or .env.production files
+- Never mark build passing without running npm run build
+
+## Always do
+- All styling via Tailwind utility classes — no inline styles
+- All forms use React Hook Form + Zod with inline error messages
+- All numbers/prices/dates use font-mono (IBM Plex Mono)
+- All cards use 1px solid #111111 border + 3px 3px 0px #111111 shadow
+- All API routes return proper HTTP status codes
+- Use Lucide React icons only — never custom SVGs for icons
+
+---
+
+# DECISION LOG
+
+| Date       | Decision                                              | Why                                                        |
+|------------|-------------------------------------------------------|------------------------------------------------------------|
+| 2026-05-10 | SQLite for local dev instead of PostgreSQL            | PostgreSQL not installed on dev machine, Docker not running|
+| 2026-05-10 | Prisma 5 instead of Prisma 7                          | Prisma 7 removed url from schema.prisma, too breaking      |
+| 2026-05-10 | Store enums as String in SQLite schema                | SQLite doesn't support Prisma enum types natively          |
+| 2026-05-10 | Next.js 16.2.6 (via create-next-app)                  | Latest stable at time of install; plan said 14+ but 16 ok  |
+| 2026-05-10 | Tailwind CSS v4 (CSS-based config via @theme)         | Installed by create-next-app; v4 uses CSS not tailwind.config.ts |
+| 2026-05-10 | DigitalOcean blr1 (Bangalore) droplet, s-2vcpu-4gb   | Per plan + GitHub Education credits; 2vCPU/4GB for Next.js build |
+
+---
+
+# VALIDATION LOG
+
+| Date       | Who/Agent    | Check                        | Result  | Notes                            |
+|------------|--------------|------------------------------|---------|----------------------------------|
+| 2026-05-10 | Cursor Agent | prisma migrate dev           | pass    | SQLite dev.db created            |
+| 2026-05-10 | Cursor Agent | prisma seed                  | pass    | 57 cities, 295 activities seeded |
+| 2026-05-10 | Cursor Agent | npm run dev                  | pass    | localhost:3000 ready in 628ms    |
+
+---
+
+# BACKLOG
+
+| # | Area     | Task                                              | Status   | Priority |
+|---|----------|---------------------------------------------------|----------|----------|
+| 1 | Server   | Resolve SSH passphrase issue for 168.144.115.156  | blocked  | critical |
+| 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | pending  | critical |
+| 3 | App      | Dashboard page (/dashboard)                       | pending  | high     |
+| 4 | App      | My Trips page (/trips)                            | pending  | high     |
+| 5 | App      | Create Trip form (/trips/new)                     | pending  | high     |
+| 6 | App      | Itinerary Builder (/trips/[id]/builder)           | pending  | high     |
+| 7 | App      | Itinerary View (/trips/[id])                      | pending  | high     |
+| 8 | App      | Budget page (/trips/[id]/budget)                  | pending  | high     |
+| 9 | App      | City Search (/cities)                             | pending  | medium   |
+|10 | App      | Packing Checklist (/trips/[id]/packing)           | pending  | medium   |
+|11 | App      | Trip Notes (/trips/[id]/notes)                    | pending  | medium   |
+|12 | App      | Public Share view (/trip/[slug])                  | pending  | medium   |
+|13 | App      | User Profile (/profile)                           | pending  | medium   |
+|14 | App      | Admin Dashboard (/admin)                          | pending  | low      |
+|15 | App      | Route Map (Leaflet) on trip view                  | pending  | low      |
+|16 | Infra    | Rename middleware.ts to fix Next.js 16 warning    | pending  | low      |
+|17 | Infra    | Switch schema to PostgreSQL for production        | pending  | pre-deploy |
+
+---
+
+# CONTEXT FILE LOG
+
+| Date       | Changed by    | What changed in this file                          |
+|------------|---------------|----------------------------------------------------|
+| 2026-05-10 | Cursor Agent  | Created initial context from CONTEXT TAMPLATE.md   |

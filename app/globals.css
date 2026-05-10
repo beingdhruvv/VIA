@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
+@theme {
+  /* VIA Color Palette */
+  --color-via-white: #F5F5F2;
+  --color-via-black: #111111;
+  --color-via-navy: #1B2A41;
+  --color-via-red: #C1121F;
+  --color-via-grey-light: #D6D6D6;
+  --color-via-grey-mid: #8A8A8A;
+  --color-via-grey-dark: #3D3D3D;
+  --color-via-off-white: #EBEBEB;
+
+  /* VIA Fonts */
+  --font-grotesk: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-inter: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "Courier New", monospace;
+
+  /* Brutalist Shadows */
+  --shadow-brutalist: 3px 3px 0px #111111;
+  --shadow-brutalist-sm: 2px 2px 0px #111111;
+  --shadow-brutalist-red: 3px 3px 0px #C1121F;
+
+  /* Override border radius - 0 everywhere */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-full: 9999px;
+  --radius-badge: 4px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F5F5F2;
+  --foreground: #111111;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography utilities */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+
+/* Monospace data class */
+.data-mono {
+  font-family: var(--font-ibm-plex-mono), "Courier New", monospace;
+  font-size: 14px;
+}
+
+/* Brutalist card pattern */
+.card-brutalist {
+  border: 1px solid #111111;
+  box-shadow: 3px 3px 0px #111111;
+  background: #F5F5F2;
+}
+
+/* Rubber stamp badge */
+.stamp-badge {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1.5px solid currentColor;
+  padding: 2px 8px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #EBEBEB;
+}
+::-webkit-scrollbar-thumb {
+  background: #D6D6D6;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8A8A8A;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
