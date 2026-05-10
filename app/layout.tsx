@@ -23,6 +23,12 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "VIA — Travel Planner",
   description: "Plan multi-city trips, build day-wise itineraries, track budgets, and share your journeys.",
+  themeColor: "#111111",
+  appleWebApp: {
+    capable: true,
+    title: "VIA",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";

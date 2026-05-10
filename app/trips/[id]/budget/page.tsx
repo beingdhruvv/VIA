@@ -6,7 +6,7 @@ import { TripSubNav } from "@/components/trip/TripSubNav";
 import { StatusBadge } from "@/components/ui/Badge";
 import { BudgetClient } from "./_BudgetClient";
 import { formatDateRange } from "@/lib/utils";
-import type { ExpenseData } from "@/types";
+import type { ExpenseData, SessionUser } from "@/types";
 
 interface BudgetPageProps {
   params: Promise<{ id: string }>;
@@ -49,12 +49,12 @@ export default async function BudgetPage({ params }: BudgetPageProps) {
 
   if (!trip) redirect("/trips");
 
-  const user = {
+  const user: SessionUser = {
     id: session.user.id,
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role,
+    role: session.user.role as any,
   };
 
   const expenses: ExpenseData[] = trip.expenses.map((e) => ({
