@@ -25,7 +25,7 @@ export function ExploreClient({ initialCities }: Props) {
     setLoadingTastes(true);
     try {
       const res = await fetch("/api/user/taste");
-      const data = await res.json();
+      const data: UserTaste[] = await res.json();
       setTastes(data);
     } catch (err) {
       console.error(err);

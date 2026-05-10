@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { MemoriesClient } from "@/app/memories/_MemoriesClient";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripSubNav } from "@/components/trip/TripSubNav";
+import type { MemoryData } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,6 +40,24 @@ export default async function TripMemoriesPage({ params }: Props) {
 
   if (!trip) redirect("/trips");
 
+  const memories: MemoryData[] = memoriesResult.map(m => ({
+    id: m.id,
+    userId: m.userId,
+    tripId: m.tripId,
+    imageUrl: m.imageUrl,
+    thumbnailUrl: m.thumbnailUrl,
+    caption: m.caption,
+    fileName: m.fileName,
+    fileSize: m.fileSize,
+    mimeType: m.mimeType,
+    takenAt: m.takenAt?.toISOString() ?? null,
+    latitude: m.latitude,
+    longitude: m.longitude,
+    locationName: m.locationName,
+    createdAt: m.createdAt.toISOString(),
+    trip: m.trip
+  }));
+
   const sidebarUser = {
     id: session.user.id,
     name: session.user.name ?? "",
@@ -60,7 +79,7 @@ export default async function TripMemoriesPage({ params }: Props) {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <MemoriesClient 
-          initialMemories={memories as any} 
+          initialMemories={memories} 
           trips={[trip]}
           storageUsed={user?.storageUsed || 0}
         />

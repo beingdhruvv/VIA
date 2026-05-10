@@ -154,12 +154,6 @@ export function BudgetClient({
   const detailedBalances = calculateDetailedBalances();
   const myBalance = detailedBalances[currentUserId] || 0;
   
-  const youAreOwed = Object.entries(detailedBalances)
-    .filter(([id, bal]) => id !== currentUserId && bal < 0) // If they owe money (negative balance), you are potentially owed
-    // This is simplified. In a real splitwise, we track who owes WHO. 
-    // Here we'll show group-level net.
-    .reduce((sum, [_, bal]) => sum + (bal < 0 ? Math.abs(bal) : 0), 0);
-
   const youOwe = myBalance < 0 ? Math.abs(myBalance) : 0;
 
   const categoryTotals = CATEGORIES.map((cat) => ({

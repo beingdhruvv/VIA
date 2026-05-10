@@ -78,6 +78,7 @@ interface AdminTrip {
   name: string;
   status: string;
   user: { name: string; email: string };
+  _count: { stops: number; expenses: number };
 }
 
 interface AdminActivity {
@@ -86,6 +87,7 @@ interface AdminActivity {
   cityId: string;
   category: string;
   estimatedCost: number;
+  avgCost?: number;
 }
 
 export default function AdminDashboardClient({ currentUserRole }: { currentUserRole: string }) {
@@ -106,8 +108,8 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         fetch("/api/admin/stats"),
         fetch("/api/admin/users")
       ]);
-      const statsData = await statsRes.json();
-      const usersData = await usersRes.json();
+      const statsData: Stats = await statsRes.json();
+      const usersData: User[] = await usersRes.json();
       setStats(statsData);
       setUsers(usersData);
     } catch (error) {
@@ -122,9 +124,9 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
     try {
       const res = await fetch(`/api/admin/${type}`);
       const data = await res.json();
-      if (type === "cities") setCities(data);
-      if (type === "trips") setTrips(data);
-      if (type === "activities") setActivities(data);
+      if (type === "cities") setCities(data as AdminCity[]);
+      if (type === "trips") setTrips(data as AdminTrip[]);
+      if (type === "activities") setActivities(data as AdminActivity[]);
     } catch (error) {
       console.error(`Failed to fetch ${type}`, error);
     } finally {
@@ -259,7 +261,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                 className={parseFloat(stats?.system.memory.usagePercent || "0") > 80 ? "bg-via-red" : "bg-via-black"}
               />
               <p className="text-[10px] text-via-grey-mid font-mono">
-                Used: {(stats?.system.memory.used || 0 / (1024 * 1024)).toFixed(0)}MB / Total: {(stats?.system.memory.total || 0 / (1024 * 1024)).toFixed(0)}MB
+                Used: {((stats?.system.memory.used || 0) / (1024 * 1024)).toFixed(0)}MB / Total: {((stats?.system.memory.total || 0) / (1024 * 1024)).toFixed(0)}MB
               </p>
             </div>
 

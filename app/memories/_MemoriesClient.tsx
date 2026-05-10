@@ -3,13 +3,11 @@
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import { 
-  Plus, 
   Upload, 
   Map as MapIcon, 
   Grid, 
   Calendar, 
   X, 
-  ChevronRight, 
   Trash2,
   Maximize2,
   HardDrive
@@ -39,12 +37,11 @@ interface Memory {
 interface Props {
   initialMemories: Memory[];
   trips: { id: string; name: string }[];
-  storageUsed: number;
 }
 
 const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
 
-export function MemoriesClient({ initialMemories, trips, storageUsed }: Props) {
+export function MemoriesClient({ initialMemories, trips }: Props) {
   const [memories, setMemories] = useState<Memory[]>(initialMemories);
   const [view, setView] = useState<"grid" | "map">("grid");
   const [uploading, setUploading] = useState(false);

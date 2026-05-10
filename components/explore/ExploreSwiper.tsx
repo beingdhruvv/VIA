@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Heart, X, Info, Star, Globe, MapPin, Bookmark, RotateCcw, SlidersHorizontal, Check } from "lucide-react";
+import { Heart, X, Star, Globe, MapPin, Bookmark, RotateCcw, SlidersHorizontal } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -29,7 +29,6 @@ interface ExploreSwiperProps {
 export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   const [cities, setCities] = useState<ExploreCity[]>(initialCities);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showInfo, setShowInfo] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -61,7 +60,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
 
     // Advance to next card
     setCurrentIndex((prev) => prev + 1);
-    setShowInfo(false);
   };
 
   const handleUndo = async () => {
@@ -81,7 +79,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     
     // Set current index back
     setCurrentIndex(lastIndex);
-    setShowInfo(false);
   };
 
   useEffect(() => {
@@ -89,7 +86,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     if (cities.length - currentIndex < 3) {
       fetch("/api/cities/explore")
         .then((res) => res.json())
-        .then((data) => {
+        .then((data: ExploreCity[]) => {
           if (Array.isArray(data)) {
             setCities((prev) => [...prev, ...data.filter(d => !prev.find(p => p.id === d.id))]);
           }

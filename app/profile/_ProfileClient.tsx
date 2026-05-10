@@ -474,7 +474,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
                    transition: 'transform 0.1s ease-out'
                  }}
                >
-                 <img src={tempAvatar!} alt="Crop preview" className="w-full h-full object-contain" />
+                                   <Image src={tempAvatar!} alt="Crop preview" fill className="object-contain" />
                </div>
                {/* Crop guide overlay */}
                <div className="absolute inset-0 pointer-events-none border-[40px] border-via-black/40 rounded-full box-content -m-[40px]"></div>

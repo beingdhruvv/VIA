@@ -3,12 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { MemoriesClient } from "./_MemoriesClient";
 import { PageHeader } from "@/components/layout/PageHeader";
+import type { MemoryData } from "@/types";
 
 export default async function MemoriesPage() {
   const session = await auth();
   if (!session) redirect("/auth/login");
 
-  const [memories, trips, user] = await Promise.all([
+  const [memoriesResult, trips, user] = await Promise.all([
     prisma.memory.findMany({
       where: { userId: session.user.id },
       include: { trip: { select: { name: true } } },
@@ -24,6 +25,24 @@ export default async function MemoriesPage() {
     })
   ]);
 
+  const memories: MemoryData[] = memoriesResult.map(m => ({
+    id: m.id,
+    userId: m.userId,
+    tripId: m.tripId,
+    imageUrl: m.imageUrl,
+    thumbnailUrl: m.thumbnailUrl,
+    caption: m.caption,
+    fileName: m.fileName,
+    fileSize: m.fileSize,
+    mimeType: m.mimeType,
+    takenAt: m.takenAt?.toISOString() ?? null,
+    latitude: m.latitude,
+    longitude: m.longitude,
+    locationName: m.locationName,
+    createdAt: m.createdAt.toISOString(),
+    trip: m.trip
+  }));
+
   return (
     <div className="space-y-6">
       <PageHeader 
@@ -31,7 +50,7 @@ export default async function MemoriesPage() {
         subtitle="Your travel history, captured in moments."
       />
       <MemoriesClient 
-        initialMemories={memories as any} 
+        initialMemories={memories} 
         trips={trips}
         storageUsed={user?.storageUsed || 0}
       />
