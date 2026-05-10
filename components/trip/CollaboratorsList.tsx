@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Users, 
-  UserPlus, 
-  X, 
   Mail, 
   Loader2,
   ShieldCheck,
-  Shield,
-  Trash2
+  Shield
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -32,23 +29,36 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCollaborators = async () => {
+  const fetchCollaborators = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch(`/api/trips/${tripId}/collaborators`);
+      const res = await fetch(`/api/trips/${tripId}/collaborators`, { signal });
       if (res.ok) {
         const data = await res.json();
-        setCollaborators(data);
+        if (!signal?.aborted) {
+          setCollaborators(data);
+        }
       }
     } catch (err) {
-      console.error(err);
+      if (!signal?.aborted) {
+        console.error(err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [tripId]);
 
   useEffect(() => {
-    fetchCollaborators();
-  }, [tripId]);
+    const abortController = new AbortController();
+    const initialFetch = setTimeout(() => {
+      void fetchCollaborators(abortController.signal);
+    }, 0);
+    return () => {
+      clearTimeout(initialFetch);
+      abortController.abort();
+    };
+  }, [fetchCollaborators]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +79,7 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
         const data = await res.json();
         setError(data.error || "Failed to add person");
       }
-    } catch (err) {
+    } catch {
       setError("Server error");
     } finally {
       setAdding(false);

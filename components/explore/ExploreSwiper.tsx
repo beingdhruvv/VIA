@@ -16,7 +16,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
   const likeOpacity = useTransform(x, [50, 150], [0, 1]);
   const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
 
@@ -56,7 +55,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-8 bg-via-white border border-via-black border-dashed">
         <Globe className="text-via-grey-light mb-4" size={48} />
-        <h3 className="font-grotesk font-bold text-xl text-via-black">You've explored the world!</h3>
+        <h3 className="font-grotesk font-bold text-xl text-via-black">You&apos;ve explored the world!</h3>
         <p className="font-inter text-via-grey-mid mt-2 max-w-xs">
           Check back later for more destinations or update your preferences.
         </p>
@@ -87,11 +86,12 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             }}
             className="absolute inset-0 cursor-grab active:cursor-grabbing"
           >
-            <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px #111111" }}>
-              {/* Image */}
-              <img
-                src={currentCity.imageUrl || `https://source.unsplash.com/800x1200/?${currentCity.name},travel`}
-                alt={currentCity.name}
+              <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px var(--foreground)" }}>
+                {/* Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentCity.imageUrl || `https://source.unsplash.com/800x1200/?${currentCity.name},travel`}
+                  alt={currentCity.name}
                 className="w-full h-full object-cover select-none pointer-events-none"
               />
 

@@ -1,4 +1,5 @@
-const { Client } = require('pg');
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { Client } = require("pg");
 
 async function promote() {
   const email = process.argv[2] || process.env.VIA_ADMIN_EMAIL;
@@ -14,7 +15,7 @@ async function promote() {
     "UPDATE users SET role = 'SUPER_ADMIN' WHERE email = $1 RETURNING id, email, role",
     [email]
   );
-  console.log('Promoted user:', res.rows[0]);
+  console.log("Promoted user:", res.rows[0]);
   await client.end();
 }
 

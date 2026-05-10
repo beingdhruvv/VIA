@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { toSessionUserRole } from "@/lib/roles";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -75,14 +76,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        if ("role" in user && typeof user.role === "string") {
+          token.role = toSessionUserRole(user.role);
+        }
       }
       return token;
     },
     session({ session, token }) {
       if (token?.id) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = toSessionUserRole(typeof token.role === "string" ? token.role : undefined);
       }
       return session;
     },

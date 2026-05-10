@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { 
   X, 
-  Users, 
-  Plus, 
-  Trash2, 
   Check,
   Split
 } from "lucide-react";
@@ -95,7 +92,7 @@ export function SplitExpenseModal({
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs text-via-grey-mid uppercase tracking-widest">Split with</p>
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 size="sm" 
                 onClick={handleEqualSplit}
                 className="h-7 text-[10px] font-mono uppercase"
@@ -146,7 +143,7 @@ export function SplitExpenseModal({
         </div>
 
         <div className="p-4 border-t-2 border-via-black bg-via-off-white flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button 
             className="flex-1" 
             disabled={Math.abs(diff) > 0.01 || splits.length === 0}

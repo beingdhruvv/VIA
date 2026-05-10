@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { TripsListClient } from "@/components/trip/TripsListClient";
 import { Button } from "@/components/ui/Button";
+import { toSessionUserRole } from "@/lib/roles";
 import Link from "next/link";
 import type { TripCard, SessionUser } from "@/types";
 
@@ -19,7 +20,7 @@ export default async function TripsPage() {
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role as any,
+    role: toSessionUserRole(session.user.role),
   };
 
   // Fetch all trips for this user with stops + city data

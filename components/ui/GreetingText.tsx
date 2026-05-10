@@ -12,7 +12,7 @@ function getLocalGreeting(): string {
 }
 
 export function GreetingText({ name }: { name: string }) {
-  const greeting = useMemo(getLocalGreeting, []);
+  const greeting = useMemo(() => getLocalGreeting(), []);
   return (
     <>
       {greeting}, {name}.

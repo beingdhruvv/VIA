@@ -22,8 +22,11 @@ export NODE_ENV=production
 export NEXT_TELEMETRY_DISABLED=1
 
 git fetch origin "${APP_BRANCH}"
-git checkout "${APP_BRANCH}"
-git pull --ff-only origin "${APP_BRANCH}"
+git checkout -B "${APP_BRANCH}" "origin/${APP_BRANCH}"
+# .env.production is gitignored in this repo, so preserve it while cleaning deploy leftovers.
+echo "Resetting tracked files to origin/${APP_BRANCH} while preserving .env.production"
+git reset --hard "origin/${APP_BRANCH}"
+git clean -fd -e .env.production
 
 # Unique build label for UI + support (override with DEPLOY_VERSION from CI)
 export NEXT_PUBLIC_APP_VERSION="${DEPLOY_VERSION:-$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)}"
