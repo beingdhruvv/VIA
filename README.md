@@ -1,57 +1,81 @@
 # VIA — Your Ultimate Travel Architect
-## [visit: via.stromlabs.tech](https://via.stromlabs.tech)
 
-**VIA** is a high-fidelity travel planning platform engineered for the modern explorer. Built by **Team StormLabs** for the Odoo Hackathon 2026, VIA combines architectural precision with a "Gujarat-coded" brutalist aesthetic to redefine how we plan, track, and share our journeys.
+### Live Product
+**Accessible at:** [via.stromlabs.tech](https://via.stromlabs.tech)
 
-![Dashboard Preview](https://via.stromlabs.tech/api/og?title=VIA%20Dashboard)
+VIA is a modern travel planning web app built to make trip creation, collaboration, budgeting, and discovery feel effortless. From multi-city itinerary planning to real-time expense management, VIA brings the full travel workflow into one premium platform.
+
+## Why VIA Stands Out
+
+- **Built for real travelers** — plan, manage, and share trips in one place
+- **Production-ready architecture** — not just a prototype, but a deployable full-stack product
+- **Fast, scalable, and structured** — powered by Prisma, modern APIs, and clean database design
+- **Strong product polish** — sharp UI, SEO readiness, analytics, and CI/CD workflows
+
+## Core Features
+
+### Smart Travel Planning
+- Create and manage **multi-city trips**
+- Explore **57+ destination options**
+- Build structured itineraries with stops, activities, and trip flow
+- Public sharing for itineraries and trip visibility
+
+### Collaboration Features
+- Add collaborators to trips
+- Plan together with shared trip access
+- Designed for group travel and coordinated planning
+
+### Expense & Budget Tracking
+- Built-in **expense tracker**
+- Budget planning per trip
+- Split and manage travel spending more efficiently
+
+### Authentication
+- **Multi-authentication system**
+- Login with **Email/Password**
+- Login with **Firebase authentication**
+- Flexible onboarding for different user preferences
+
+## Technical Highlights
+
+### Database & Backend
+- Structured database design using **Prisma**
+- Clean schema for trips, users, destinations, collaborators, expenses, and notes
+- Built to support scalable full-stack operations
+
+### Analytics & SEO
+- Integrated **web analytics**
+- SEO-focused implementation for better discoverability
+- **Google Search Console optimization** for indexing and search visibility
+- Sitemap and metadata support for stronger search presence
+
+### Hosting & Infrastructure
+- **Self-hosted on our own DigitalOcean server**
+- Deployed and maintained independently for full infrastructure control
+- Production environment configured for real-world usage
+
+### CI/CD & Deployment
+- Automated **CI / Deploy Workflow**
+- GitHub Actions based pipeline
+- Streamlined build, validation, and deployment process
+
+## What We Built
+
+- Full-stack travel planning web app
+- Multi-authentication flow
+- Collaborative trip management
+- Destination discovery system
+- Expense tracking and budgeting
+- SEO and search optimization
+- Analytics integration
+- Prisma-powered backend
+- CI/CD deployment pipeline
+- Self-hosted production deployment on DigitalOcean
+
+## In Short
+
+VIA is not just a travel planner — it is a complete travel management platform that combines **planning, collaboration, budgeting, authentication, analytics, SEO, and production deployment** into one polished experience.
 
 ---
 
-## ⚡ Core Features (Tier 1 & 2 Compliant)
-
-### 🗺️ Intelligent Itinerary Builder
-- **Multi-City Flow**: Seamlessly transition between destinations with our "Boarding Pass" styled itinerary cards.
-- **Drag-and-Drop Sequencing**: Built with `dnd-kit` for intuitive reordering of stops and activities.
-- **Global City Search**: Integrated with **GeoDB API** for real-time access to global destinations.
-- **Automated Routing**: Visual route connectors that adapt based on travel distance and transit modes.
-
-### 💰 Financial Governance
-- **Real-time Budgeting**: Track expenses across categories (Stay, Food, Transport, etc.) with automated cost aggregation.
-- **Activity Estimations**: Preview expected costs before you spend.
-
-### 🎒 Logistics & Preparation
-- **Dynamic Packing Lists**: Smart templates (Beach, Backpacking, Business) to get you ready in seconds.
-- **Integrated Notes**: Markdown-supported rich notes for every stop of your journey.
-
-### 🔓 Public Sharing & Admin
-- **Public Itineraries**: Generate read-only, shareable links to inspire others (no login required for viewers).
-- **Admin Command Center**: Real-time server telemetry, user governance, and system-wide analytics for super-admins.
-
----
-
-## 🎨 Design Philosophy: "The Stepwell Grid"
-VIA's design is a tribute to the geometric brilliance of **Rani ki Vav** and the intricate grids of **Patan Patola**.
-- **Whitespace**: Inspired by the vast expanses of the **Rann of Kutch**.
-- **Aesthetic**: Brutalist geometry meets premium typography.
-- **Stack**: Next.js 15, Tailwind CSS v4, Prisma (PostgreSQL), NextAuth v5.
-
----
-
-## 🛠️ Infrastructure & CI/CD
-- **Production**: Deployed on **DigitalOcean Droplets** using **Nginx** reverse proxy and **Let's Encrypt** SSL.
-- **Automation**: Fully automated CI/CD pipeline via **GitHub Actions** for zero-downtime deployments.
-- **Database**: Hybrid architecture using **SQLite** for development and **PostgreSQL** for production scale.
-
----
-
-## 🚀 Quick Start
-
-1. **Install Dependencies**: `npm install`
-2. **Environment**: Setup `.env.local` with `DATABASE_URL`, `AUTH_SECRET`, and `GEODB_API_KEY`.
-3. **Database**: `npx prisma migrate dev && npm run db:seed`
-4. **Launch**: `npm run dev`
-
----
-
-*Designed and Developed by **pxvn** @ StormLabs.*
-*v0.1.0-beta | Odoo Hackathon 2026*
+**Live Demo:** [via.stromlabs.tech](https://via.stromlabs.tech)
