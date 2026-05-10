@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { isFirebaseConfigured } from "@/lib/firebase";
 
 const signupSchema = z
   .object({
@@ -139,8 +140,10 @@ export default function SignupForm() {
     setServerError(null);
     try {
       const { signInWithPopup } = await import("firebase/auth");
-      const { auth, googleProvider } = await import("@/lib/firebase");
-      
+      const { getFirebaseAuth, getGoogleProvider } = await import("@/lib/firebase");
+      const auth = getFirebaseAuth();
+      const googleProvider = getGoogleProvider();
+
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
@@ -239,6 +242,8 @@ export default function SignupForm() {
           "Create Account"
         )}
       </button>
+      {isFirebaseConfigured && (
+        <>
       {/* Separator */}
       <div className="relative flex items-center py-2">
         <div className="flex-grow border-t border-via-grey-light"></div>
@@ -260,6 +265,8 @@ export default function SignupForm() {
         </svg>
         Continue with Google
       </button>
+        </>
+      )}
     </form>
   );
 }

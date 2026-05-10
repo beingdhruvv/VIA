@@ -59,9 +59,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Brute force fix for IP redirect issue
-      if (baseUrl.includes("64.227.163.198") || process.env.NODE_ENV === "production") {
-        return "https://via.stromlabs.tech/dashboard";
+      const canonical =
+        (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "").replace(/\/$/, "") || null;
+      if (process.env.NODE_ENV === "production" && canonical) {
+        try {
+          const canonicalOrigin = new URL(canonical).origin;
+          if (new URL(baseUrl).origin !== canonicalOrigin) {
+            return `${canonicalOrigin}/dashboard`;
+          }
+        } catch {
+          /* misconfigured AUTH_URL / NEXTAUTH_URL */
+        }
       }
       return url.startsWith(baseUrl) ? url : baseUrl;
     },

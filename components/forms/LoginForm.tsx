@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { isFirebaseConfigured } from "@/lib/firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -54,8 +55,10 @@ export default function LoginForm() {
     setServerError(null);
     try {
       const { signInWithPopup } = await import("firebase/auth");
-      const { auth, googleProvider } = await import("@/lib/firebase");
-      
+      const { getFirebaseAuth, getGoogleProvider } = await import("@/lib/firebase");
+      const auth = getFirebaseAuth();
+      const googleProvider = getGoogleProvider();
+
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
@@ -175,7 +178,9 @@ export default function LoginForm() {
           "Sign In"
         )}
       </button>
-  {/* Separator */}
+      {isFirebaseConfigured && (
+        <>
+      {/* Separator */}
       <div className="relative flex items-center py-2">
         <div className="flex-grow border-t border-via-grey-light"></div>
         <span className="shrink-0 px-4 text-xs font-mono text-via-grey-mid uppercase tracking-widest">Or</span>
@@ -196,6 +201,8 @@ export default function LoginForm() {
         </svg>
         Continue with Google
       </button>
+        </>
+      )}
     </form>
   );
 }

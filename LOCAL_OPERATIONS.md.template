@@ -1,0 +1,36 @@
+# Local operations (not for Git)
+
+Copy this file to **`LOCAL_OPERATIONS.md`** in the repo root (that filename is gitignored).  
+Store only on your machine: real hosts, IPs, SSH key names, non-public URLs, recovery notes.
+
+## Droplet / hosting
+
+- Provider:
+- Region:
+- Droplet name:
+- Public IPv4: `<YOUR_PUBLIC_IPV4>`
+- Private IP:
+- Public IPv6 (if any):
+- SSH user:
+- Deploy key label (e.g. GitHub secret name):
+
+## Domains and URLs
+
+- Production site: `https://<YOUR_DOMAIN>`
+- `NEXTAUTH_URL` / `AUTH_URL` on server: (must match public URL)
+
+## Third-party keys (reference only — real values live in `.env.production` on server)
+
+- RapidAPI GeoDB key: (stored server-side / secrets manager)
+- Firebase console project:
+- GA4 measurement ID (if used):
+
+## Personal dev machine (optional)
+
+- Local repo path:
+- SSH key path (if non-default):
+
+## Recovery / runbook
+
+- Last known good deploy:
+- Who has server access:

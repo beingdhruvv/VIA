@@ -4,7 +4,7 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/var/www/via}"
 APP_BRANCH="${APP_BRANCH:-main}"
 APP_NAME="${APP_NAME:-via}"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3000/}"
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3000/api/health}"
 
 cd "${APP_DIR}"
 
@@ -42,17 +42,27 @@ fi
 
 npm run build
 
-pm2 startOrReload ecosystem.config.cjs --update-env
+# PM2: start fresh if missing; reload if running (clears stuck / stale workers)
+if pm2 describe "${APP_NAME}" >/dev/null 2>&1; then
+  pm2 reload "${APP_NAME}" --update-env
+else
+  pm2 start ecosystem.config.cjs --update-env
+fi
 pm2 save
 
-for attempt in {1..20}; do
-  if curl -fsS "${HEALTH_URL}" >/dev/null; then
+for attempt in {1..25}; do
+  if curl -fsS "${HEALTH_URL}" >/dev/null 2>&1; then
     echo "Deploy complete: ${APP_NAME} is healthy at ${HEALTH_URL}"
     exit 0
+  fi
+  if [[ "${attempt}" -eq 3 ]] || [[ "${attempt}" -eq 8 ]]; then
+    echo "Health check pending (attempt ${attempt}), forcing pm2 restart ${APP_NAME}..." >&2
+    pm2 restart "${APP_NAME}" --update-env || pm2 start ecosystem.config.cjs --update-env
   fi
   sleep 2
 done
 
 echo "Deploy finished, but health check failed: ${HEALTH_URL}" >&2
+pm2 describe "${APP_NAME}" || true
 pm2 logs "${APP_NAME}" --lines 80 --nostream || true
 exit 1

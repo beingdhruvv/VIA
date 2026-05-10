@@ -1,32 +1,56 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAxe0KtnX-T0CwwypP7-w1YK34GInLy0w0",
-  authDomain: "via-travel-f699a.firebaseapp.com",
-  projectId: "via-travel-f699a",
-  storageBucket: "via-travel-f699a.firebasestorage.app",
-  messagingSenderId: "153689583474",
-  appId: "1:153689583474:web:48f500a2baf8187adbf7eb",
-  measurementId: "G-02LD2D9VVK"
-};
+/** All Firebase web config must come from env — never commit keys in source. */
+function firebaseWebConfig() {
+  return {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "",
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? "",
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? "",
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? "",
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  };
+}
 
-// Initialize Firebase (Singleton pattern to prevent re-initialization in Next.js)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+export const isFirebaseConfigured = (() => {
+  const c = firebaseWebConfig();
+  return Boolean(c.apiKey && c.authDomain && c.projectId && c.appId);
+})();
 
-// Initialize Auth and Provider
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+let app: FirebaseApp | undefined;
+let googleProviderSingleton: GoogleAuthProvider | undefined;
 
-// Initialize Analytics safely (only runs in browser)
-let analytics;
-if (typeof window !== "undefined") {
+function getAppSingleton(): FirebaseApp {
+  const config = firebaseWebConfig();
+  if (!isFirebaseConfigured) {
+    throw new Error(
+      "Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* in .env.local (see .env.example).",
+    );
+  }
+  if (!app) {
+    app = getApps().length ? getApp() : initializeApp(config);
+  }
+  return app;
+}
+
+export function getFirebaseAuth(): Auth {
+  return getAuth(getAppSingleton());
+}
+
+export function getGoogleProvider(): GoogleAuthProvider {
+  if (!googleProviderSingleton) {
+    googleProviderSingleton = new GoogleAuthProvider();
+  }
+  return googleProviderSingleton;
+}
+
+if (typeof window !== "undefined" && isFirebaseConfigured) {
   isSupported().then((supported) => {
     if (supported) {
-      analytics = getAnalytics(app);
+      getAnalytics(getAppSingleton());
     }
   });
 }
-
-export { app, auth, googleProvider, analytics };
