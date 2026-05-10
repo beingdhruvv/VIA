@@ -1,9 +1,10 @@
 # VIA — Travel intelligence, shipped as a product
 
-**Live:** [via.stromlabs.tech](https://via.stromlabs.tech) *(requires healthy app on the server — if you see **502**, nginx is up but Node/PM2 on port 3000 is not; see [502 troubleshooting in `docs/DEPLOYMENT_WORKFLOW.md`](docs/DEPLOYMENT_WORKFLOW.md))*  
+**Live:** [via.stromlabs.tech](https://via.stromlabs.tech) 
+
 **Local:** `npm run dev` → [http://localhost:3000](http://localhost:3000)
 
-**Team:** StormLabs · **Presenter / contact:** Pavan
+**Team:** StormLabs · 
 
 ---
 
@@ -13,7 +14,7 @@ VIA is a **full-stack travel OS**: plan multi-city trips, attach activities to s
 
 ---
 
-## Why this stands out (judges / hiring / investors)
+## Why this stands out 
 
 | Angle | What we actually did |
 |--------|----------------------|
@@ -28,8 +29,7 @@ VIA is a **full-stack travel OS**: plan multi-city trips, attach activities to s
 
 ---
 
-## Feature bullets (demo-friendly)
-
+## Feature bullets 
 - **Multi-city trips** — stops, dates, ordering, map-style timeline where implemented  
 - **Itinerary builder + view** — activities per stop, structured flow  
 - **57+ destinations** — seeded cities + activities; Wikimedia-accurate hero imagery (see `lib/place-images.ts`)  
@@ -77,9 +77,6 @@ Open **http://localhost:3000**. If port is busy, Next may choose **3001** — wa
 
 ---
 
-## Video script (3 min, polished)
-
-See **[`DOCS/VIDEO_DEMO_SCRIPT.md`](DOCS/VIDEO_DEMO_SCRIPT.md)** — timed sections, optional B-roll checklist, one-liner backup.
 
 ---
 
