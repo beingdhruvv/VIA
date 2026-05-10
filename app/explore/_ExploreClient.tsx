@@ -6,12 +6,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Heart, Globe, Bookmark, XCircle } from "lucide-react";
 import type { City } from "@prisma/client";
 
+interface UserTaste {
+  id: string;
+  type: "LIKE" | "DISLIKE" | "SAVE";
+  city: City;
+}
+
 interface Props {
   initialCities: City[];
 }
 
 export function ExploreClient({ initialCities }: Props) {
-  const [tastes, setTastes] = useState<any[]>([]);
+  const [tastes, setTastes] = useState<UserTaste[]>([]);
   const [loadingTastes, setLoadingTastes] = useState(false);
 
   const fetchTastes = async () => {

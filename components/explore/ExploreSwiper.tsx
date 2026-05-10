@@ -12,12 +12,22 @@ function exploreCityImageSrc(city: City): string {
   return CITY_IMAGES[key] ?? FALLBACK_CITY_IMAGE;
 }
 
+interface ExploreCity extends City {
+  activities?: Array<{
+    id: string;
+    name: string;
+    estimatedCost: number;
+    category: string;
+  }>;
+  moreImages?: string[];
+}
+
 interface ExploreSwiperProps {
-  initialCities: City[];
+  initialCities: ExploreCity[];
 }
 
 export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
-  const [cities, setCities] = useState<City[]>(initialCities);
+  const [cities, setCities] = useState<ExploreCity[]>(initialCities);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
@@ -196,25 +206,42 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                     </p>
                   </div>
 
-                  {/* Activities Preview (if available) */}
-                  {(currentCity as any).activities?.length > 0 && (
-                    <div>
-                      <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Top Activities</h4>
-                      <div className="space-y-3">
-                        {(currentCity as any).activities.map((act: any) => (
-                          <div key={act.id} className="flex gap-3 items-center">
-                            <div className="w-12 h-12 shrink-0 border border-via-black bg-via-off-white flex items-center justify-center">
-                              <Star size={16} className="text-via-black" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold text-xs truncate uppercase">{act.name}</p>
-                              <p className="text-[10px] font-mono text-via-grey-mid uppercase tracking-wide">₹{act.estimatedCost.toLocaleString()} · {act.category}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                  {/* Gallery Carousel */}
+                  <div>
+                    <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Gallery</h4>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                      {[
+                        exploreCityImageSrc(currentCity),
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-2`,
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-3`,
+                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-4`,
+                      ].map((img, i) => (
+                        <div key={i} className="w-32 aspect-square shrink-0 border border-via-black overflow-hidden bg-via-off-white">
+                           <img src={img} alt={`${currentCity.name} preview ${i+1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+
+                    {/* Activities Preview (if available) */}
+                    {currentCity.activities && currentCity.activities.length > 0 && (
+                      <div>
+                        <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Top Activities</h4>
+                        <div className="space-y-3">
+                          {currentCity.activities.map((act) => (
+                            <div key={act.id} className="flex gap-3 items-center">
+                              <div className="w-12 h-12 shrink-0 border border-via-black bg-via-off-white flex items-center justify-center">
+                                <Star size={16} className="text-via-black" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-xs truncate uppercase">{act.name}</p>
+                                <p className="text-[10px] font-mono text-via-grey-mid uppercase tracking-wide">₹{act.estimatedCost.toLocaleString()} · {act.category}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                   <div className="pt-4 flex flex-col gap-2">
                     <button 

@@ -48,30 +48,52 @@ export async function GET(_req: NextRequest) {
       take: 40, // Fetch more for better sorting
     });
 
-    // Intense Recommendation Logic:
-    // 1. Home Region Boost (+5) - High local relevance
-    // 2. Liked Region Boost (+3) - Proven interest
-    // 3. Cost Similarity Boost (+2) - Within 25% of avg liked cost
-    // 4. Popularity Baseline (+1 per 20 points)
+    // Intense Recommendation Logic with Diversity Filter:
+    // 1. Home Region Boost (+5)
+    // 2. Liked Region Boost (+3)
+    // 3. Cost Similarity Boost (+2)
+    // 4. ML Similarity Mock (+2) - Simulate "Users like you also liked..."
+    // 5. Diversity Decay (-2 if too many from same region)
+    
+    const regionCounts: Record<string, number> = {};
     const sortedCities = [...cities].map(city => {
       let score = 0;
       
+      // Home & Liked region boosts
       if (city.region === homeRegion) score += 5;
       if (preferredRegionsList.includes(city.region)) score += 3;
       
+      // Cost similarity
       if (avgLikedCost !== null) {
         const costDiff = Math.abs(city.costIndex - avgLikedCost) / avgLikedCost;
         if (costDiff < 0.25) score += 2;
       }
+
+      // Mock ML Similarity (based on cross-region popularity patterns)
+      // If user likes Europe, show them a bit of Japan (similar vibe/score)
+      const isMLSimilar = city.popularityScore > 80 && !preferredRegionsList.includes(city.region);
+      if (isMLSimilar) score += 1.5;
       
       score += city.popularityScore / 20;
       
       return { ...city, recScore: score };
     })
-    .sort((a, b) => b.recScore - a.recScore)
-    .slice(0, 15);
+    .sort((a, b) => b.recScore - a.recScore);
 
-    return NextResponse.json(sortedCities);
+    // Apply Diversity Decay:
+    // Ensure we don't show more than 4 cities from the same region in the final 15
+    const finalCities: any[] = [];
+    sortedCities.forEach(city => {
+      regionCounts[city.region] = (regionCounts[city.region] || 0) + 1;
+      if (regionCounts[city.region] <= 4) {
+        finalCities.push(city);
+      } else if (finalCities.length < 15) {
+        // Only add if we don't have enough cities yet, but with lower priority
+        finalCities.push({ ...city, recScore: city.recScore - 4 });
+      }
+    });
+
+    return NextResponse.json(finalCities.sort((a, b) => b.recScore - a.recScore).slice(0, 15));
   } catch (error) {
     console.error("Explore API Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

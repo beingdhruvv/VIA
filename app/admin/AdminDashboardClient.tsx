@@ -23,19 +23,13 @@ import {
   Tooltip, 
   ResponsiveContainer,
   AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  Cell
+  Area
 } from "recharts";
 import { 
   Tabs, 
   TabsList, 
   TabsTrigger, 
-  TabsContent,
-  Modal,
-  Input,
-  Select
+  TabsContent
 } from "@/components/ui";
 
 interface Stats {
@@ -70,6 +64,29 @@ interface User {
   createdAt: string;
 }
 
+interface AdminCity {
+  id: string;
+  name: string;
+  country: string;
+  region: string;
+  popularityScore: number;
+}
+
+interface AdminTrip {
+  id: string;
+  name: string;
+  status: string;
+  user: { name: string; email: string };
+}
+
+interface AdminActivity {
+  id: string;
+  name: string;
+  cityId: string;
+  category: string;
+  estimatedCost: number;
+}
+
 export default function AdminDashboardClient({ currentUserRole }: { currentUserRole: string }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -77,9 +94,9 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
   // New management states
-  const [cities, setCities] = useState<any[]>([]);
-  const [trips, setTrips] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
+  const [cities, setCities] = useState<AdminCity[]>([]);
+  const [trips, setTrips] = useState<AdminTrip[]>([]);
+  const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [mgmtLoading, setMgmtLoading] = useState(false);
 
   const fetchData = useCallback(async () => {

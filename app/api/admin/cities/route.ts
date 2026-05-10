@@ -14,7 +14,7 @@ export async function GET() {
       take: 50, // Limit for now
     });
     return NextResponse.json(cities);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch cities" }, { status: 500 });
   }
 }
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       },
     });
     return NextResponse.json(city);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to create city" }, { status: 500 });
   }
 }

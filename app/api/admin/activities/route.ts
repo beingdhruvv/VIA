@@ -14,7 +14,7 @@ export async function GET() {
       take: 50,
     });
     return NextResponse.json(activities);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch activities" }, { status: 500 });
   }
 }
