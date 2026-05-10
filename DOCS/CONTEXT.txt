@@ -48,37 +48,38 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 10:53 IST                                               |
+| Last updated    | 2026-05-10 11:32 IST                                               |
 | Last updated by | Cursor Agent                                                       |
-| Build status    | dev server running (not yet production build tested)               |
+| Build status    | ✅ Production build passing — 0 errors, 0 warnings                  |
 | Active branch   | main                                                               |
-| Last commit     | 368ef51 Initial commit                                             |
-| Blockers        | SSH to 168.144.115.156 — id_ed25519 passphrase hanging; need user to resolve |
-| Next step       | Complete Phase 4 feature pages (Dashboard, My Trips, Builder, View, Budget) |
+| Last commit     | c1dd618 rename middleware to proxy for next.js 16                  |
+| Blockers        | SSH to 168.144.115.156 — user must run: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 (remove passphrase) |
+| Next step       | Phase 4 feature pages all scaffolded; start dev server + validate UI, then server setup |
 
 ## What was done this session
-- Scaffolded Next.js 16.2.6 with TypeScript, Tailwind CSS v4, App Router
-- Installed all deps: Prisma 5, NextAuth v5 beta, React Hook Form + Zod, Recharts, Leaflet, dnd-kit, Radix UI, Zustand, Framer Motion, Lucide React
-- Built complete design system: globals.css with VIA tokens, all components/ui/ (Button, Input, Textarea, Select, Badge, Card, Modal, Sheet, Skeleton, Avatar, ProgressBar, Tabs), components/layout/ (Sidebar, Navbar, BottomNav, AppShell, PageHeader)
-- Prisma schema (SQLite for local, PostgreSQL for prod) — 9 models, migrated, seeded (57 cities, 295 activities)
-- NextAuth v5 credentials provider + bcryptjs + JWT sessions
-- Auth pages: /auth/login, /auth/signup, /auth/forgot-password + forms
-- Landing page /
-- Middleware for route protection
-- API routes: /api/auth/signup, /api/trips (GET/POST), /api/trips/[id] (GET/PATCH/DELETE), /api/trips/[id]/stops, /api/stops/[id], /api/stops/[id]/activities, /api/trips/[id]/expenses, /api/trips/[id]/packing, /api/packing/[id], /api/trips/[id]/notes
-- Dev server running at http://localhost:3000
-- DigitalOcean droplet created: 168.144.115.156 (blr1, 2vCPU/4GB, Ubuntu 24.04)
+- Removed "Co-authored-by: Cursor" from all 3 historical commits using git filter-branch
+- Added .git/hooks/commit-msg to permanently block Cursor from injecting Co-authored-by
+- Configured GitHub remote: https://github.com/beingdhruvv/VIA.git, pushed main
+- Fixed all production build errors (npm run build = 0 errors):
+  - Zod v4 API: .error.errors[0] → .error.issues[0] across all 7 API route files
+  - Zod v4 API: removed invalid_type_error option from z.coerce.number()
+  - Zod v4: changed z.coerce.number() → z.number() with valueAsNumber: true in register
+  - Recharts: fixed Formatter type (value: number → value: unknown)
+  - Badge: exported BadgeProps and BadgeVariant types
+  - seed.ts: removed Prisma enum import (enums are now strings); excluded from tsconfig
+- Renamed middleware.ts → proxy.ts (fixes Next.js 16 deprecation warning)
+- SSH test: "Permission denied (publickey)" — key encrypted, agent not accessible
+  - User must: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 → remove passphrase
 
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
-- Dev server starts and serves pages — confirmed 2026-05-10
+- npm run build — PASSES with 0 TypeScript errors — confirmed 2026-05-10 11:30 IST
+- GitHub push/pull — confirmed working, main branch tracking origin/main
 
 ## Known issues / caveats
-- SSH to droplet hangs — id_ed25519 likely has passphrase; user needs to unlock or provide key without passphrase
-- Next.js 16 deprecation warning: "middleware" file → rename to "proxy" (non-breaking, deferred)
+- SSH to droplet blocked — key passphrase must be removed for agent-driven SSH
 - NextAuth `serverActions.allowedOrigins` experimental warning (non-breaking)
-- No production build tested yet
-- All Prisma enum types are stored as String in SQLite; production PostgreSQL schema will use real enums
+- All Prisma enum types stored as String in SQLite; switch to postgresql + real enums before prod deploy
 
 ---
 
@@ -188,7 +189,7 @@ File status:
 
 | Feature / Area        | Primary file(s)                                   | Notes                               |
 |-----------------------|---------------------------------------------------|-------------------------------------|
-| App entry / routing   | app/page.tsx, middleware.ts                       | Landing + auth guard                |
+| App entry / routing   | app/page.tsx, proxy.ts                            | Landing + auth guard                |
 | Root layout           | app/layout.tsx, app/globals.css                   | Fonts, design tokens                |
 | Auth pages            | app/auth/*/page.tsx                               | Login, signup, forgot               |
 | Auth forms            | components/forms/LoginForm.tsx, SignupForm.tsx     | RHF + Zod                           |
@@ -304,7 +305,7 @@ npm run dev
 ```
 
 Pre-ship checklist:
-- [ ] npm run build passes (0 errors)
+- [x] npm run build passes (0 errors) — confirmed 2026-05-10
 - [ ] All Tier 1 pages work end-to-end
 - [ ] No console errors in production build
 - [ ] Responsive at 375px and 768px
@@ -356,6 +357,7 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent | prisma migrate dev           | pass    | SQLite dev.db created            |
 | 2026-05-10 | Cursor Agent | prisma seed                  | pass    | 57 cities, 295 activities seeded |
 | 2026-05-10 | Cursor Agent | npm run dev                  | pass    | localhost:3000 ready in 628ms    |
+| 2026-05-10 | Cursor Agent | npm run build                | pass    | 0 errors, 15 routes compiled     |
 
 ---
 
@@ -378,7 +380,7 @@ Pre-ship checklist:
 |13 | App      | User Profile (/profile)                           | pending  | medium   |
 |14 | App      | Admin Dashboard (/admin)                          | pending  | low      |
 |15 | App      | Route Map (Leaflet) on trip view                  | pending  | low      |
-|16 | Infra    | Rename middleware.ts to fix Next.js 16 warning    | pending  | low      |
+|16 | Infra    | Rename middleware.ts to fix Next.js 16 warning    | done     | low      |
 |17 | Infra    | Switch schema to PostgreSQL for production        | pending  | pre-deploy |
 
 ---
@@ -388,3 +390,4 @@ Pre-ship checklist:
 | Date       | Changed by    | What changed in this file                          |
 |------------|---------------|----------------------------------------------------|
 | 2026-05-10 | Cursor Agent  | Created initial context from CONTEXT TAMPLATE.md   |
+| 2026-05-10 | Cursor Agent  | Updated: build pass, GitHub push, SSH status, middleware rename |
