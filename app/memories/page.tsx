@@ -25,7 +25,7 @@ export default async function MemoriesPage() {
     })
   ]);
 
-  const memories: MemoryData[] = memoriesResult.map(m => ({
+  const mappedMemories: MemoryData[] = memoriesResult.map(m => ({
     id: m.id,
     userId: m.userId,
     tripId: m.tripId,
@@ -50,9 +50,8 @@ export default async function MemoriesPage() {
         subtitle="Your travel history, captured in moments."
       />
       <MemoriesClient 
-        initialMemories={memories} 
+        initialMemories={mappedMemories} 
         trips={trips}
-        storageUsed={user?.storageUsed || 0}
       />
     </div>
   );

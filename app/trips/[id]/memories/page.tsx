@@ -16,7 +16,7 @@ export default async function TripMemoriesPage({ params }: Props) {
 
   const { id } = await params;
 
-  const [trip, memories, user] = await Promise.all([
+  const [trip, memoriesResult, user] = await Promise.all([
     prisma.trip.findFirst({
       where: { 
         id, 
@@ -40,7 +40,7 @@ export default async function TripMemoriesPage({ params }: Props) {
 
   if (!trip) redirect("/trips");
 
-  const memories: MemoryData[] = memoriesResult.map(m => ({
+  const mappedMemories: MemoryData[] = memoriesResult.map(m => ({
     id: m.id,
     userId: m.userId,
     tripId: m.tripId,
@@ -79,9 +79,8 @@ export default async function TripMemoriesPage({ params }: Props) {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <MemoriesClient 
-          initialMemories={memories} 
+          initialMemories={mappedMemories} 
           trips={[trip]}
-          storageUsed={user?.storageUsed || 0}
         />
       </main>
     </AppShell>
