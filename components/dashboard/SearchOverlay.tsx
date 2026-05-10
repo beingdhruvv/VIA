@@ -18,7 +18,6 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<{ cities: CityData[], trips: TripCard[] }>({ cities: [], trips: [] });
   const [searching, setSearching] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Close on Escape
   useEffect(() => {
@@ -49,7 +48,6 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
         const trips = tripsRes.ok ? await tripsRes.json() : [];
         
         setResults({ cities, trips });
-        setSelectedIndex(0);
       } catch (err) {
         console.error(err);
       } finally {
@@ -142,7 +140,12 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
                         className="w-full flex items-center gap-4 px-3 py-3 hover:bg-via-black hover:text-via-white transition-colors text-left group"
                       >
                         <div className="w-10 h-10 border border-via-black overflow-hidden shrink-0">
-                          <img src={getCityImageUrl(city.name, city.country)} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={getCityImageUrl(city.name, city.country)}
+                            alt={city.name}
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-grotesk font-bold text-sm truncate">{city.name}</p>

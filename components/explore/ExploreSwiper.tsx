@@ -16,7 +16,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
   const likeOpacity = useTransform(x, [50, 150], [0, 1]);
   const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
 
@@ -87,11 +86,12 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             }}
             className="absolute inset-0 cursor-grab active:cursor-grabbing"
           >
-            <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px #111111" }}>
-              {/* Image */}
-              <img
-                src={currentCity.imageUrl || `https://source.unsplash.com/800x1200/?${currentCity.name},travel`}
-                alt={currentCity.name}
+              <div className="w-full h-full bg-via-white border-2 border-via-black overflow-hidden relative" style={{ boxShadow: "8px 8px 0px #111111" }}>
+                {/* Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentCity.imageUrl || `https://source.unsplash.com/800x1200/?${currentCity.name},travel`}
+                  alt={currentCity.name}
                 className="w-full h-full object-cover select-none pointer-events-none"
               />
 

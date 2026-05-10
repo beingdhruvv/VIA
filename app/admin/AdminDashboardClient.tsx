@@ -10,15 +10,12 @@ import {
   Cpu, 
   ShieldAlert, 
   CheckCircle2, 
-  XCircle,
   RefreshCw,
   UserPlus,
   UserMinus,
   Loader2
 } from "lucide-react";
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 

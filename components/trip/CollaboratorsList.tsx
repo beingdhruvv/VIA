@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Users, 
   Mail, 
@@ -29,7 +29,7 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCollaborators = async () => {
+  const fetchCollaborators = useCallback(async () => {
     try {
       const res = await fetch(`/api/trips/${tripId}/collaborators`);
       if (res.ok) {
@@ -41,12 +41,12 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tripId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchCollaborators();
-  }, [tripId]);
+  }, [fetchCollaborators]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +67,7 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
         const data = await res.json();
         setError(data.error || "Failed to add person");
       }
-    } catch (err) {
+    } catch {
       setError("Server error");
     } finally {
       setAdding(false);

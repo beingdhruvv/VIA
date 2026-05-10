@@ -35,6 +35,9 @@
 :root {
   --background: #F5F5F2;
   --foreground: #111111;
+  --font-space-grotesk: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-inter: Inter, "Segoe UI", system-ui, sans-serif;
+  --font-ibm-plex-mono: "IBM Plex Mono", "SFMono-Regular", "Courier New", monospace;
 }
 
 * {
