@@ -105,6 +105,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
               const nextQuery = e.target.value;
               setQuery(nextQuery);
               if (nextQuery.length < 2) {
+                setResults(EMPTY_RESULTS);
                 setSearching(false);
               }
             }}

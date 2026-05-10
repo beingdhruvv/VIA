@@ -27,9 +27,6 @@ export function GlobalCitySearch() {
 
   useEffect(() => {
     if (query.length < 2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResults([]);
-      setIsOpen(false);
       return;
     }
 
@@ -74,7 +71,15 @@ export function GlobalCitySearch() {
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const nextQuery = e.target.value;
+            setQuery(nextQuery);
+            if (nextQuery.length < 2) {
+              setResults([]);
+              setIsOpen(false);
+              setSearching(false);
+            }
+          }}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder="Where are you going next?"
           className="min-w-0 flex-1 px-3 py-3 sm:px-4 sm:py-4 bg-transparent font-grotesk font-bold text-base sm:text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
