@@ -22,9 +22,9 @@ export NODE_ENV=production
 export NEXT_TELEMETRY_DISABLED=1
 
 git fetch origin "${APP_BRANCH}"
-git checkout -B "${APP_BRANCH}" "origin/${APP_BRANCH}"
-# .env.production is gitignored in this repo, so preserve it while cleaning deploy leftovers.
-echo "Resetting tracked files to origin/${APP_BRANCH} while preserving .env.production"
+# Never run checkout before reset: local edits to deploy.sh / package.json on the droplet
+# would block checkout and abort the whole deploy (502 until fixed).
+echo "Resetting to origin/${APP_BRANCH} (drops any local edits to tracked files)"
 git reset --hard "origin/${APP_BRANCH}"
 git clean -fd -e .env.production
 

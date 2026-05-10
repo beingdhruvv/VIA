@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Trash2, Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { Trash2, Plus, TrendingUp, TrendingDown, Split, Users } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -24,7 +24,6 @@ import { SplitExpenseModal } from "@/components/trip/SplitExpenseModal";
 import { formatCurrency, diffInDays } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import type { ExpenseData, ExpenseCategory, TripCollaboratorData } from "@/types";
-import { Split, User as UserIcon, Users } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

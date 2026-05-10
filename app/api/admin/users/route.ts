@@ -42,7 +42,7 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json(updatedUser);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update user role" }, { status: 500 });
   }
 }

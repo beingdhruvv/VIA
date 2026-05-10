@@ -7,7 +7,6 @@ import { z } from "zod";
 import { CheckSquare, Square, Trash2, Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { ExpenseBadge } from "@/components/ui/Badge";
 import type { PackingItemData, PackingCategory } from "@/types";
 
 const CATEGORIES: PackingCategory[] = ["CLOTHING", "DOCUMENTS", "ELECTRONICS", "TOILETRIES", "MISC"];
@@ -111,7 +110,7 @@ export function PackingClient({ tripId, initialItems }: Props) {
       body: JSON.stringify(data),
     });
     if (res.ok) {
-      const result = await res.json();
+      await res.json();
       const newItems = data.map((d, i) => ({
         id: `temp-${Date.now()}-${i}`,
         tripId,

@@ -42,8 +42,9 @@ export async function POST(
 
 export async function GET(
   req: NextRequest,
-  { params: _params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
+  await context.params;
   const { searchParams } = new URL(req.url);
   const slug = searchParams.get("slug");
 
