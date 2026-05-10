@@ -6,12 +6,12 @@ import { initFirebaseFromJson, isFirebaseConfigured } from "@/lib/firebase";
 
 /**
  * Resolves Firebase for the client:
- * 1) Optional `bootstrap` from the auth Server Component (reads `FIREBASE_WEB_*` at request time).
+ * 1) Optional `bootstrap` from the auth Server Component (reads env + `.env.production` on server).
  * 2) Build-inlined `NEXT_PUBLIC_*` if present.
  * 3) `GET /api/config/firebase` as fallback.
  */
 export function useFirebaseReady(bootstrap: FirebaseWebPublicConfig | null = null) {
-  const [ready, setReady] = useState(() => {
+  const [configured, setConfigured] = useState(() => {
     if (
       bootstrap?.apiKey &&
       bootstrap.authDomain &&
@@ -19,12 +19,9 @@ export function useFirebaseReady(bootstrap: FirebaseWebPublicConfig | null = nul
       bootstrap.appId
     ) {
       initFirebaseFromJson(bootstrap);
-      return true;
     }
     return isFirebaseConfigured();
   });
-
-  const [configured, setConfigured] = useState(() => isFirebaseConfigured());
 
   useEffect(() => {
     if (configured) return;
@@ -39,9 +36,6 @@ export function useFirebaseReady(bootstrap: FirebaseWebPublicConfig | null = nul
       })
       .catch(() => {
         if (!cancelled) setConfigured(false);
-      })
-      .finally(() => {
-        if (!cancelled) setReady(true);
       });
 
     return () => {
@@ -49,5 +43,5 @@ export function useFirebaseReady(bootstrap: FirebaseWebPublicConfig | null = nul
     };
   }, [configured]);
 
-  return { ready, configured: ready && configured };
+  return { configured };
 }

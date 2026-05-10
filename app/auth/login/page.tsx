@@ -7,6 +7,8 @@ import LoginForm from "@/components/forms/LoginForm";
 import { getFirebaseBootstrapForAuthPages } from "@/lib/firebase-server-config";
 
 export const metadata = { title: "Sign In — VIA" };
+/** Read `FIREBASE_WEB_*` per request (avoid static shell with null bootstrap from build time). */
+export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
   const firebaseBootstrap = getFirebaseBootstrapForAuthPages();

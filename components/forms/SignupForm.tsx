@@ -94,7 +94,7 @@ export default function SignupForm({
   firebaseBootstrap?: FirebaseWebPublicConfig | null;
 }) {
   const router = useRouter();
-  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady(firebaseBootstrap);
+  const { configured: firebaseConfigured } = useFirebaseReady(firebaseBootstrap);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -248,7 +248,7 @@ export default function SignupForm({
           "Create Account"
         )}
       </button>
-      {firebaseReady && firebaseConfigured && (
+      {firebaseConfigured && (
         <>
       {/* Separator */}
       <div className="relative flex items-center py-2">

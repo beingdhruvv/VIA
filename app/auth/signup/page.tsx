@@ -7,6 +7,7 @@ import SignupForm from "@/components/forms/SignupForm";
 import { getFirebaseBootstrapForAuthPages } from "@/lib/firebase-server-config";
 
 export const metadata = { title: "Create Account — VIA" };
+export const dynamic = "force-dynamic";
 
 export default function SignupPage() {
   const firebaseBootstrap = getFirebaseBootstrapForAuthPages();
