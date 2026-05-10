@@ -12,12 +12,14 @@ import {
   Compass,
   User,
   LogOut,
+  Search,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { SessionUser } from "@/types";
 
 interface SidebarProps {
   user: SessionUser;
+  onSearchClick?: () => void;
 }
 
 const NAV_LINKS = [
@@ -27,7 +29,7 @@ const NAV_LINKS = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
-function Sidebar({ user }: SidebarProps) {
+function Sidebar({ user, onSearchClick }: SidebarProps) {
   const pathname = usePathname();
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
@@ -55,6 +57,22 @@ function Sidebar({ user }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-0.5 px-3">
+          {/* Global Search Shortcut */}
+          <li>
+            <button
+              onClick={onSearchClick}
+              className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-colors font-mono tracking-wide text-via-grey-dark hover:text-via-black hover:bg-via-off-white border-l-2 border-transparent"
+            >
+              <div className="flex items-center gap-3">
+                <Search size={18} strokeWidth={1.5} />
+                Search
+              </div>
+              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border border-via-grey-light bg-via-white px-1.5 font-mono text-[10px] font-medium text-via-grey-mid uppercase">
+                ⌘K
+              </kbd>
+            </button>
+          </li>
+
           {NAV_LINKS.map(({ href, label, icon: Icon }) => {
             const isActive =
               href === "/dashboard"
@@ -123,7 +141,7 @@ function Sidebar({ user }: SidebarProps) {
         {/* Version & Credits */}
         <div className="mt-4 pt-4 border-t border-via-grey-light flex items-center justify-between">
           <span className="text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">
-            v0.1.0-beta
+            v0.1.1-beta
           </span>
           <span className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest">
             StormLabs

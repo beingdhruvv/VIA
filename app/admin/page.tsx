@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { AppShell } from "@/components/layout/AppShell";
 import AdminDashboardClient from "./AdminDashboardClient";
 
 export const metadata = {
@@ -14,18 +15,29 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-4xl font-bold text-via-black font-space-grotesk tracking-tight">
-          Admin Control
-        </h1>
-        <p className="text-via-grey-mid font-mono text-sm mt-2 uppercase tracking-widest">
-          System Overview & Management
-        </p>
-      </div>
+  const user = {
+    id: session.user.id,
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
+    image: session.user.image,
+    role: session.user.role,
+  };
 
-      <AdminDashboardClient currentUserRole={session.user.role as string} />
-    </div>
+  return (
+    <AppShell user={user}>
+      <div className="px-4 md:px-8 py-6 flex flex-col gap-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-via-black font-space-grotesk tracking-tight">
+            Admin Control
+          </h1>
+          <p className="text-via-grey-mid font-mono text-[11px] mt-1 uppercase tracking-[0.15em]">
+            System Overview & Management
+          </p>
+        </div>
+
+        <AdminDashboardClient currentUserRole={session.user.role as string} />
+      </div>
+    </AppShell>
   );
 }
+

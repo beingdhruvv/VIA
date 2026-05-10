@@ -60,7 +60,7 @@ export default async function PublicTripPage({ params }: Props) {
       <div className="relative h-48 sm:h-64 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={trip.coverUrl ?? getCityImageUrl(firstStop?.city?.name ?? "travel")}
+          src={trip.coverUrl ?? getCityImageUrl(firstStop?.city?.name ?? "", firstStop?.city?.country)}
           alt={trip.name}
           className="w-full h-full object-cover"
         />
@@ -148,7 +148,7 @@ export default async function PublicTripPage({ params }: Props) {
                 </div>
                 <div className="h-12 w-16 overflow-hidden shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getCityImageUrl(stop.city.name)} alt={stop.city.name} className="w-full h-full object-cover" />
+                  <img src={getCityImageUrl(stop.city.name, stop.city.country)} alt={stop.city.name} className="w-full h-full object-cover" />
                 </div>
               </div>
 

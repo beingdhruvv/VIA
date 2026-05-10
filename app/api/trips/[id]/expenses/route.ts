@@ -9,6 +9,11 @@ const expenseSchema = z.object({
   description: z.string().min(1),
   date: z.string(),
   stopId: z.string().uuid().optional().nullable(),
+  payerId: z.string().uuid().optional().nullable(),
+  splits: z.array(z.object({
+    userId: z.string().uuid(),
+    amount: z.number().positive()
+  })).optional()
 });
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -16,12 +21,27 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const trip = await prisma.trip.findFirst({ where: { id, userId: session.user.id } });
-  if (!trip) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  
+  // Allow access if owner or collaborator
+  const isAuthorized = await prisma.trip.findFirst({
+    where: {
+      id,
+      OR: [
+        { userId: session.user.id },
+        { collaborators: { some: { userId: session.user.id } } }
+      ]
+    }
+  });
+  
+  if (!isAuthorized) return NextResponse.json({ error: "Trip not found or unauthorized" }, { status: 404 });
 
   const expenses = await prisma.expense.findMany({
     where: { tripId: id },
     orderBy: { date: "desc" },
+    include: {
+      payer: { select: { id: true, name: true, avatarUrl: true } },
+      splits: { include: { user: { select: { id: true, name: true } } } }
+    }
   });
 
   return NextResponse.json(expenses);
@@ -32,8 +52,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: tripId } = await params;
-  const trip = await prisma.trip.findFirst({ where: { id: tripId, userId: session.user.id } });
-  if (!trip) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  const isAuthorized = await prisma.trip.findFirst({
+    where: {
+      id: tripId,
+      OR: [
+        { userId: session.user.id },
+        { collaborators: { some: { userId: session.user.id } } }
+      ]
+    }
+  });
+  
+  if (!isAuthorized) return NextResponse.json({ error: "Trip not found or unauthorized" }, { status: 404 });
 
   const body = await req.json();
   const parsed = expenseSchema.safeParse(body);
@@ -41,18 +70,36 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const expense = await prisma.expense.create({
-    data: {
-      tripId,
-      category: parsed.data.category,
-      amount: parsed.data.amount,
-      description: parsed.data.description,
-      date: new Date(parsed.data.date),
-      stopId: parsed.data.stopId ?? null,
-    },
-  });
+  const { category, amount, description, date, stopId, payerId, splits } = parsed.data;
 
-  return NextResponse.json(expense, { status: 201 });
+  try {
+    const expense = await prisma.expense.create({
+      data: {
+        tripId,
+        category,
+        amount,
+        description,
+        date: new Date(date),
+        stopId: stopId ?? null,
+        payerId: payerId ?? session.user.id,
+        splits: splits ? {
+          create: splits.map(s => ({
+            userId: s.userId,
+            amount: s.amount
+          }))
+        } : undefined
+      },
+      include: {
+        payer: true,
+        splits: true
+      }
+    });
+
+    return NextResponse.json(expense, { status: 201 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to create expense" }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -65,9 +112,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   const { id: tripId } = await params;
   const expense = await prisma.expense.findFirst({
-    where: { id: expenseId, tripId, trip: { userId: session.user.id } },
+    where: { 
+      id: expenseId, 
+      tripId, 
+      trip: {
+        OR: [
+          { userId: session.user.id },
+          { collaborators: { some: { userId: session.user.id, role: "EDITOR" } } }
+        ]
+      }
+    },
   });
-  if (!expense) return NextResponse.json({ error: "Expense not found" }, { status: 404 });
+  
+  if (!expense) return NextResponse.json({ error: "Expense not found or unauthorized" }, { status: 404 });
 
   await prisma.expense.delete({ where: { id: expenseId } });
   return NextResponse.json({ success: true });

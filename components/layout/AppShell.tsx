@@ -1,12 +1,10 @@
-/**
- * AppShell — root layout wrapper for all authenticated pages.
- * Desktop: Sidebar (260px fixed) + scrollable main content area.
- * Mobile: Navbar (top) + BottomNav (bottom) + full-width content.
- */
-import { ReactNode } from "react";
+"use client";
+
+import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { Navbar } from "./Navbar";
 import { BottomNav } from "./BottomNav";
+import { SearchOverlay } from "@/components/dashboard/SearchOverlay";
 import { SessionUser } from "@/types";
 
 interface AppShellProps {
@@ -17,10 +15,26 @@ interface AppShellProps {
 }
 
 function AppShell({ user, children, showBack = false }: AppShellProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen bg-via-white">
+      {/* Search overlay shortcut */}
+      <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
+
       {/* Desktop sidebar — hidden on mobile */}
-      <Sidebar user={user} />
+      <Sidebar user={user} onSearchClick={() => setSearchOpen(true)} />
 
       {/* Mobile top bar */}
       <Navbar user={user} showBack={showBack} />
@@ -46,3 +60,4 @@ function AppShell({ user, children, showBack = false }: AppShellProps) {
 
 export { AppShell };
 export type { AppShellProps };
+

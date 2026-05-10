@@ -4,6 +4,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { CITY_IMAGES, cityImageKey } from "../lib/place-images";
 
 const prisma = new PrismaClient();
 
@@ -635,6 +636,7 @@ async function main() {
         popularityScore: city.popularityScore,
         latitude: city.latitude,
         longitude: city.longitude,
+        imageUrl: CITY_IMAGES[cityImageKey(city.name, city.country)] ?? null,
       },
     });
     cityMap[city.name] = created.id;
@@ -649,6 +651,8 @@ async function main() {
       console.warn(`  ⚠ No city found for "${cityName}" — skipping`);
       continue;
     }
+    const country = cities.find((c) => c.name === cityName)?.country ?? "";
+    const cityHero = CITY_IMAGES[cityImageKey(cityName, country)] ?? null;
     for (const act of activities) {
       await prisma.activity.create({
         data: {
@@ -659,6 +663,7 @@ async function main() {
           estimatedCost: act.estimatedCost,
           durationHours: act.durationHours,
           rating: act.rating,
+          imageUrl: cityHero,
         },
       });
       activityCount++;

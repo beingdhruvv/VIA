@@ -20,8 +20,11 @@ import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ExpenseBadge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
+import { SplitExpenseModal } from "@/components/trip/SplitExpenseModal";
 import { formatCurrency, diffInDays } from "@/lib/utils";
-import type { ExpenseData, ExpenseCategory } from "@/types";
+import { Avatar } from "@/components/ui/Avatar";
+import type { ExpenseData, ExpenseCategory, TripCollaboratorData } from "@/types";
+import { Split, User as UserIcon } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -62,6 +65,8 @@ interface BudgetClientProps {
   startDate: string;
   endDate: string;
   initialExpenses: ExpenseData[];
+  collaborators: TripCollaboratorData[];
+  currentUserId: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -83,10 +88,15 @@ export function BudgetClient({
   startDate,
   endDate,
   initialExpenses,
+  collaborators,
+  currentUserId,
 }: BudgetClientProps) {
   const [expenses, setExpenses] = useState<ExpenseData[]>(initialExpenses);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  
+  const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
+  const [pendingSplits, setPendingSplits] = useState<{ userId: string, amount: number }[]>([]);
 
   const {
     register,
@@ -110,25 +120,43 @@ export function BudgetClient({
   const budgetPct = totalBudget ? Math.min((totalSpend / totalBudget) * 100, 100) : 0;
   const overBudget = totalBudget != null && totalSpend > totalBudget;
 
-  // Category totals
-  const categoryTotals = CATEGORIES.map((cat) => ({
-    category: cat,
-    amount: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount, 0),
-  }));
-  const maxCategoryAmount = Math.max(...categoryTotals.map((c) => c.amount), 1);
+  // ── Settlements Logic ──────────────────────────────────────────────────────
+  
+  const calculateBalances = () => {
+    const balances: Record<string, number> = {};
+    collaborators.forEach(c => balances[c.user.id] = 0);
+    balances[currentUserId] = balances[currentUserId] || 0; // Ensure owner is there
 
-  // Pie chart data
-  const pieData = categoryTotals.filter((c) => c.amount > 0);
+    expenses.forEach(exp => {
+      const payerId = exp.payerId || currentUserId;
+      const totalAmount = exp.amount;
+      
+      if (!exp.splits || exp.splits.length === 0) {
+        // If no splits, assume it's personal (not shared) or split equally if collaborative?
+        // For now, if no splits, only the payer is affected.
+        return;
+      }
 
-  // Bar chart data — group by date
-  const barDataMap: Record<string, number> = {};
-  expenses.forEach((e) => {
-    const d = e.date.slice(0, 10);
-    barDataMap[d] = (barDataMap[d] ?? 0) + e.amount;
-  });
-  const barData = Object.entries(barDataMap)
-    .map(([date, amount]) => ({ date, amount }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+      // Payer gets credit
+      balances[payerId] = (balances[payerId] || 0) + totalAmount;
+
+      // Each split person gets debt
+      exp.splits.forEach(s => {
+        balances[s.userId] = (balances[s.userId] || 0) - s.amount;
+      });
+    });
+
+    return balances;
+  };
+
+  const balances = calculateBalances();
+  const sortedBalances = Object.entries(balances)
+    .map(([id, amount]) => ({
+      id,
+      amount,
+      user: collaborators.find(c => c.user.id === id)?.user || { name: "You", avatarUrl: null }
+    }))
+    .sort((a, b) => b.amount - a.amount);
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
@@ -137,24 +165,19 @@ export function BudgetClient({
     const res = await fetch(`/api/trips/${tripId}/expenses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify({
+        ...values,
+        splits: pendingSplits.length > 0 ? pendingSplits : undefined
+      }),
     });
     const data = await res.json();
     if (!res.ok) {
       setServerError(data.error ?? "Failed to add expense");
       return;
     }
-    const newExpense: ExpenseData = {
-      id: data.id,
-      tripId: data.tripId,
-      stopId: data.stopId ?? null,
-      category: data.category,
-      amount: data.amount,
-      description: data.description,
-      date: new Date(data.date).toISOString(),
-    };
-    setExpenses((prev) => [newExpense, ...prev]);
+    setExpenses((prev) => [data, ...prev]);
     reset({ date: today(), category: "MISC" });
+    setPendingSplits([]);
   }
 
   async function handleDelete(expenseId: string) {
@@ -175,7 +198,44 @@ export function BudgetClient({
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-4xl pb-20">
+      <SplitExpenseModal
+        isOpen={isSplitModalOpen}
+        onClose={() => setIsSplitModalOpen(false)}
+        totalAmount={watch("amount") || 0}
+        collaborators={collaborators}
+        onSave={(s) => {
+          setPendingSplits(s);
+          setIsSplitModalOpen(false);
+        }}
+        initialSplits={pendingSplits}
+      />
+
+      {/* ── Settlements (Splitwise style) ── */}
+      {collaborators.length > 0 && (
+        <section
+          className="bg-via-white border border-via-black"
+          style={{ boxShadow: "3px 3px 0px #111111" }}
+        >
+          <div className="px-5 py-3 border-b border-via-grey-light flex items-center justify-between">
+            <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid">Settlements (Who owes who)</p>
+            <Users size={14} className="text-via-grey-mid" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-via-grey-light">
+            {sortedBalances.map((item) => (
+              <div key={item.id} className="p-4 flex items-center gap-3">
+                <Avatar src={item.user.avatarUrl} name={item.user.name} size="sm" />
+                <div className="flex-1">
+                  <p className="text-xs font-bold font-grotesk uppercase">{item.user.name}</p>
+                  <p className={`text-xs font-mono font-medium ${item.amount > 0 ? 'text-emerald-600' : item.amount < 0 ? 'text-via-red' : 'text-via-grey-mid'}`}>
+                    {item.amount > 0 ? `is owed ₹${item.amount.toLocaleString()}` : item.amount < 0 ? `owes ₹${Math.abs(item.amount).toLocaleString()}` : 'is settled up'}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Budget Overview ── */}
       <section
@@ -521,10 +581,25 @@ export function BudgetClient({
             </p>
           )}
 
-          <Button type="submit" loading={isSubmitting} size="sm">
-            <Plus size={13} />
-            Add Expense
-          </Button>
+          <div className="flex items-center gap-3 pt-2">
+            <Button type="submit" loading={isSubmitting} size="sm">
+              <Plus size={13} />
+              Add Expense
+            </Button>
+            
+            {collaborators.length > 0 && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsSplitModalOpen(true)}
+                className={`gap-2 ${pendingSplits.length > 0 ? 'border-emerald-500 text-emerald-600' : ''}`}
+              >
+                <Split size={14} />
+                {pendingSplits.length > 0 ? "Split Applied" : "Split with Friends"}
+              </Button>
+            )}
+          </div>
         </form>
       </section>
 
@@ -570,10 +645,21 @@ export function BudgetClient({
                   {expense.description}
                 </p>
 
+                {/* Payer info */}
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                  <Avatar src={expense.payer?.avatarUrl} name={expense.payer?.name} size="xs" />
+                  <span className="font-mono text-[10px] text-via-grey-mid uppercase">{expense.payer?.name?.split(' ')[0]} paid</span>
+                </div>
+
                 {/* Amount */}
-                <p className="font-mono text-[13px] font-medium text-via-black shrink-0">
-                  {formatCurrency(expense.amount)}
-                </p>
+                <div className="text-right shrink-0 min-w-[80px]">
+                  <p className="font-mono text-[13px] font-medium text-via-black">
+                    {formatCurrency(expense.amount)}
+                  </p>
+                  {expense.splits && expense.splits.length > 0 && (
+                    <p className="font-mono text-[9px] text-via-grey-mid uppercase">Shared ({expense.splits.length})</p>
+                  )}
+                </div>
 
                 {/* Delete */}
                 <button

@@ -123,7 +123,7 @@ export default async function CityDetailPage({ params }: Props) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={city.imageUrl ?? getCityImageUrl(city.name)}
+            src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}
             alt={city.name}
             className="w-full h-full object-cover"
           />
@@ -223,7 +223,7 @@ export default async function CityDetailPage({ params }: Props) {
                         <div className="h-28 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={act.imageUrl ?? getActivityImageUrl(act.name)}
+                            src={act.imageUrl ?? getActivityImageUrl(act.name, city.name, city.country)}
                             alt={act.name}
                             className="w-full h-full object-cover"
                             loading="lazy"

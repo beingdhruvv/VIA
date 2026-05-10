@@ -16,12 +16,12 @@ const stripeColors: Record<TripStatus, string> = {
 };
 
 export function TripCard({ trip, onDelete }: TripCardProps) {
-  const firstCity = trip.stops?.[0]?.city?.name;
+  const firstStop = trip.stops?.[0];
+  const firstCity = firstStop?.city?.name;
+  const firstCountry = firstStop?.city?.country;
   const coverImage =
     trip.coverUrl ||
-    (firstCity
-      ? getCityImageUrl(firstCity)
-      : `https://source.unsplash.com/400x300/?travel,journey`);
+    (firstCity ? getCityImageUrl(firstCity, firstCountry) : getCityImageUrl(""));
 
   const cityCount = trip.stops?.length ?? trip._count?.stops ?? 0;
   const countries = [...new Set(trip.stops?.map((s) => s.city?.country).filter(Boolean))];

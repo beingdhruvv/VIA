@@ -68,11 +68,13 @@ export function CitiesClient({ cities }: Props) {
               <div className="h-36 overflow-hidden relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={city.imageUrl ?? getCityImageUrl(city.name)}
+                  src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}
                   alt={city.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getCityImageUrl(city.name, city.country);
+                  }}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-via-black px-3 py-1.5 flex items-center justify-between">
                   <h3 className="font-grotesk font-bold text-sm text-via-white leading-tight truncate">{city.name}</h3>

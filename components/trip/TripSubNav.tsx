@@ -9,6 +9,7 @@ const TABS = [
   { label: "BUDGET",    path: "/budget" },
   { label: "PACKING",   path: "/packing" },
   { label: "NOTES",     path: "/notes" },
+  { label: "MEMBERS",   path: "/members" },
 ];
 
 interface TripSubNavProps {

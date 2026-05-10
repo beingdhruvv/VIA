@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripItineraryClient } from "@/components/trip/TripItineraryClient";
+import { JsonLd } from "@/components/seo/JsonLd";
 import type { TripFull } from "@/types";
 
 interface TripPageProps {
@@ -23,8 +24,17 @@ export default async function TripPage({ params }: TripPageProps) {
   };
 
   const trip = await prisma.trip.findFirst({
-    where: { id, userId: session.user.id },
+    where: { 
+      id, 
+      OR: [
+        { userId: session.user.id },
+        { collaborators: { some: { userId: session.user.id } } }
+      ]
+    },
     include: {
+      collaborators: {
+        include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } }
+      },
       stops: {
         orderBy: { orderIndex: "asc" },
         include: {
@@ -35,12 +45,16 @@ export default async function TripPage({ params }: TripPageProps) {
           },
         },
       },
-      expenses: { orderBy: { date: "desc" } },
+      expenses: { 
+        orderBy: { date: "desc" },
+        include: { payer: true, splits: { include: { user: true } } }
+      },
       packingItems: { orderBy: { createdAt: "asc" } },
       notes: { orderBy: { createdAt: "desc" } },
       sharedLinks: true,
     },
   });
+
 
   if (!trip) redirect("/trips");
 
@@ -100,10 +114,21 @@ export default async function TripPage({ params }: TripPageProps) {
       id: e.id,
       tripId: e.tripId,
       stopId: e.stopId,
+      payerId: e.payerId,
       category: e.category as TripFull["expenses"][0]["category"],
       amount: e.amount,
       description: e.description,
       date: e.date.toISOString(),
+      payer: e.payer ? {
+        id: e.payer.id,
+        name: e.payer.name,
+        avatarUrl: e.payer.avatarUrl
+      } : undefined,
+      splits: e.splits.map(s => ({
+        userId: s.userId,
+        amount: s.amount,
+        user: { name: s.user.name }
+      }))
     })),
     packingItems: trip.packingItems.map((p) => ({
       id: p.id,
@@ -126,11 +151,38 @@ export default async function TripPage({ params }: TripPageProps) {
       slug: l.slug,
       views: l.views,
     })),
+    collaborators: trip.collaborators.map(c => ({
+      id: c.id,
+      userId: c.userId,
+      role: c.role,
+      user: {
+        id: c.user.id,
+        name: c.user.name,
+        email: c.user.email,
+        avatarUrl: c.user.avatarUrl
+      }
+    }))
+  };
+
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Trip",
+    "name": trip.name,
+    "description": trip.description,
+    "startDate": trip.startDate.toISOString(),
+    "endDate": trip.endDate.toISOString(),
+    "itinerary": trip.stops.map(s => ({
+      "@type": "City",
+      "name": s.city.name
+    }))
   };
 
   return (
     <AppShell user={user} showBack>
+      <JsonLd data={jsonLd} />
       <TripItineraryClient trip={serialized} />
     </AppShell>
   );
+
 }

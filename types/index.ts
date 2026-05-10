@@ -10,6 +10,7 @@ export interface SessionUser {
   name: string;
   email: string;
   image?: string | null;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
 }
 
 // ─── Enum string literals ─────────────────────────────────────────────────────
@@ -20,14 +21,6 @@ export type ExpenseCategory = "TRANSPORT" | "STAY" | "FOOD" | "ACTIVITIES" | "MI
 export type PackingCategory = "CLOTHING" | "DOCUMENTS" | "ELECTRONICS" | "TOILETRIES" | "MISC";
 
 // ─── Domain types ─────────────────────────────────────────────────────────────
-
-/** Minimal user shape stored in the NextAuth JWT session */
-export interface SessionUser {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-}
 
 export interface UserProfile {
   id: string;
@@ -84,14 +77,23 @@ export interface StopWithCity {
   activities: StopActivityWithActivity[];
 }
 
+export interface ExpenseSplitData {
+  userId: string;
+  amount: number;
+  user?: { name: string };
+}
+
 export interface ExpenseData {
   id: string;
   tripId: string;
   stopId: string | null;
+  payerId?: string | null;
   category: ExpenseCategory;
   amount: number;
   description: string;
   date: string;
+  payer?: { id: string; name: string; avatarUrl: string | null };
+  splits?: ExpenseSplitData[];
 }
 
 export interface PackingItemData {
@@ -130,17 +132,22 @@ export interface TripCard {
   _count?: { stops: number; expenses: number };
 }
 
+export interface TripCollaboratorData {
+  id: string;
+  userId: string;
+  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+  };
+}
+
 export interface TripFull extends TripCard {
   expenses: ExpenseData[];
   packingItems: PackingItemData[];
   notes: NoteData[];
   sharedLinks: { id: string; slug: string; views: number }[];
-}
-
-export interface SessionUser {
-  id: string;
-  name: string;
-  email: string;
-  image?: string | null;
-  role?: string;
+  collaborators?: TripCollaboratorData[];
 }

@@ -50,7 +50,7 @@ export function RecommendedDestinationsCarousel({ cities }: { cities: CarouselCi
         className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {cities.map((city) => {
-          const img = city.imageUrl ?? `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`;
+          const img = city.imageUrl ?? getCityImageUrl(city.name, city.country);
           const estDaily = formatCurrency(city.costIndex * 30);
           const score = (city.popularityScore / 10).toFixed(1);
           return (
@@ -68,7 +68,7 @@ export function RecommendedDestinationsCarousel({ cities }: { cities: CarouselCi
                   className="w-full h-full object-cover group-hover:opacity-95 transition-opacity"
                   loading="lazy"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = getCityImageUrl(city.name);
+                    (e.target as HTMLImageElement).src = getCityImageUrl(city.name, city.country);
                   }}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-via-navy px-3 py-2 flex items-end justify-between gap-2">

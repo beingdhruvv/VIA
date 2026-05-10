@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripCard } from "@/components/trip/TripCard";
 import { RecommendedDestinationsCarousel } from "@/components/dashboard/RecommendedDestinationsCarousel";
+import { GlobalCitySearch } from "@/components/dashboard/GlobalCitySearch";
 import {
   formatCurrency,
   diffInDays,
@@ -150,20 +151,24 @@ export default async function DashboardPage() {
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-10">
 
         {/* ── Greeting header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-via-black pb-6">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-via-grey-mid mb-1">
-              Dashboard
-            </p>
-            <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-via-black">
+            <h1 className="font-grotesk font-bold text-2xl md:text-4xl text-via-black leading-tight">
               <GreetingText name={user.name.split(" ")[0]} />
             </h1>
+            <p className="font-inter text-via-grey-mid mt-2 max-w-md">
+              Your journeys, mapped and managed. Where should we go next?
+            </p>
           </div>
 
-          {/* Weather chip */}
+          <div className="w-full lg:w-auto">
+            <GlobalCitySearch />
+          </div>
+        </div>
+
+        {/* ── Weather & Status Bar ── */}
+        <div className="flex flex-wrap items-center gap-4">
           {weather && weatherCity && (
             <div
-              className="inline-flex items-center gap-3 border border-via-black px-3 py-2 bg-via-white self-start sm:self-auto"
+              className="inline-flex items-center gap-3 border border-via-black px-3 py-2 bg-via-white"
               style={{ boxShadow: "2px 2px 0px #111111" }}
             >
               <div className="flex items-center gap-1.5 text-via-black">
@@ -183,6 +188,10 @@ export default async function DashboardPage() {
               </span>
             </div>
           )}
+          
+          <div className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid px-3 py-2 border border-dashed border-via-grey-light">
+            System Status: <span className="text-green-600 font-bold">Optimal</span>
+          </div>
         </div>
 
         {/* ── Primary CTA ── */}

@@ -28,9 +28,21 @@ export default async function BudgetPage({ params }: BudgetPageProps) {
   const { id } = await params;
 
   const trip = await prisma.trip.findFirst({
-    where: { id, userId: session.user.id },
+    where: { 
+      id, 
+      OR: [
+        { userId: session.user.id },
+        { collaborators: { some: { userId: session.user.id } } }
+      ]
+    },
     include: {
-      expenses: { orderBy: { date: "desc" } },
+      expenses: { 
+        orderBy: { date: "desc" },
+        include: { payer: true, splits: { include: { user: true } } }
+      },
+      collaborators: {
+        include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } }
+      },
       stops: { select: { startDate: true, endDate: true } },
     },
   });
@@ -42,17 +54,37 @@ export default async function BudgetPage({ params }: BudgetPageProps) {
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
+    role: session.user.role,
   };
 
   const expenses: ExpenseData[] = trip.expenses.map((e) => ({
     id: e.id,
     tripId: e.tripId,
     stopId: e.stopId,
+    payerId: e.payerId,
     category: e.category as ExpenseData["category"],
     amount: e.amount,
     description: e.description,
     date: e.date.toISOString(),
+    payer: e.payer ? {
+      id: e.payer.id,
+      name: e.payer.name,
+      avatarUrl: e.payer.avatarUrl
+    } : undefined,
+    splits: e.splits.map(s => ({
+      userId: s.userId,
+      amount: s.amount,
+      user: { name: s.user.name }
+    }))
   }));
+
+  const collaborators = trip.collaborators.map(c => ({
+    id: c.id,
+    userId: c.userId,
+    role: c.role,
+    user: c.user
+  }));
+
 
   const dateRange = formatDateRange(trip.startDate, trip.endDate);
 
@@ -93,7 +125,10 @@ export default async function BudgetPage({ params }: BudgetPageProps) {
           startDate={trip.startDate.toISOString()}
           endDate={trip.endDate.toISOString()}
           initialExpenses={expenses}
+          collaborators={collaborators}
+          currentUserId={user.id}
         />
+
       </div>
     </AppShell>
   );

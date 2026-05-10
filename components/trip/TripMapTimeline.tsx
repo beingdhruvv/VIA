@@ -270,7 +270,7 @@ export function TripMapTimeline({ stops }: Props) {
                         <div className="w-10 h-10 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={stop.city.imageUrl || getCityImageUrl(stop.city.name)}
+                            src={stop.city.imageUrl || getCityImageUrl(stop.city.name, stop.city.country)}
                             alt={stop.city.name}
                             className="w-full h-full object-cover"
                           />

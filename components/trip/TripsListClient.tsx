@@ -71,8 +71,12 @@ const STRIPE_WIDTH = 4;
 function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
   const firstStop = trip.stops[0];
   const firstCity = firstStop?.city?.name;
+  const firstCountry = firstStop?.city?.country;
   const firstCityImage = (firstStop?.city as { imageUrl?: string | null } | undefined)?.imageUrl;
-  const coverSrc = trip.coverUrl || firstCityImage || (firstCity ? getCityImageUrl(firstCity) : `https://picsum.photos/seed/${encodeURIComponent(trip.name)}/400/300`);
+  const coverSrc =
+    trip.coverUrl ||
+    firstCityImage ||
+    (firstCity ? getCityImageUrl(firstCity, firstCountry) : getCityImageUrl(""));
   const stopCount = trip._count?.stops ?? trip.stops.length;
 
   return (

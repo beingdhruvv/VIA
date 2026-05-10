@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { CITY_IMAGES, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
@@ -48,13 +49,28 @@ export function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-// Picsum Photos — deterministic seed from name, always returns a real photo
-export function getCityImageUrl(cityName: string): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(cityName)}/800/500`;
+/** Wikimedia Commons hero for seeded cities; optional country disambiguates duplicate names. */
+export function getCityImageUrl(cityName: string, country?: string | null): string {
+  if (!cityName.trim()) return FALLBACK_CITY_IMAGE;
+  if (country) {
+    const key = `${cityName}|${country}`;
+    if (CITY_IMAGES[key]) return CITY_IMAGES[key];
+  }
+  const hit = Object.entries(CITY_IMAGES).find(([key]) => key.startsWith(`${cityName}|`));
+  if (hit) return hit[1];
+  return FALLBACK_CITY_IMAGE;
 }
 
-export function getActivityImageUrl(activityName: string): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(activityName)}/400/300`;
+/**
+ * Activity cards: use the parent city image (real place) until a per-activity URL exists in DB.
+ */
+export function getActivityImageUrl(
+  _activityName: string,
+  cityName?: string | null,
+  country?: string | null,
+): string {
+  if (cityName) return getCityImageUrl(cityName, country);
+  return FALLBACK_CITY_IMAGE;
 }
 
 export function timeAgo(date: Date | string): string {

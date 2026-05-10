@@ -25,19 +25,25 @@ export const metadata: Metadata = {
   description: "Plan multi-city trips, build day-wise itineraries, track budgets, and share your journeys.",
 };
 
+import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full`}
     >
       <body className="min-h-full bg-via-white text-via-black antialiased">
+        {gaId && <GoogleAnalytics gaId={gaId} />}
         {children}
       </body>
     </html>
   );
 }
+

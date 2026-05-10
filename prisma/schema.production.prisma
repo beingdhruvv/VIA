@@ -19,8 +19,11 @@ model User {
   language     String   @default("en")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  trips     Trip[]
-  tripNotes TripNote[]
+  trips           Trip[]
+  tripNotes       TripNote[]
+  collaboratingIn TripCollaborator[]
+  paidExpenses    Expense[]          @relation("PayerRelation")
+  expenseSplits   ExpenseSplit[]
 
   @@map("users")
 }
@@ -40,12 +43,13 @@ model Trip {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stops        TripStop[]
-  expenses     Expense[]
-  packingItems PackingItem[]
-  notes        TripNote[]
-  sharedLinks  SharedLink[]
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops         TripStop[]
+  expenses      Expense[]
+  packingItems  PackingItem[]
+  notes         TripNote[]
+  sharedLinks   SharedLink[]
+  collaborators TripCollaborator[]
 
   @@map("trips")
 }
@@ -121,13 +125,16 @@ model Expense {
   id          String   @id @default(uuid())
   tripId      String   @map("trip_id")
   stopId      String?  @map("stop_id")
+  payerId     String?  @map("payer_id")
   category    String
   amount      Float
   description String
   date        DateTime
 
-  trip Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  stop TripStop? @relation(fields: [stopId], references: [id])
+  trip   Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  stop   TripStop?      @relation(fields: [stopId], references: [id])
+  payer  User?          @relation("PayerRelation", fields: [payerId], references: [id])
+  splits ExpenseSplit[]
 
   @@map("expenses")
 }
@@ -171,4 +178,30 @@ model SharedLink {
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@map("shared_links")
+}
+
+model TripCollaborator {
+  id     String @id @default(uuid())
+  tripId String @map("trip_id")
+  userId String @map("user_id")
+  role   String @default("EDITOR") // OWNER | EDITOR | VIEWER
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+  @@map("trip_collaborators")
+}
+
+model ExpenseSplit {
+  id        String @id @default(uuid())
+  expenseId String @map("expense_id")
+  userId    String @map("user_id")
+  amount    Float
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([expenseId, userId])
+  @@map("expense_splits")
 }
