@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { 
   Search, 
   MapPin, 
-  Calendar, 
   ArrowRight, 
   Loader2,
-  X,
-  History,
   TrendingUp,
   Map
 } from "lucide-react";
@@ -35,6 +32,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
   // Debounced search
   useEffect(() => {
     if (query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults({ cities: [], trips: [] });
       return;
     }
@@ -62,7 +60,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = useCallback((item: any, type: "city" | "trip") => {
+  const handleSelect = useCallback((item: CityData | TripCard, type: "city" | "trip") => {
     onOpenChange(false);
     setQuery("");
     if (type === "city") {
@@ -185,7 +183,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
             </div>
           ) : !searching && (
             <div className="py-20 text-center space-y-2">
-              <p className="font-grotesk font-bold text-via-black text-lg">No results for "{query}"</p>
+              <p className="font-grotesk font-bold text-via-black text-lg">No results for &quot;{query}&quot;</p>
               <p className="font-mono text-xs text-via-grey-mid uppercase tracking-widest">Try a different search term</p>
             </div>
           )}

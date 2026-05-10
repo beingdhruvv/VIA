@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TripSubNav } from "@/components/trip/TripSubNav";
 import { StatusBadge } from "@/components/ui/Badge";
 import { BudgetClient } from "./_BudgetClient";
+import { toSessionUserRole } from "@/lib/roles";
 import { formatDateRange } from "@/lib/utils";
 import type { ExpenseData, SessionUser } from "@/types";
 
@@ -54,7 +55,7 @@ export default async function BudgetPage({ params }: BudgetPageProps) {
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role as any,
+    role: toSessionUserRole(session.user.role),
   };
 
   const expenses: ExpenseData[] = trip.expenses.map((e) => ({

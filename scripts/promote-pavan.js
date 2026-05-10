@@ -1,4 +1,5 @@
-const { Client } = require('pg');
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { Client } = require("pg");
 
 async function promote() {
   const client = new Client({
@@ -7,9 +8,9 @@ async function promote() {
   await client.connect();
   const res = await client.query(
     "UPDATE users SET role = 'SUPER_ADMIN' WHERE email = $1 RETURNING id, email, role",
-    ['pavan.code.io@gmail.com']
+    ["pavan.code.io@gmail.com"]
   );
-  console.log('Promoted user:', res.rows[0]);
+  console.log("Promoted user:", res.rows[0]);
   await client.end();
 }
 

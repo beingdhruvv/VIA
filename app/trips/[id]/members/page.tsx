@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripSubNav } from "@/components/trip/TripSubNav";
 import { CollaboratorsList } from "@/components/trip/CollaboratorsList";
+import { toSessionUserRole, toTripStatus } from "@/lib/roles";
 import { formatDateRange } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/Badge";
 import type { SessionUser } from "@/types";
@@ -35,7 +36,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role as any,
+    role: toSessionUserRole(session.user.role),
   };
 
   return (
@@ -45,7 +46,7 @@ export default async function MembersPage({ params }: MembersPageProps) {
           <h1 className="text-[22px] md:text-[28px] font-bold text-via-black font-space-grotesk">{trip.name}</h1>
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <p className="font-mono text-xs text-via-grey-mid">{formatDateRange(trip.startDate, trip.endDate)}</p>
-            <StatusBadge status={trip.status as any} />
+            <StatusBadge status={toTripStatus(trip.status)} />
           </div>
         </div>
         <div className="px-4 md:px-8">

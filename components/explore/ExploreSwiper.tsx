@@ -56,7 +56,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-8 bg-via-white border border-via-black border-dashed">
         <Globe className="text-via-grey-light mb-4" size={48} />
-        <h3 className="font-grotesk font-bold text-xl text-via-black">You've explored the world!</h3>
+        <h3 className="font-grotesk font-bold text-xl text-via-black">You&apos;ve explored the world!</h3>
         <p className="font-inter text-via-grey-mid mt-2 max-w-xs">
           Check back later for more destinations or update your preferences.
         </p>

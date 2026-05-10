@@ -16,7 +16,10 @@ export function CitiesClient({ cities }: Props) {
 
   useEffect(() => {
     const param = searchParams.get("q");
-    if (param && param !== q) setQ(param);
+    if (param && param !== q) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQ(param);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 

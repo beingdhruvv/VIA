@@ -8,7 +8,6 @@ import {
   Globe, 
   Activity, 
   Cpu, 
-  HardDrive, 
   ShieldAlert, 
   CheckCircle2, 
   XCircle,
@@ -85,7 +84,8 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   };
 
   useEffect(() => {
-    fetchData();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchData();
     const interval = setInterval(fetchData, 30000); // Refresh every 30s
     return () => clearInterval(interval);
   }, []);

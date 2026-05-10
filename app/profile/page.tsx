@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProfileClient } from "./_ProfileClient";
 import type { SessionUser } from "@/types";
+import { toSessionUserRole } from "@/lib/roles";
 
 export const metadata = { title: "Profile — VIA" };
 
@@ -25,7 +26,7 @@ export default async function ProfilePage() {
     name: session.user.name ?? "", 
     email: session.user.email ?? "", 
     image: session.user.image,
-    role: session.user.role as any
+    role: toSessionUserRole(session.user.role)
   };
 
   return (

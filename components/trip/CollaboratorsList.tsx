@@ -3,13 +3,10 @@
 import { useState, useEffect } from "react";
 import { 
   Users, 
-  UserPlus, 
-  X, 
   Mail, 
   Loader2,
   ShieldCheck,
-  Shield,
-  Trash2
+  Shield
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -47,7 +44,8 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
   };
 
   useEffect(() => {
-    fetchCollaborators();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchCollaborators();
   }, [tripId]);
 
   const handleAdd = async (e: React.FormEvent) => {

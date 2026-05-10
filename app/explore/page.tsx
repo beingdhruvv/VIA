@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
 import { Flame } from "lucide-react";
 import type { SessionUser } from "@/types";
+import { toSessionUserRole } from "@/lib/roles";
 
 export default async function ExplorePage() {
   const session = await auth();
@@ -30,7 +31,7 @@ export default async function ExplorePage() {
     name: session.user.name ?? "Traveler",
     email: session.user.email,
     image: session.user.image,
-    role: session.user.role as any,
+    role: toSessionUserRole(session.user.role),
   };
 
   return (
