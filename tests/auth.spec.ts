@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'; 
 
 test.describe('Authentication', () => {
   const timestamp = Date.now();
@@ -17,7 +17,7 @@ test.describe('Authentication', () => {
     // Submit
     await page.click('button[type="submit"]');
 
-    // Expect to be redirected to login
+    // Expect to be redirected to login, check if pass or fail
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
