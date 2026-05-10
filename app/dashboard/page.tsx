@@ -5,10 +5,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripCard } from "@/components/trip/TripCard";
+import { RecommendedDestinationsCarousel } from "@/components/dashboard/RecommendedDestinationsCarousel";
 import {
   formatCurrency,
   diffInDays,
-  getCityImageUrl,
 } from "@/lib/utils";
 import { GreetingText } from "@/components/ui/GreetingText";
 import type { SessionUser, TripCard as TripCardType } from "@/types";
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
   // ── Recommended cities ──
   const recommendedCities = await prisma.city.findMany({
     orderBy: { popularityScore: "desc" },
-    take: 6,
+    take: 8,
   });
 
   // ── Weather for last trip's first stop ──
@@ -185,8 +185,26 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* ── Primary CTA ── */}
+        <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-via-black bg-via-white p-5 md:p-6" style={{ boxShadow: "3px 3px 0px #111111" }}>
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-via-grey-mid mb-1">Next step</p>
+            <p className="font-grotesk font-bold text-lg md:text-xl text-via-black">Plan a new journey</p>
+            <p className="font-inter text-sm text-via-grey-mid mt-1 max-w-xl">Set dates, budget, and build stops in the itinerary builder.</p>
+          </div>
+          <Link
+            href="/trips/new"
+            className="inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-black text-via-white px-6 py-3 hover:bg-via-navy transition-colors shrink-0"
+            style={{ boxShadow: "2px 2px 0px #111111" }}
+          >
+            Plan a New Trip
+            <ArrowRight size={14} strokeWidth={1.5} />
+          </Link>
+        </section>
+
         {/* ── Stats ── */}
         <section>
+          <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-via-grey-mid mb-3">Quick stats</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard label="Total Trips" value={totalTrips} icon={MapPin} />
             <StatCard label="Countries" value={countries.size} icon={Globe} />
@@ -231,40 +249,19 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* ── Recommended destinations ── */}
+        {/* ── Recommended destinations (carousel) ── */}
         <section>
-          <SectionHeader title="Discover Destinations" href="/cities" linkLabel="Explore all" />
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {recommendedCities.map((city) => (
-              <Link
-                key={city.id}
-                href={`/cities/${city.id}`}
-                className="group block relative overflow-hidden border border-via-black"
-                style={{ boxShadow: "3px 3px 0px #111111" }}
-              >
-                {/* City image */}
-                <div className="relative h-32 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={city.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`}
-                    alt={city.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  {/* Solid overlay on bottom — no gradient per spec */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-via-black px-3 py-1.5">
-                    <p className="font-grotesk font-bold text-xs text-via-white leading-tight truncate">
-                      {city.name}
-                    </p>
-                    <p className="font-mono text-[9px] text-via-grey-light uppercase tracking-wide">
-                      {city.country}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <SectionHeader title="Recommended Destinations" href="/cities" linkLabel="Explore all" />
+          <RecommendedDestinationsCarousel
+            cities={recommendedCities.map((c) => ({
+              id: c.id,
+              name: c.name,
+              country: c.country,
+              imageUrl: c.imageUrl,
+              costIndex: c.costIndex,
+              popularityScore: c.popularityScore,
+            }))}
+          />
         </section>
 
       </div>

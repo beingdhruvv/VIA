@@ -19,6 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
+        console.log("Authorize attempt:", credentials?.email, "isFirebase:", credentials?.isFirebase);
         // Check if it's a Firebase login bypass
         if (credentials?.isFirebase === "true" && credentials?.email) {
           const user = await prisma.user.findUnique({ 
@@ -56,6 +57,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Brute force fix for IP redirect issue
+      if (baseUrl.includes("64.227.163.198") || process.env.NODE_ENV === "production") {
+        return "https://via.stromlabs.tech/dashboard";
+      }
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
