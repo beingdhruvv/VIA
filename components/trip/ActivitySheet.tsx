@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Check, Plus, Star, Clock, DollarSign } from "lucide-react";
+import { Check, Plus, Star, Clock, DollarSign, SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { ActivityBadge } from "@/components/ui/Badge";
@@ -36,6 +36,9 @@ export function ActivitySheet({
   const [activeCategory, setActiveCategory] = useState<"ALL" | ActivityCategory>("ALL");
   const [toggling, setToggling] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const [maxCost, setMaxCost] = useState<number>(10000);
+  const [maxDuration, setMaxDuration] = useState<number>(24);
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchActivities = useCallback(async () => {
     if (!stop) return;
@@ -55,6 +58,9 @@ export function ActivitySheet({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchActivities();
       setActiveCategory("ALL");
+      setMaxCost(10000);
+      setMaxDuration(24);
+      setShowFilters(false);
       // Pre-populate added IDs from stop activities
       setAddedIds(new Set(stop.activities.map((a) => a.activityId)));
     }
@@ -86,10 +92,15 @@ export function ActivitySheet({
     [stop, toggling, onActivitiesChanged]
   );
 
-  const filtered =
-    activeCategory === "ALL"
-      ? activities
-      : activities.filter((a) => a.category === activeCategory);
+  const allMax = activities.reduce((m, a) => Math.max(m, a.estimatedCost), 0);
+  const allMaxDur = activities.reduce((m, a) => Math.max(m, a.durationHours), 0);
+
+  const filtered = activities.filter((a) => {
+    if (activeCategory !== "ALL" && a.category !== activeCategory) return false;
+    if (a.estimatedCost > maxCost) return false;
+    if (a.durationHours > maxDuration) return false;
+    return true;
+  });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -111,8 +122,58 @@ export function ActivitySheet({
                 {cat}
               </button>
             ))}
+            <button
+              onClick={() => setShowFilters((f) => !f)}
+              className={["px-3 py-2 text-[11px] font-mono tracking-wider uppercase border-b-2 transition-colors whitespace-nowrap flex items-center gap-1 ml-auto",
+                showFilters ? "border-via-black text-via-black" : "border-transparent text-via-grey-mid hover:text-via-black"
+              ].join(" ")}
+            >
+              <SlidersHorizontal size={11} /> Filters
+            </button>
           </div>
         </div>
+
+        {/* Advanced filters */}
+        {showFilters && (
+          <div className="px-4 py-3 border-b border-via-grey-light bg-via-off-white space-y-3">
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="font-mono text-[10px] uppercase tracking-wide text-via-grey-mid">Max Cost</label>
+                <span className="font-mono text-[11px] text-via-black">{formatCurrency(maxCost)}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={allMax || 10000}
+                step={100}
+                value={maxCost}
+                onChange={(e) => setMaxCost(Number(e.target.value))}
+                className="w-full accent-black h-1"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <label className="font-mono text-[10px] uppercase tracking-wide text-via-grey-mid">Max Duration</label>
+                <span className="font-mono text-[11px] text-via-black">{maxDuration}h</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={allMaxDur || 24}
+                step={0.5}
+                value={maxDuration}
+                onChange={(e) => setMaxDuration(Number(e.target.value))}
+                className="w-full accent-black h-1"
+              />
+            </div>
+            <button
+              onClick={() => { setMaxCost(allMax || 10000); setMaxDuration(allMaxDur || 24); }}
+              className="font-mono text-[10px] text-via-grey-mid hover:text-via-black underline"
+            >
+              Reset filters
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="p-6 space-y-3">

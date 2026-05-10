@@ -88,6 +88,20 @@ export function PackingClient({ tripId, initialItems }: Props) {
     if (res.ok) setItems((p) => p.filter((i) => i.id !== id));
   }
 
+  async function resetAll() {
+    const packed = items.filter((i) => i.isPacked);
+    await Promise.all(
+      packed.map((item) =>
+        fetch(`/api/packing/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPacked: false }),
+        })
+      )
+    );
+    setItems((p) => p.map((i) => ({ ...i, isPacked: false })));
+  }
+
   async function applyTemplate(tpl: string) {
     setAddingTemplate(true);
     const data = TEMPLATES[tpl];
@@ -178,17 +192,33 @@ export function PackingClient({ tripId, initialItems }: Props) {
         {errors.name && <p className="font-mono text-[11px] text-via-red mt-1">{errors.name.message}</p>}
       </form>
 
-      {/* Filter */}
-      <div className="flex gap-2 flex-wrap">
-        {(["ALL", ...CATEGORIES] as Array<"ALL" | PackingCategory>).map((cat) => (
+      {/* Filter + Reset */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {(["ALL", ...CATEGORIES] as Array<"ALL" | PackingCategory>).map((cat) => {
+          const count = cat === "ALL" ? items.length : items.filter((i) => i.category === cat).length;
+          return (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`font-mono text-[11px] uppercase tracking-wide px-2.5 py-1 border transition-colors flex items-center gap-1.5 ${filter === cat ? "bg-via-black text-via-white border-via-black" : "border-via-grey-light text-via-grey-mid hover:border-via-black hover:text-via-black"}`}
+            >
+              {cat}
+              {count > 0 && (
+                <span className={`text-[9px] px-1 py-0 leading-4 ${filter === cat ? "bg-via-white/20 text-via-white" : "bg-via-grey-light text-via-grey-dark"}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+        {items.some((i) => i.isPacked) && (
           <button
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`font-mono text-[11px] uppercase tracking-wide px-2.5 py-1 border transition-colors ${filter === cat ? "bg-via-black text-via-white border-via-black" : "border-via-grey-light text-via-grey-mid hover:border-via-black hover:text-via-black"}`}
+            onClick={resetAll}
+            className="ml-auto font-mono text-[11px] uppercase tracking-wide px-2.5 py-1 border border-via-grey-light text-via-grey-mid hover:border-via-black hover:text-via-black transition-colors"
           >
-            {cat}
+            Reset All
           </button>
-        ))}
+        )}
       </div>
 
       {/* Items list */}

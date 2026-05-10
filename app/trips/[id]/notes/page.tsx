@@ -26,6 +26,7 @@ export default async function NotesPage({ params }: Props) {
         orderBy: { createdAt: "desc" },
         include: { stop: { include: { city: true } } },
       },
+      stops: { orderBy: { orderIndex: "asc" }, include: { city: true } },
     },
   });
   if (!trip) redirect("/trips");
@@ -42,11 +43,13 @@ export default async function NotesPage({ params }: Props) {
     stop: n.stop ? { city: { ...n.stop.city, imageUrl: n.stop.city.imageUrl } } : null,
   }));
 
+  const stops = trip.stops.map((s) => ({ id: s.id, cityName: s.city.name }));
+
   return (
     <AppShell user={user}>
       <div className="px-4 md:px-8 py-6">
         <TripSubNav tripId={id} />
-        <NotesClient tripId={id} initialNotes={notes} />
+        <NotesClient tripId={id} initialNotes={notes} stops={stops} />
       </div>
     </AppShell>
   );

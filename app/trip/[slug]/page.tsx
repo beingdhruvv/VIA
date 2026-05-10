@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { MapPin, Calendar, Wallet } from "lucide-react";
 import { formatDateRange, formatCurrency, getCityImageUrl } from "@/lib/utils";
+import { PublicShareActions } from "./_PublicShareActions";
 import type { Metadata } from "next";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -16,22 +18,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicTripPage({ params }: Props) {
   const { slug } = await params;
 
-  const link = await prisma.sharedLink.findUnique({
-    where: { slug },
-    include: {
-      trip: {
-        include: {
-          stops: {
-            orderBy: { orderIndex: "asc" },
-            include: {
-              city: true,
-              activities: { include: { activity: true }, orderBy: { scheduledTime: "asc" } },
+  const [link, session] = await Promise.all([
+    prisma.sharedLink.findUnique({
+      where: { slug },
+      include: {
+        trip: {
+          include: {
+            stops: {
+              orderBy: { orderIndex: "asc" },
+              include: {
+                city: true,
+                activities: { include: { activity: true }, orderBy: { scheduledTime: "asc" } },
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+    auth(),
+  ]);
 
   if (!link || !link.trip.isPublic) notFound();
 
@@ -39,6 +44,8 @@ export default async function PublicTripPage({ params }: Props) {
 
   const { trip } = link;
   const firstStop = trip.stops[0];
+  const shareUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/trip/${slug}`;
+  const isOwner = session?.user?.id === trip.userId;
 
   return (
     <div className="min-h-screen bg-via-off-white">
@@ -74,9 +81,21 @@ export default async function PublicTripPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Share actions */}
+      <div className="max-w-3xl mx-auto px-6 py-4">
+        <PublicShareActions
+          shareUrl={shareUrl}
+          tripId={trip.id}
+          tripName={trip.name}
+          isLoggedIn={!!session}
+          isOwner={isOwner}
+          views={link.views}
+        />
+      </div>
+
       {/* Description */}
       {trip.description && (
-        <div className="max-w-3xl mx-auto px-6 py-5">
+        <div className="max-w-3xl mx-auto px-6 pb-3">
           <p className="font-mono text-sm text-via-grey-mid leading-relaxed">{trip.description}</p>
         </div>
       )}
@@ -85,7 +104,6 @@ export default async function PublicTripPage({ params }: Props) {
       <div className="max-w-3xl mx-auto px-6 pb-12 space-y-6">
         {trip.stops.map((stop, idx) => (
           <div key={stop.id} className="relative">
-            {/* Connector */}
             {idx < trip.stops.length - 1 && (
               <div className="absolute left-4 top-full h-6 w-px bg-via-grey-light" />
             )}
@@ -129,7 +147,7 @@ export default async function PublicTripPage({ params }: Props) {
 
       <footer className="border-t border-via-grey-light px-6 py-4 text-center">
         <p className="font-mono text-xs text-via-grey-mid">
-          Planned with <span className="font-bold text-via-black">VIA</span> · {link.views} views
+          Planned with <span className="font-bold text-via-black">VIA</span>
         </p>
       </footer>
     </div>

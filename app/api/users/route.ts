@@ -45,20 +45,54 @@ export async function POST(req: Request) {
   }
 }
 
+const patchSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  language: z.string().min(2).max(10).optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().min(8).optional(),
+}).refine((d) => d.name || d.language || (d.currentPassword && d.newPassword), {
+  message: "Nothing to update",
+});
+
 export async function PATCH(req: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const schema = z.object({ name: z.string().min(1).max(100) });
-  const parsed = schema.safeParse(body);
+  const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+
+  const { name, language, currentPassword, newPassword } = parsed.data;
+  const updateData: Record<string, unknown> = {};
+
+  if (name) updateData.name = name;
+  if (language) updateData.language = language;
+
+  if (currentPassword && newPassword) {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
+    updateData.passwordHash = await bcrypt.hash(newPassword, 12);
+  }
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: parsed.data.name },
-    select: { id: true, name: true, email: true },
+    data: updateData,
+    select: { id: true, name: true, email: true, language: true },
   });
   return NextResponse.json(user);
 }
 
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  if (body.confirm !== "DELETE") {
+    return NextResponse.json({ error: 'Type "DELETE" to confirm account deletion' }, { status: 400 });
+  }
+
+  await prisma.user.delete({ where: { id: session.user.id } });
+  return NextResponse.json({ ok: true });
+}

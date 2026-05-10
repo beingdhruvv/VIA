@@ -95,7 +95,9 @@ This avoids breaking local development while still running the droplet on Postgr
 
 ## Nginx and SSL
 
-The bootstrap script installs `infra/server/nginx-via.conf` with `server_name _`, so the app works by IP first:
+Nginx acts as a reverse proxy, handling traffic on port 80 and forwarding it to the PM2/Next.js instance on port 3000. 
+
+The configuration file is located at `/etc/nginx/sites-available/via` and is symlinked to `/etc/nginx/sites-enabled/via`. By default, it uses `listen 80 default_server;` and `server_name _;` so the app is accessible by the droplet IP:
 
 ```text
 http://64.227.163.198
