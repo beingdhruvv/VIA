@@ -97,10 +97,10 @@ export function GlobalCitySearch() {
               {results.map((city) => (
                 <li key={city.id}>
                   <button
-                     onClick={() => handleSelect(city)}
-                     className="w-full flex items-center gap-4 px-4 py-4 hover:bg-via-off-white transition-colors text-left group/item"
-                   >
-                     <div className="relative w-12 h-12 shrink-0 border border-via-black overflow-hidden">
+                    onClick={() => handleSelect(city)}
+                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-via-off-white transition-colors text-left group/item"
+                  >
+                    <div className="relative w-12 h-12 shrink-0 border border-via-black overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}

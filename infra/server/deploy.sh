@@ -23,8 +23,9 @@ export NEXT_TELEMETRY_DISABLED=1
 
 git fetch origin "${APP_BRANCH}"
 git checkout -B "${APP_BRANCH}" "origin/${APP_BRANCH}"
+echo "Resetting tracked files to origin/${APP_BRANCH} while preserving .env.production"
 git reset --hard "origin/${APP_BRANCH}"
-git clean -fd
+git clean -fd -e .env.production
 
 # Unique build label for UI + support (override with DEPLOY_VERSION from CI)
 export NEXT_PUBLIC_APP_VERSION="${DEPLOY_VERSION:-$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)}"
