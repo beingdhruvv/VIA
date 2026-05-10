@@ -9,6 +9,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Models ──────────────────────────────────────────────────────────────────
+// Valid values: TripStatus: PLANNING | ACTIVE | COMPLETED
+//               ActivityCategory: SIGHTSEEING | FOOD | ADVENTURE | CULTURE | SHOPPING | WELLNESS
+//               ExpenseCategory: TRANSPORT | STAY | FOOD | ACTIVITIES | MISC
+//               PackingCategory: CLOTHING | DOCUMENTS | ELECTRONICS | TOILETRIES | MISC
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -17,10 +23,14 @@ model User {
   avatarUrl    String?  @map("avatar_url")
   role         String   @default("USER") // USER | ADMIN | SUPER_ADMIN
   language     String   @default("en")
+  homeCity     String?  @map("home_city")
+  homeCountry  String?  @map("home_country")
   createdAt    DateTime @default(now()) @map("created_at")
+  storageUsed  Int      @default(0) @map("storage_used") // Track bytes used
 
-  trips           Trip[]
-  tripNotes       TripNote[]
+  trips    Trip[]
+  memories Memory[]
+  tripNotes TripNote[]
   collaboratingIn TripCollaborator[]
   paidExpenses    Expense[]          @relation("PayerRelation")
   expenseSplits   ExpenseSplit[]
@@ -40,28 +50,30 @@ model Trip {
   totalBudget Float?   @map("total_budget")
   isPublic    Boolean  @default(false) @map("is_public")
   publicSlug  String?  @unique @map("public_slug")
+  /// TripStatus: PLANNING | ACTIVE | COMPLETED
   status      String   @default("PLANNING")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stops         TripStop[]
-  expenses      Expense[]
-  packingItems  PackingItem[]
-  notes         TripNote[]
-  sharedLinks   SharedLink[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops        TripStop[]
+  expenses     Expense[]
+  packingItems PackingItem[]
+  notes        TripNote[]
+  sharedLinks  SharedLink[]
   collaborators TripCollaborator[]
+  memories      Memory[]
 
   @@map("trips")
 }
 
 model City {
-  id              String  @id @default(uuid())
+  id              String @id @default(uuid())
   name            String
   country         String
   region          String
-  costIndex       Float   @map("cost_index")
-  popularityScore Int     @map("popularity_score")
+  costIndex       Float  @map("cost_index")
+  popularityScore Int    @map("popularity_score")
   imageUrl        String? @map("image_url")
   latitude        Float
   longitude       Float
@@ -96,6 +108,7 @@ model Activity {
   cityId        String  @map("city_id")
   name          String
   description   String
+  /// ActivityCategory: SIGHTSEEING | FOOD | ADVENTURE | CULTURE | SHOPPING | WELLNESS
   category      String
   estimatedCost Float   @map("estimated_cost")
   durationHours Float   @map("duration_hours")
@@ -128,6 +141,7 @@ model Expense {
   tripId      String   @map("trip_id")
   stopId      String?  @map("stop_id")
   payerId     String?  @map("payer_id")
+  /// ExpenseCategory: TRANSPORT | STAY | FOOD | ACTIVITIES | MISC
   category    String
   amount      Float
   description String
@@ -145,6 +159,7 @@ model PackingItem {
   id        String   @id @default(uuid())
   tripId    String   @map("trip_id")
   name      String
+  /// PackingCategory: CLOTHING | DOCUMENTS | ELECTRONICS | TOILETRIES | MISC
   category  String
   isPacked  Boolean  @default(false) @map("is_packed")
   createdAt DateTime @default(now()) @map("created_at")
@@ -220,4 +235,30 @@ model UserTaste {
 
   @@unique([userId, cityId])
   @@map("user_tastes")
+}
+
+model Memory {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  tripId       String?  @map("trip_id")
+  imageUrl     String   @map("image_url")
+  thumbnailUrl String?  @map("thumbnail_url")
+  caption      String?
+  fileName     String   @map("file_name")
+  fileSize     Int      @map("file_size") // size in bytes
+  mimeType     String   @map("mime_type")
+  
+  // Metadata from EXIF
+  takenAt      DateTime? @map("taken_at")
+  latitude     Float?
+  longitude    Float?
+  locationName String?   @map("location_name")
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip? @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  @@map("memories")
 }

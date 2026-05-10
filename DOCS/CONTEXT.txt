@@ -12,7 +12,7 @@
 | Which file owns what              | FILE MAP           |
 | Directory layout + versions       | WORKING DIRECTORY  |
 | DB / API paths                    | DATA & PATHS       |
-| Build and ship                    | BUILD & DEPLOY     |
+| Build and ship / 502 recovery     | BUILD & DEPLOY     |
 | Rules that must never break       | HARD RULES         |
 | Why we made a choice              | DECISION LOG       |
 | What has been tested              | VALIDATION LOG     |
@@ -296,6 +296,17 @@ External APIs:
 | npm run db:seed            | tsx prisma/seed.ts                      |
 | npm run db:push            | npx prisma db push (quick schema push)  |
 
+## Deploy tips — 502 / stuck deploys (droplet)
+
+What went wrong once: **tracked files edited on the server** under `/var/www/via` (common: `deploy.sh`, `package.json`). A deploy that ran **`git checkout` (or similar) before `git reset --hard`** could **fail** on a dirty tree; with `set -e` the script **exited early** → **no clean build/reload** → **502** until someone fixed the box by hand.
+
+Tips (do not skip):
+- **Do not** hot-edit tracked files on the droplet. Commit locally, push `main`, let GitHub Actions deploy.
+- Before blaming the app: **`cd /var/www/via && git status`**. If anything under tracked paths is modified, that is a red flag for failed deploys.
+- **Current fix in repo:** `git fetch` → **`git reset --hard origin/<branch>`** (immediately; no checkout-before-reset) → **`git clean -fd -e .env.production`**. Same reset+clean runs from **CI SSH before `deploy.sh`** (see `.github/workflows/deploy.yml`, `infra/server/deploy.sh` comments).
+- **502 triage on server:** `pm2 logs <app>` (often `via`), `curl -fsS http://127.0.0.1:3000/api/health`, Nginx error log / upstream. If the tree was dirty, **`git fetch origin main && git reset --hard origin/main`** (then re-run deploy or push again) usually unblocks.
+- **Never lose prod env:** `git clean` must keep **`.env.production`** — the script uses `-e .env.production` on purpose.
+
 Dev server start command (set secrets locally — do not paste real keys into this repo file):
 ```powershell
 cd <YOUR_REPO_ROOT>
@@ -352,6 +363,7 @@ Pre-ship checklist:
 | 2026-05-10 | City search DB-only; no GeoDB merge in `/api/cities/search` | Product requirement; seeded cities as destinations |
 | 2026-05-10 | Firebase: `FIREBASE_WEB_*` + merge `.env.production` + `force-dynamic` auth pages | PM2/build empty `NEXT_PUBLIC_*`; static bootstrap was null |
 | 2026-05-10 | `proxy.ts` allow `/api/config/*` without auth | Login page fetch must work while logged out |
+| 2026-05-10 | Droplet deploy: `fetch` then `reset --hard` only (no checkout first) | Dirty server edits to tracked files blocked old flow → aborted deploy → 502 |
 
 # VALIDATION LOG
 
@@ -399,3 +411,4 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent  | CONTEXT: handoff, FILE MAP, cities/search, Firebase/proxy, WORKING DIRECTORY lib + proxy |
 | 2026-05-10 | Antigravity   | FIXED: Explore API 'any' types, missing imports, Image optimization, Profile Location card |
 | 2026-05-10 | Antigravity   | FEATURE: Memories gallery (200MB quota, trip-sync, Google Photos style) |
+| 2026-05-10 | Cursor Agent  | BUILD & DEPLOY: tips for 502 / dirty-git-on-droplet; NAVIGATION + DECISION LOG sync |
