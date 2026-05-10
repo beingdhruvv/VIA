@@ -4,7 +4,7 @@ const { Client } = require("pg");
 async function promote() {
   const email = process.argv[2] || process.env.VIA_ADMIN_EMAIL;
   if (!email) {
-    console.error("Usage: VIA_ADMIN_EMAIL=you@example.com node scripts/promote-pavan.js  or  node scripts/promote-pavan.js you@example.com");
+    console.error("Usage: VIA_ADMIN_EMAIL=you@example.com node scripts/promote-pavan.js or node scripts/promote-pavan.js you@example.com");
     process.exit(1);
   }
   const client = new Client({
