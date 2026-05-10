@@ -23,6 +23,7 @@ export NEXT_TELEMETRY_DISABLED=1
 
 git fetch origin "${APP_BRANCH}"
 git checkout -B "${APP_BRANCH}" "origin/${APP_BRANCH}"
+# .env.production is gitignored in this repo, so preserve it while cleaning deploy leftovers.
 echo "Resetting tracked files to origin/${APP_BRANCH} while preserving .env.production"
 git reset --hard "origin/${APP_BRANCH}"
 git clean -fd -e .env.production

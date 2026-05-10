@@ -11,7 +11,7 @@ interface Props { cities: CityData[] }
 
 export function CitiesClient({ cities }: Props) {
   const searchParams = useSearchParams();
-  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [country, setCountry] = useState("ALL");
 
   const countries = useMemo(() => {
