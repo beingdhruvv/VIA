@@ -39,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} h-full`}
     >
-      <body className="min-h-full bg-via-white text-via-black antialiased">
+      <body className="min-h-full bg-via-white text-via-black antialiased overflow-x-clip">
         {gaId && <GoogleAnalytics gaId={gaId} />}
         {children}
       </body>

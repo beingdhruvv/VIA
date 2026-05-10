@@ -77,7 +77,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 px-4">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 overflow-y-auto">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-via-black/40 backdrop-blur-sm"
@@ -86,10 +86,10 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
       
       {/* Search Modal */}
       <div 
-        className="relative w-full max-w-2xl bg-via-white border-2 border-via-black animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-2xl min-w-0 bg-via-white border-2 border-via-black animate-in fade-in zoom-in duration-200 my-4"
         style={{ boxShadow: "8px 8px 0px #111111" }}
       >
-        <div className="flex items-center border-b-2 border-via-black px-4">
+        <div className="flex items-center min-w-0 border-b-2 border-via-black px-3 sm:px-4">
           <Search size={20} className="text-via-grey-mid shrink-0" />
           <input
             type="text"
@@ -97,7 +97,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search cities, trips, or activities..."
-            className="w-full px-4 py-5 bg-transparent font-grotesk font-bold text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
+            className="min-w-0 flex-1 px-3 sm:px-4 py-4 sm:py-5 bg-transparent font-grotesk font-bold text-base sm:text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
           />
           {searching ? (
             <Loader2 size={18} className="animate-spin text-via-grey-mid" />

@@ -25,9 +25,9 @@ function Navbar({ user, showBack = false, rightSlot }: NavbarProps) {
 
   return (
     <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-via-white border-b border-via-black flex items-center px-4">
-      {/* Left: back or menu */}
+      {/* Left: back arrow or empty space */}
       <div className="w-10 flex items-center">
-        {showBack ? (
+        {showBack && (
           <button
             type="button"
             onClick={() => router.back()}
@@ -35,14 +35,6 @@ function Navbar({ user, showBack = false, rightSlot }: NavbarProps) {
             aria-label="Go back"
           >
             <ChevronLeft size={24} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="text-via-black hover:text-via-grey-dark transition-colors"
-            aria-label="Menu"
-          >
-            <Menu size={22} />
           </button>
         )}
       </div>

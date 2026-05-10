@@ -11,11 +11,13 @@ import {
   Map,
   Compass,
   User,
-  LogOut,
   Search,
+  Flame,
+  LogOut,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { SessionUser } from "@/types";
+import { APP_PUBLIC_VERSION } from "@/lib/app-version";
 
 interface SidebarProps {
   user: SessionUser;
@@ -24,6 +26,7 @@ interface SidebarProps {
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/explore", label: "Explore", icon: Flame },
   { href: "/trips", label: "My Trips", icon: Map },
   { href: "/cities", label: "Cities", icon: Compass },
   { href: "/profile", label: "Profile", icon: User },
@@ -139,11 +142,11 @@ function Sidebar({ user, onSearchClick }: SidebarProps) {
         </form>
 
         {/* Version & Credits */}
-        <div className="mt-4 pt-4 border-t border-via-grey-light flex items-center justify-between">
-          <span className="text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">
-            v0.1.1-beta
+        <div className="mt-4 pt-4 border-t border-via-grey-light flex items-center justify-between gap-2 min-w-0">
+          <span className="text-[10px] font-mono text-via-grey-mid uppercase tracking-widest truncate" title={APP_PUBLIC_VERSION}>
+            {APP_PUBLIC_VERSION}
           </span>
-          <span className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest">
+          <span className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest shrink-0">
             StormLabs
           </span>
         </div>

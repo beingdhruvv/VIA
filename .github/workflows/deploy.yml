@@ -37,8 +37,9 @@ jobs:
           DROPLET_HOST: ${{ secrets.DROPLET_HOST }}
           DROPLET_PORT: ${{ secrets.DROPLET_PORT }}
           DROPLET_USER: ${{ secrets.DROPLET_USER }}
+          DEPLOY_VERSION: ${{ github.run_number }}-${{ github.sha }}
         run: |
           ssh -i ~/.ssh/via_deploy_key \
             -p "${DROPLET_PORT:-22}" \
             "${DROPLET_USER}@${DROPLET_HOST}" \
-            "APP_DIR=/var/www/via APP_BRANCH=main bash /var/www/via/infra/server/deploy.sh"
+            "DEPLOY_VERSION='${DEPLOY_VERSION}' APP_DIR=/var/www/via APP_BRANCH=main bash /var/www/via/infra/server/deploy.sh"

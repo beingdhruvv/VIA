@@ -25,6 +25,10 @@ git fetch origin "${APP_BRANCH}"
 git checkout "${APP_BRANCH}"
 git pull --ff-only origin "${APP_BRANCH}"
 
+# Unique build label for UI + support (override with DEPLOY_VERSION from CI)
+export NEXT_PUBLIC_APP_VERSION="${DEPLOY_VERSION:-$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)}"
+echo "NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}"
+
 npm ci
 npx prisma generate --schema prisma/schema.production.prisma
 npx prisma db push --schema prisma/schema.production.prisma

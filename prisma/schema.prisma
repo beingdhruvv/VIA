@@ -30,6 +30,7 @@ model User {
   collaboratingIn TripCollaborator[]
   paidExpenses    Expense[]          @relation("PayerRelation")
   expenseSplits   ExpenseSplit[]
+  tastes          UserTaste[]
 
   @@map("users")
 }
@@ -74,6 +75,7 @@ model City {
 
   stops      TripStop[]
   activities Activity[]
+  tastes     UserTaste[]
 
   @@map("cities")
 }
@@ -214,4 +216,18 @@ model ExpenseSplit {
 
   @@unique([expenseId, userId])
   @@map("expense_splits")
+}
+
+model UserTaste {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  cityId    String   @map("city_id")
+  type      String   // LIKE | DISLIKE | SAVE
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId])
+  @@map("user_tastes")
 }

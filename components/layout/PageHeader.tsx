@@ -63,20 +63,20 @@ function PageHeader({
         </nav>
       )}
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
           <h2
-            className="text-[32px] font-semibold text-via-black leading-tight"
+            className="text-2xl sm:text-[28px] md:text-[32px] font-semibold text-via-black leading-tight"
             style={{ fontFamily: "var(--font-space-grotesk, sans-serif)" }}
           >
             {title}
           </h2>
           {subtitle && (
-            <p className="text-sm text-via-grey-mid mt-1">{subtitle}</p>
+            <p className="text-sm text-via-grey-mid mt-1 max-w-prose">{subtitle}</p>
           )}
         </div>
         {actions && (
-          <div className="flex items-center gap-2 shrink-0 pt-1">{actions}</div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0 pt-1 sm:justify-end">{actions}</div>
         )}
       </div>
     </div>

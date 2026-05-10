@@ -29,7 +29,7 @@ function AppShell({ user, children, showBack = false }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-via-white">
+    <div className="min-h-screen bg-via-white overflow-x-clip">
       {/* Search overlay shortcut */}
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
 
@@ -46,7 +46,7 @@ function AppShell({ user, children, showBack = false }: AppShellProps) {
           "md:ml-[260px]",
           /* On mobile, account for fixed top and bottom bars */
           "pt-14 pb-16 md:pt-0 md:pb-0",
-          "min-h-screen",
+          "min-h-screen min-w-0",
         ].join(" ")}
       >
         {children}

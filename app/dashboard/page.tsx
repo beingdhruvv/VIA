@@ -12,6 +12,7 @@ import {
   diffInDays,
 } from "@/lib/utils";
 import { GreetingText } from "@/components/ui/GreetingText";
+import type { ElementType } from "react";
 import type { SessionUser, TripCard as TripCardType } from "@/types";
 
 // ─── Weather helpers ──────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ function StatCard({
 }: {
   label: string;
   value: string | number;
-  icon: React.ElementType;
+  icon: ElementType;
 }) {
   return (
     <div
@@ -149,7 +150,6 @@ export default async function DashboardPage() {
   return (
     <AppShell user={user}>
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-10">
-
         {/* ── Greeting header ── */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div>
@@ -160,7 +160,6 @@ export default async function DashboardPage() {
               Your journeys, mapped and managed. Where should we go next?
             </p>
           </div>
-
           <div className="w-full lg:w-auto">
             <GlobalCitySearch />
           </div>
@@ -190,9 +189,8 @@ export default async function DashboardPage() {
               </span>
             </div>
           )}
-          
           <div className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid px-3 py-2 border border-dashed border-via-grey-light">
-            System Status: <span className="text-green-600 font-bold">Optimal</span>
+            System Status: <span className="text-via-navy font-bold">Optimal</span>
           </div>
         </div>
 
@@ -231,18 +229,13 @@ export default async function DashboardPage() {
         {/* ── Recent Trips ── */}
         <section>
           <SectionHeader title="Recent Trips" href="/trips" linkLabel="All trips" />
-
           {recentTrips.length === 0 ? (
             <div
               className="border border-via-black bg-via-white p-8 text-center"
               style={{ boxShadow: "3px 3px 0px #111111" }}
             >
-              <p className="font-grotesk font-semibold text-via-black mb-1">
-                No trips yet
-              </p>
-              <p className="font-inter text-sm text-via-grey-mid mb-5">
-                Start planning your first adventure.
-              </p>
+              <p className="font-grotesk font-semibold text-via-black mb-1">No trips yet</p>
+              <p className="font-inter text-sm text-via-grey-mid mb-5">Start planning your first adventure.</p>
               <Link
                 href="/trips/new"
                 className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-black text-via-white px-5 py-2.5 hover:bg-via-navy transition-colors"
@@ -260,7 +253,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* ── Recommended destinations (carousel) ── */}
+        {/* ── Recommended destinations ── */}
         <section>
           <SectionHeader title="Recommended Destinations" href="/cities" linkLabel="Explore all" />
           <RecommendedDestinationsCarousel
@@ -274,7 +267,6 @@ export default async function DashboardPage() {
             }))}
           />
         </section>
-
       </div>
     </AppShell>
   );

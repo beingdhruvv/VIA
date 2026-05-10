@@ -64,7 +64,7 @@ export function GlobalCitySearch() {
   return (
     <div className="relative w-full max-w-2xl" ref={containerRef}>
       <div 
-        className="group relative flex items-center bg-via-white border-2 border-via-black transition-all"
+        className="group relative flex min-w-0 items-center bg-via-white border-2 border-via-black transition-all"
         style={{ boxShadow: isOpen ? "0px 0px 0px #111111" : "4px 4px 0px #111111" }}
       >
         <div className="pl-4 text-via-grey-mid">
@@ -76,7 +76,7 @@ export function GlobalCitySearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder="Where are you going next?"
-          className="w-full px-4 py-4 bg-transparent font-grotesk font-bold text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
+          className="min-w-0 flex-1 px-3 py-3 sm:px-4 sm:py-4 bg-transparent font-grotesk font-bold text-base sm:text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
         />
         <div className="pr-4">
           <kbd className="hidden sm:inline-flex h-6 select-none items-center gap-1 rounded border border-via-grey-light bg-via-off-white px-1.5 font-mono text-[10px] font-medium text-via-grey-mid">
