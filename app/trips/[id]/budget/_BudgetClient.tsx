@@ -608,7 +608,7 @@ export function BudgetClient({
             {collaborators.length > 0 && (
               <Button 
                 type="button" 
-                variant="outline" 
+                variant="secondary" 
                 size="sm" 
                 onClick={() => setIsSplitModalOpen(true)}
                 className={`gap-2 ${pendingSplits.length > 0 ? 'border-emerald-500 text-emerald-600' : ''}`}
