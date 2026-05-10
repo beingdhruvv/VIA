@@ -4,12 +4,13 @@ This is the production workflow for the VIA DigitalOcean droplet.
 
 ## Target Server
 
-- Provider: DigitalOcean
-- Region: blr1
-- Droplet name: `snow`
-- Public IPv4: `64.227.163.198`
-- Private IP: `10.122.0.3`
-- Public IPv6: `2400:6180:100:d0:0:1:415a:2001`
+Concrete hostnames, IPs, and keys belong in a **local-only** file (see `LOCAL_OPERATIONS.md.template` → copy to `LOCAL_OPERATIONS.md`, gitignored).
+
+- Provider: (e.g. DigitalOcean)
+- Region: (your region slug)
+- Droplet name: (your name)
+- Public IPv4: `<YOUR_PUBLIC_IPV4>`
+- Private IP / IPv6: (optional; document locally if needed)
 - OS: Ubuntu 24.04 LTS x64
 - App directory: `/var/www/via`
 - Runtime: Node.js 22, Next.js `next start`, PM2, Nginx, PostgreSQL
@@ -72,7 +73,7 @@ APP_DIR=/var/www/via APP_BRANCH=main bash infra/server/deploy.sh
 Set these repository secrets before enabling push deploy:
 
 ```text
-DROPLET_HOST=64.227.163.198
+DROPLET_HOST=<YOUR_DROPLET_HOST_OR_IPV4>
 DROPLET_PORT=22
 DROPLET_USER=root
 DROPLET_SSH_KEY=<private deploy key>
@@ -100,7 +101,7 @@ Nginx acts as a reverse proxy, handling traffic on port 80 and forwarding it to 
 The configuration file is located at `/etc/nginx/sites-available/via` and is symlinked to `/etc/nginx/sites-enabled/via`. By default, it uses `listen 80 default_server;` and `server_name _;` so the app is accessible by the droplet IP:
 
 ```text
-http://64.227.163.198
+http://<YOUR_PUBLIC_IPV4>
 ```
 
 After a domain is pointed to the droplet, edit `/etc/nginx/sites-available/via`:
@@ -136,6 +137,46 @@ Every production build must carry a unique, user-visible build label (sidebar + 
 
 **Semver:** bump `package.json` `version` in the repo when you cut a meaningful release (optional script: `npm version patch --no-git-tag-version`). Production UI still shows the deploy-specific `NEXT_PUBLIC_APP_VERSION` from CI when deployed via Actions.
 
+## Site shows 502 Bad Gateway (nginx up, app “offline”)
+
+A **502** from nginx means the reverse proxy cannot reach the Next.js process on **`127.0.0.1:3000`** (see `infra/server/nginx-via.conf`). Nginx and TLS are fine; the **Node / PM2 app is missing, crashed, or still starting**.
+
+**On the droplet, run in order:**
+
+```bash
+cd /var/www/via
+pm2 status
+curl -sI http://127.0.0.1:3000/api/health
+pm2 logs via --lines 120 --nostream
+```
+
+- If **`via` is `stopped` / `errored` / missing** → read the **first error** in logs (failed `next start`, bad `.env.production`, DB unreachable, OOM, missing `/.next` after a bad build).
+- If **curl to :3000 fails** but PM2 says `online` → app may be crashing immediately; logs will show the stack trace.
+
+**Typical recovery (after fixing any env/DB issue shown in logs):**
+
+```bash
+cd /var/www/via
+set -a && source .env.production && set +a
+npm ci
+npx prisma generate --schema prisma/schema.production.prisma
+npx prisma db push --schema prisma/schema.production.prisma
+npm run build
+pm2 restart via --update-env
+pm2 save
+curl -sI http://127.0.0.1:3000/api/health
+```
+
+Or run the full scripted deploy (pull + build + PM2): `APP_DIR=/var/www/via APP_BRANCH=main bash infra/server/deploy.sh`
+
+**Fast restart only (no `git pull` / no rebuild)** — if code is already good but PM2 died:
+
+```bash
+cd /var/www/via && bash infra/server/quick-up.sh
+```
+
+Until `curl -I http://127.0.0.1:3000/api/health` returns **200**, the public URL (the HTTPS host in your `NEXTAUTH_URL` / Nginx `server_name`) will keep returning **502**. Fix must be applied **on the server** (SSH); the Git repo alone cannot resurrect a dead process.
+
 ## Verification
 
 On the droplet:
@@ -143,8 +184,8 @@ On the droplet:
 ```bash
 pm2 status
 pm2 logs via --lines 100
-curl -I http://127.0.0.1:3000
-curl -I http://64.227.163.198
+curl -I http://127.0.0.1:3000/api/health
+curl -I http://<YOUR_PUBLIC_IPV4>
 ```
 
 From local:
@@ -156,14 +197,10 @@ npm run build
 
 ## NextAuth and IP Redirects
 
-If the application redirects to the server IP (http://64.227.163.198) after authentication:
-1. Ensure `AUTH_TRUST_HOST=true` is set in the production `.env`.
-2. Ensure Nginx passes `proxy_set_header Host $host;` and `proxy_set_header X-Forwarded-Proto $scheme;`.
-3. Add a `redirect` callback in `lib/auth.ts` to force the production domain:
-   ```typescript
-   async redirect({ url, baseUrl }) {
-     if (process.env.NODE_ENV === "production") return "https://via.stromlabs.tech/dashboard";
-     return url.startsWith(baseUrl) ? url : baseUrl;
-   }
-   ```
-4. Verify that the production domain `via.stromlabs.tech` is added to the Authorized Domains list in the Firebase Console (Authentication > Settings > Authorized domains).
+If the application redirects to the raw droplet IP after authentication:
+
+1. Set `NEXTAUTH_URL` and `AUTH_URL` in `.env.production` to the **canonical HTTPS origin** users should use (same host as in Nginx / DNS).
+2. Ensure `AUTH_TRUST_HOST=true` is set where your process manager loads env (often the same `.env.production`).
+3. Ensure Nginx passes `proxy_set_header Host $host;` and `proxy_set_header X-Forwarded-Proto $scheme;`.
+4. `lib/auth.ts` uses `AUTH_URL` / `NEXTAUTH_URL`: when `NODE_ENV=production` and the request `baseUrl` origin differs from that canonical origin, redirects go to `{canonical}/dashboard`.
+5. Add your production hostname to Firebase **Authentication → Settings → Authorized domains**.

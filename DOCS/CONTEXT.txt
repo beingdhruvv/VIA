@@ -64,22 +64,22 @@
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
 - npm run build — 0 errors (post perf-fix build in progress)
-- GitHub push → GitHub Actions → auto-deploy to via.stromlabs.tech
+- GitHub push → GitHub Actions → auto-deploy to production (canonical URL in server `.env.production`, not in this repo)
 - Google Sign-In → NextAuth session → dashboard access ✅
 - Dev server at http://localhost:3000
 
 ## Deployment
-- Production URL: https://via.stromlabs.tech
-- Server: DigitalOcean Droplet 64.227.163.198 (Ubuntu 24.04), app at /var/www/via
-- Deploy: push to main → GitHub Actions → infra/server/deploy.sh
-- DB: PostgreSQL in production (schema.production.prisma)
+- Production URL, droplet addresses, SSH: **`LOCAL_OPERATIONS.md`** only (copy from `LOCAL_OPERATIONS.md.template`; never commit the filled file).
+- App on server: `/var/www/via`
+- Deploy: push to main → GitHub Actions → `infra/server/deploy.sh`
+- DB: PostgreSQL in production (`schema.production.prisma`)
 - Auth: NextAuth v5 JWT + Firebase Google Sign-In
 
 ## Known issues / caveats
-- SSH key has passphrase; must run: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove
+- Prefer a passphrase-free **deploy key** for CI; keep a personal passphrase key only on your machine.
 - NextAuth serverActions.allowedOrigins experimental warning (non-breaking)
 - Prisma enums stored as String in SQLite; switch to postgresql + real enums before prod deploy
-- Firebase Auth Domain in firebase.ts is hardcoded — ensure via.stromlabs.tech is in Firebase Console > Authentication > Authorized domains
+- Firebase: set `NEXT_PUBLIC_FIREBASE_*` in env; add your production hostname under Firebase Console → Authentication → Authorized domains
 
 ---
 
@@ -107,7 +107,7 @@ Stack:
 # WORKING DIRECTORY
 
 ```
-E:\VIA/
+<repo-root>/
 ├── app/                        # All Next.js pages + API routes
 │   ├── api/
 │   │   ├── auth/[...nextauth]/ # NextAuth handler
@@ -217,28 +217,17 @@ File status:
 
 | Field           | Value                                        |
 |-----------------|----------------------------------------------|
-| Provider        | DigitalOcean                                 |
-| Region          | blr1 (Bangalore)                             |
-| Droplet name    | snow                                         |
-| Public IPv4     | 64.227.163.198                               |
-| Private IP      | 10.122.0.3                                   |
-| Public IPv6     | 2400:6180:100:d0:0:1:415a:2001              |
-| Size            | s-2vcpu-4gb (2 vCPU, 4GB RAM)               |
-| OS              | Ubuntu 24.04 LTS x64                         |
-| SSH user        | root                                         |
-| SSH key         | Authorized (via_github_deploy_key)           |
-| SSH key ID (DO) | none                                         |
-| Status          | Active — CI/CD Configured                    |
-| Installed       | Node.js 22, PostgreSQL, Nginx, PM2, Certbot  |
-| App URL         | https://via.stromlabs.tech                   |
-| Domain          | via.stromlabs.tech                           |
+| Notes           | Put real IPs, domain, SSH labels in `LOCAL_OPERATIONS.md` (gitignored). |
+| Provider        | (your host)                                  |
+| App directory   | `/var/www/via`                               |
+| Runtime         | Node.js 22, PostgreSQL, Nginx, PM2           |
 
-Server setup TODO (run once SSH access is confirmed):
-1. Add local public key to /root/.ssh/authorized_keys on snow
-2. SSH as root with key and clone repo
-3. Run infra/server/bootstrap-ubuntu-24-04.sh
-4. Set .env.production
-5. Run infra/server/deploy.sh
+Server setup (once SSH works):
+1. Add deploy public key to server `authorized_keys`
+2. Clone repo under `/var/www/via`
+3. Run `infra/server/bootstrap-ubuntu-24-04.sh`
+4. Create `.env.production` from `.env.production.example`
+5. Run `infra/server/deploy.sh`
 6. Verify PM2, Nginx, app URL, and logs
 
 ---
@@ -247,7 +236,7 @@ Server setup TODO (run once SSH access is confirmed):
 
 Local (SQLite dev):
 - DATABASE_URL = file:./prisma/dev.db
-- DB file: E:\VIA\prisma\dev.db
+- DB file: `./prisma/dev.db` (repo-relative path)
 
 Production target (PostgreSQL):
 - DATABASE_URL = postgresql://via_user:PASSWORD@localhost:5432/via_db
@@ -296,12 +285,12 @@ External APIs:
 | npm run db:seed            | tsx prisma/seed.ts                      |
 | npm run db:push            | npx prisma db push (quick schema push)  |
 
-Dev server start command (includes all required env vars):
+Dev server start command (set secrets locally — do not paste real keys into this repo file):
 ```powershell
-cd E:\VIA
+cd <YOUR_REPO_ROOT>
 $env:DATABASE_URL="file:./prisma/dev.db"
-$env:NEXTAUTH_SECRET="dev-secret-stormlabs-via-2026"
-$env:AUTH_SECRET="dev-secret-stormlabs-via-2026"
+$env:NEXTAUTH_SECRET="<openssl rand -base64 32 output>"
+$env:AUTH_SECRET="<same as NEXTAUTH_SECRET>"
 $env:NEXTAUTH_URL="http://localhost:3000"
 npm run dev
 ```
@@ -368,7 +357,7 @@ Pre-ship checklist:
 
 | # | Area     | Task                                              | Status   | Priority |
 |---|----------|---------------------------------------------------|----------|----------|
-| 1 | Server   | Add SSH key to new snow droplet 64.227.163.198    | done     | critical |
+| 1 | Server   | SSH + droplet access documented in LOCAL_OPERATIONS.md | done     | critical |
 | 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | done     | critical |
 | 3 | App      | Dashboard page (/dashboard)                       | pending  | high     |
 | 4 | App      | My Trips page (/trips)                            | pending  | high     |
@@ -396,3 +385,4 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent  | Updated: build pass, GitHub push, SSH status, middleware rename |
 | 2026-05-10 | Cursor Agent  | Deploy version pipeline, responsive shell tweaks, CONTEXT sync |
 | 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
+| 2026-05-10 | Cursor Agent  | Removed committed secrets/infra literals; LOCAL_OPERATIONS template |

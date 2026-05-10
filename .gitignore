@@ -36,6 +36,9 @@ yarn-error.log*
 .env.production
 .env*.local
 
+# Ops notes with real hosts/keys — copy from LOCAL_OPERATIONS.md.template
+LOCAL_OPERATIONS.md
+
 # SQLite dev database — local only, never commit
 *.db
 *.db-journal
