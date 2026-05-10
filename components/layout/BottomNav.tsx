@@ -6,13 +6,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, Compass, User, Flame } from "lucide-react";
+import { Home, Map, Compass, User, Flame, Camera } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/explore", label: "Explore", icon: Flame },
   { href: "/trips", label: "Trips", icon: Map },
-  { href: "/cities", label: "Cities", icon: Compass },
+  { href: "/memories", label: "Memories", icon: Camera },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

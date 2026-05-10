@@ -7,7 +7,6 @@ interface ExploreCityResponse extends City {
   recScore: number;
   activities: { id: string; name: string; estimatedCost: number; category: string }[];
 }
-
 export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

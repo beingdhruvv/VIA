@@ -144,10 +144,28 @@ export interface TripCollaboratorData {
   };
 }
 
+export interface MemoryData {
+  id: string;
+  userId: string;
+  tripId: string | null;
+  imageUrl: string;
+  thumbnailUrl?: string | null;
+  caption: string | null;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  takenAt: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationName: string | null;
+  createdAt: string;
+}
+
 export interface TripFull extends TripCard {
   expenses: ExpenseData[];
   packingItems: PackingItemData[];
   notes: NoteData[];
   sharedLinks: { id: string; slug: string; views: number }[];
   collaborators?: TripCollaboratorData[];
+  memories?: MemoryData[];
 }

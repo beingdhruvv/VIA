@@ -14,6 +14,7 @@ import {
   Search,
   Flame,
   LogOut,
+  Camera,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { SessionUser } from "@/types";
@@ -29,6 +30,7 @@ const NAV_LINKS = [
   { href: "/explore", label: "Explore", icon: Flame },
   { href: "/trips", label: "My Trips", icon: Map },
   { href: "/cities", label: "Cities", icon: Compass },
+  { href: "/memories", label: "Memories", icon: Camera },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

@@ -54,13 +54,13 @@
 | Active branch   | main                                                                |
 | Last commit     | (update when committing)                                            |
 | Blockers        | None                                                                |
-| Next step       | Implement collaborative trip invites / sharing module               |
+| Next step       | Deploy & test Memories upload/gallery functionality                |
 
 ## What was done this session
 - **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once (PM2 often omits file vars); `GET /api/config/firebase` + `useFirebaseReady` + login/signup `force-dynamic` + server bootstrap prop; **`proxy.ts`** — allow **`/api/config/*`** without session (was blocking client fetch on login → no Google).
-- **Build Stabilization:** Resolved `Unexpected any` in `/api/cities/explore` by implementing `ExploreCityResponse` interface and explicit map return types. Added missing `City` and `MapPin` imports.
-- **Image Optimization:** Migrated all standard `<img>` tags in Profile, Explore, and Admin to `next/image` component. Updated `next.config.ts` with `api.dicebear.com` remote pattern.
-- **Location Engine:** Completed **Location Preferences** card in Profile; wired `homeCity`/`homeCountry` to recommendation scoring (Blinkit-style localized discovery).
+- **Memories (Google Photos style):** Implemented `/memories` gallery and `/api/memories` upload handler. 200MB quota per user (tracked via `storageUsed`). Grouping by date, trip-specific filtering, and full-screen preview.
+- **Trip Integration:** Added `MEMORIES` tab to trip details sub-navigation. Photos are now linked to trips and searchable via trip history.
+- **Git Recovery:** Resolved complex merge conflicts in `explore`, `profile`, and `api` routes caused by local commit/amend issues. Synchronized with remote.
 - **Deploy:** `deploy.sh` uses `git reset --hard` after fetch only; GitHub Actions SSH pre-runs hard reset; `postinstall` Prisma generate.
 
 ## What reliably works
@@ -398,3 +398,4 @@ Pre-ship checklist:
 | 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
 | 2026-05-10 | Cursor Agent  | CONTEXT: handoff, FILE MAP, cities/search, Firebase/proxy, WORKING DIRECTORY lib + proxy |
 | 2026-05-10 | Antigravity   | FIXED: Explore API 'any' types, missing imports, Image optimization, Profile Location card |
+| 2026-05-10 | Antigravity   | FEATURE: Memories gallery (200MB quota, trip-sync, Google Photos style) |

@@ -52,6 +52,7 @@ export default async function TripPage({ params }: TripPageProps) {
       packingItems: { orderBy: { createdAt: "asc" } },
       notes: { orderBy: { createdAt: "desc" } },
       sharedLinks: true,
+      memories: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -161,6 +162,22 @@ export default async function TripPage({ params }: TripPageProps) {
         email: c.user.email,
         avatarUrl: c.user.avatarUrl
       }
+    })),
+    memories: trip.memories.map(m => ({
+      id: m.id,
+      userId: m.userId,
+      tripId: m.tripId,
+      imageUrl: m.imageUrl,
+      thumbnailUrl: m.thumbnailUrl,
+      caption: m.caption,
+      fileName: m.fileName,
+      fileSize: m.fileSize,
+      mimeType: m.mimeType,
+      takenAt: m.takenAt?.toISOString() ?? null,
+      latitude: m.latitude,
+      longitude: m.longitude,
+      locationName: m.locationName,
+      createdAt: m.createdAt.toISOString()
     }))
   };
 
