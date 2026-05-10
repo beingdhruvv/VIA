@@ -77,12 +77,12 @@ function StatCard({
 
 function SectionHeader({ title, href, linkLabel }: { title: string; href?: string; linkLabel?: string }) {
   return (
-    <div className="flex items-center justify-between mb-4 border-b border-via-black pb-2">
-      <h2 className="font-grotesk font-bold text-lg text-via-black">{title}</h2>
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4 border-b border-via-black pb-2 min-w-0">
+      <h2 className="font-grotesk font-bold text-base sm:text-lg text-via-black min-w-0">{title}</h2>
       {href && linkLabel && (
         <Link
           href={href}
-          className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-wide text-via-grey-mid hover:text-via-black transition-colors"
+          className="inline-flex items-center gap-1 font-mono text-[10px] sm:text-[11px] uppercase tracking-wide text-via-grey-mid hover:text-via-black transition-colors shrink-0"
         >
           {linkLabel}
           <ArrowRight size={12} strokeWidth={1.5} />

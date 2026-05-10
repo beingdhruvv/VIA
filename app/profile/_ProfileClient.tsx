@@ -6,6 +6,7 @@ import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check } from "lucide
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
+import { APP_PUBLIC_VERSION } from "@/lib/app-version";
 import type { UserProfile } from "@/types";
 
 interface Props {
@@ -119,14 +120,14 @@ export function ProfileClient({ profile, tripCount }: Props) {
     <div className="mt-6 space-y-6 max-w-2xl">
       {/* Avatar + stats */}
       <div
-        className="bg-via-white border border-via-black p-6 flex items-center gap-5"
+        className="bg-via-white border border-via-black p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5"
         style={{ boxShadow: "3px 3px 0px #111111" }}
       >
         <Avatar name={profile.name} src={profile.avatarUrl ?? undefined} size="lg" />
-        <div>
+        <div className="min-w-0">
           <p className="font-grotesk font-bold text-xl text-via-black">{profile.name}</p>
           <p className="font-mono text-xs text-via-grey-mid">{profile.email}</p>
-          <div className="flex items-center gap-3 mt-2 font-mono text-xs text-via-grey-mid">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 font-mono text-xs text-via-grey-mid">
             <span className="flex items-center gap-1"><Calendar size={11} strokeWidth={1.5} /> Joined {formatDate(profile.createdAt)}</span>
             <span>{tripCount} trip{tripCount !== 1 ? "s" : ""}</span>
           </div>
@@ -313,6 +314,10 @@ export function ProfileClient({ profile, tripCount }: Props) {
           </div>
         )}
       </div>
+
+      <p className="font-mono text-[10px] text-via-grey-mid uppercase tracking-widest pt-2">
+        Build <span className="text-via-black">{APP_PUBLIC_VERSION}</span>
+      </p>
     </div>
   );
 }

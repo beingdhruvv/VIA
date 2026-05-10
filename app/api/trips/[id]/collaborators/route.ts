@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id: tripId } = await params;
+
   try {
     const collaborators = await prisma.tripCollaborator.findMany({
-      where: { tripId: params.id },
+      where: { tripId },
       include: { user: { select: { id: true, name: true, email: true, avatarUrl: true } } }
     });
 
@@ -18,9 +20,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id: tripId } = await params;
 
   try {
     const { email, role = "EDITOR" } = await req.json();
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const collab = await prisma.tripCollaborator.create({
       data: {
-        tripId: params.id,
+        tripId,
         userId: targetUser.id,
         role,
       },

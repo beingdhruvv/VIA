@@ -38,7 +38,7 @@ function PageHeader({
         .join(" ")}
     >
       {breadcrumb && breadcrumb.length > 0 && (
-        <nav className="flex items-center gap-1 mb-2" aria-label="Breadcrumb">
+        <nav className="flex flex-wrap items-center gap-1 mb-2 min-w-0" aria-label="Breadcrumb">
           {breadcrumb.map((item, i) => (
             <span key={i} className="flex items-center gap-1">
               {i > 0 && (

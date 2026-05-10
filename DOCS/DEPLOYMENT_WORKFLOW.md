@@ -126,6 +126,16 @@ AUTH_URL=https://your-domain.com
 
 Deploy again after changing auth URLs.
 
+## Build version (`NEXT_PUBLIC_APP_VERSION`)
+
+Every production build must carry a unique, user-visible build label (sidebar + profile).
+
+1. **GitHub Actions** (`.github/workflows/deploy.yml`) sets `DEPLOY_VERSION` to `${{ github.run_number }}-${{ github.sha }}` and passes it over SSH.
+2. **`infra/server/deploy.sh`** exports `NEXT_PUBLIC_APP_VERSION` from `DEPLOY_VERSION`, or falls back to `YYYYMMDD-<short git sha>` on manual deploys.
+3. **`next.config.ts`** exposes `NEXT_PUBLIC_APP_VERSION` to the client; if unset (local `next dev`), it falls back to `package.json` `version`.
+
+**Semver:** bump `package.json` `version` in the repo when you cut a meaningful release (optional script: `npm version patch --no-git-tag-version`). Production UI still shows the deploy-specific `NEXT_PUBLIC_APP_VERSION` from CI when deployed via Actions.
+
 ## Verification
 
 On the droplet:

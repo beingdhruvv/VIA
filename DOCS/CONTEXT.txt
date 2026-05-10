@@ -48,24 +48,18 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 14:15 IST                                               |
-| Last updated by | Antigravity                                                        |
-| Build status    | ✅ 0 errors — verifying post-perf-fix build                         |
-| Active branch   | main                                                               |
-| Last commit     | pending commit of perf + auth fixes                                |
-| Blockers        | None                                                               |
-| Next step       | Deploy to via.stromlabs.tech via git push → GitHub Actions         |
+| Last updated    | 2026-05-10 (session: deploy version + responsive + context)        |
+| Last updated by | Cursor                                                              |
+| Build status    | Run `npm run build` after pull — dashboard JSX verified clean       |
+| Active branch   | main                                                                |
+| Last commit     | (update when committing)                                            |
+| Blockers        | None                                                                |
+| Next step       | Push main → verify Actions sets DEPLOY_VERSION → health check        |
 
 ## What was done this session
-- Production live at https://via.stromlabs.tech (DigitalOcean, Ubuntu 24.04, Nginx + PM2).
-- GitHub Actions auto-deploy on push to main (server clones from github.com/beingdhruvv/VIA).
-- Firebase Google Sign-In fully wired: Firebase popup → /api/auth/firebase (upsert user) → NextAuth session.
-- Created /api/auth/firebase endpoint: finds or creates user in DB, returns ok.
-- Fixed Google Sign-In in LoginForm + SignupForm (both now produce valid NextAuth JWT session).
-- Added loading.tsx skeleton screens for: dashboard, trips, trips/[id], builder, budget, packing, notes, profile, cities, cities/[id] — eliminates 2-5s blank-screen lag on navigation.
-- Fixed next.config.ts: added via.stromlabs.tech to allowedOrigins, picsum.photos to image domains, compress:true, poweredByHeader:false.
-- Added Cache-Control headers to /api/cities/search and /api/cities/[id]/activities (s-maxage=120-300).
-- Fixed Button variant "outline" → "secondary" in AdminDashboardClient (pre-existing TS error).
+- **Deploy version:** `NEXT_PUBLIC_APP_VERSION` from `DEPLOY_VERSION` (CI) or date+sha in `deploy.sh`; `next.config.ts` env fallback to `package.json`; `lib/app-version.ts`; Sidebar + Profile show build label; `package.json` → `0.1.2-beta`.
+- **Responsive / theme:** `overflow-x-clip` on root body + AppShell; main `min-w-0`; PageHeader title scales `text-2xl`→`md:text-[32px]`, actions wrap; breadcrumb `flex-wrap`; dashboard `SectionHeader` stacks on narrow screens; GlobalCitySearch / SearchOverlay `min-w-0` + responsive padding; profile hero stacks on mobile; system status uses `text-via-navy` (palette) not generic green.
+- **Docs:** `docs/DEPLOYMENT_WORKFLOW.md` — Build version section.
 
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
@@ -212,7 +206,8 @@ File status:
 | API: expenses         | app/api/trips/[id]/expenses/route.ts              | GET, POST, DELETE                   |
 | API: packing          | app/api/trips/[id]/packing/route.ts               | GET, POST, bulk                     |
 | API: notes            | app/api/trips/[id]/notes/route.ts                 | GET, POST                           |
-| Utility functions     | lib/utils.ts                                      | formatDate, formatCurrency etc.     |
+| Utility functions     | lib/utils.ts, lib/place-images.ts                 | City/activity image URLs (Wikimedia) |
+| App build label       | lib/app-version.ts, next.config.ts `env`          | `NEXT_PUBLIC_APP_VERSION`            |
 
 ---
 
@@ -293,6 +288,7 @@ External APIs:
 | npm run dev                | Dev server at http://localhost:3000     |
 | npm run build              | Production build (tsc + Next.js)        |
 | npm run start              | Start production server                 |
+| **Deploy build id**        | CI sets `DEPLOY_VERSION` → `deploy.sh` exports `NEXT_PUBLIC_APP_VERSION` before `npm run build`. Local dev uses `package.json` `version` via `next.config.ts`. |
 | npm run db:generate        | npx prisma generate                     |
 | npm run db:migrate         | npx prisma migrate dev (dev only)       |
 | npm run db:seed            | tsx prisma/seed.ts                      |
@@ -350,6 +346,7 @@ Pre-ship checklist:
 | 2026-05-10 | Store enums as String in SQLite schema                | SQLite doesn't support Prisma enum types natively          |
 | 2026-05-10 | Next.js 16.2.6 (via create-next-app)                  | Latest stable at time of install; plan said 14+ but 16 ok  |
 | 2026-05-10 | Tailwind CSS v4 (CSS-based config via @theme)         | Installed by create-next-app; v4 uses CSS not tailwind.config.ts |
+| 2026-05-10 | Deploy build id via NEXT_PUBLIC_APP_VERSION + DEPLOY_VERSION in CI | Unique production label per deploy; semver stays in package.json for releases |
 | 2026-05-10 | DigitalOcean blr1 (Bangalore) droplet, s-2vcpu-4gb   | Per plan + GitHub Education credits; 2vCPU/4GB for Next.js build |
 
 ---
@@ -395,4 +392,5 @@ Pre-ship checklist:
 |------------|---------------|----------------------------------------------------|
 | 2026-05-10 | Cursor Agent  | Created initial context from CONTEXT TAMPLATE.md   |
 | 2026-05-10 | Cursor Agent  | Updated: build pass, GitHub push, SSH status, middleware rename |
+| 2026-05-10 | Cursor Agent  | Deploy version pipeline, responsive shell tweaks, CONTEXT sync |
 | 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
