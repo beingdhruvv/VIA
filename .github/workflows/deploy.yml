@@ -42,4 +42,4 @@ jobs:
           ssh -i ~/.ssh/via_deploy_key \
             -p "${DROPLET_PORT:-22}" \
             "${DROPLET_USER}@${DROPLET_HOST}" \
-            "DEPLOY_VERSION='${DEPLOY_VERSION}' APP_DIR=/var/www/via APP_BRANCH=main bash /var/www/via/infra/server/deploy.sh"
+            "set -euo pipefail; cd /var/www/via; git fetch origin main; git reset --hard origin/main; git clean -fd -e .env.production; DEPLOY_VERSION='${DEPLOY_VERSION}' APP_DIR=/var/www/via APP_BRANCH=main bash infra/server/deploy.sh"
