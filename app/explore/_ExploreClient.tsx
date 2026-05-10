@@ -35,7 +35,15 @@ export function ExploreClient({ initialCities }: Props) {
   };
 
   return (
-    <Tabs defaultValue="swipe" className="flex flex-col h-full">
+    <Tabs 
+      defaultValue="swipe" 
+      className="flex flex-col h-full"
+      onValueChange={(value) => {
+        if (value === "taste") {
+          void fetchTastes();
+        }
+      }}
+    >
       <div className="flex justify-center mb-4">
         <TabsList className="bg-via-white border-2 border-via-black p-1 shadow-brutalist-sm">
           <TabsTrigger value="swipe" className="font-mono text-xs uppercase gap-2">
@@ -44,7 +52,6 @@ export function ExploreClient({ initialCities }: Props) {
           <TabsTrigger 
             value="taste" 
             className="font-mono text-xs uppercase gap-2"
-            onClick={fetchTastes}
           >
             <Heart size={14} /> My Taste
           </TabsTrigger>

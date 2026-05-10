@@ -228,13 +228,21 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs 
+        defaultValue="overview" 
+        className="space-y-6"
+        onValueChange={(value) => {
+          if (["cities", "trips", "activities"].includes(value)) {
+            void fetchManagementData(value);
+          }
+        }}
+      >
         <TabsList className="bg-via-white border-2 border-via-black p-1 shadow-brutalist-sm">
           <TabsTrigger value="overview" className="font-mono text-xs uppercase">Overview</TabsTrigger>
           <TabsTrigger value="users" className="font-mono text-xs uppercase">Users</TabsTrigger>
-          <TabsTrigger value="cities" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("cities")}>Cities</TabsTrigger>
-          <TabsTrigger value="trips" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("trips")}>Trips</TabsTrigger>
-          <TabsTrigger value="activities" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("activities")}>Activities</TabsTrigger>
+          <TabsTrigger value="cities" className="font-mono text-xs uppercase">Cities</TabsTrigger>
+          <TabsTrigger value="trips" className="font-mono text-xs uppercase">Trips</TabsTrigger>
+          <TabsTrigger value="activities" className="font-mono text-xs uppercase">Activities</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8 animate-in fade-in duration-300">
