@@ -19,6 +19,7 @@ export default async function TripsPage() {
     name: session.user.name,
     email: session.user.email,
     image: session.user.image,
+    role: session.user.role,
   };
 
   // Fetch all trips for this user with stops + city data
