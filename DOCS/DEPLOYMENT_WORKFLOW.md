@@ -79,6 +79,8 @@ DROPLET_USER=root
 DROPLET_SSH_KEY=<private deploy key>
 ```
 
+`DROPLET_HOST` can be either a DNS hostname or the server IPv4 address.
+
 Use a dedicated deploy key for automation. Prefer a server-only deploy key without a passphrase for GitHub Actions, then restrict it by server access and GitHub secret permissions. Keep your personal passphrase-protected key for local SSH.
 
 ## Production Database

@@ -56,7 +56,7 @@ for attempt in {1..25}; do
     exit 0
   fi
   if [[ "${attempt}" -eq 3 ]] || [[ "${attempt}" -eq 8 ]]; then
-    echo "Health check pending (attempt ${attempt}), forcing pm2 restart ${APP_NAME}..." >&2
+    echo "Health check pending (attempt ${attempt}), restarting ${APP_NAME} with pm2..." >&2
     pm2 restart "${APP_NAME}" --update-env || pm2 start ecosystem.config.cjs --update-env
   fi
   sleep 2
