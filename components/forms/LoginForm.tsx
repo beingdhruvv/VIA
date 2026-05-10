@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { useFirebaseReady } from "@/lib/useFirebaseReady";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -23,6 +23,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -178,7 +179,7 @@ export default function LoginForm() {
           "Sign In"
         )}
       </button>
-      {isFirebaseConfigured && (
+      {firebaseReady && firebaseConfigured && (
         <>
       {/* Separator */}
       <div className="relative flex items-center py-2">

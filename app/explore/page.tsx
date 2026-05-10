@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
-import { Flame } from "lucide-react";
 import type { SessionUser } from "@/types";
 import { toSessionUserRole } from "@/lib/roles";
 
@@ -36,19 +35,17 @@ export default async function ExplorePage() {
 
   return (
     <AppShell user={user}>
-      <div className="max-w-4xl mx-auto px-4 py-8 h-[calc(100vh-64px)] md:h-screen flex flex-col">
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-via-red text-white font-mono text-[10px] uppercase tracking-widest mb-3">
-            <Flame size={12} fill="currentColor" />
-            Live Discovery
-          </div>
-          <h1 className="font-grotesk font-bold text-3xl text-via-black">Explore the World</h1>
-          <p className="font-inter text-via-grey-mid mt-2">
+      <div className="mx-auto flex h-[calc(100dvh-3.5rem)] max-h-[100dvh] w-full max-w-4xl flex-col px-3 pb-4 pt-3 sm:h-[calc(100dvh-4rem)] sm:px-4 sm:pt-4 md:px-6 md:pt-6">
+        <header className="shrink-0 space-y-1 pb-2 text-center sm:space-y-1.5 sm:pb-3">
+          <h1 className="font-grotesk text-xl font-bold leading-tight text-via-black sm:text-2xl md:text-3xl">
+            Explore the World
+          </h1>
+          <p className="mx-auto max-w-md px-1 font-inter text-xs text-via-grey-mid sm:text-sm">
             Swipe right to like, left to skip. Let us learn your taste.
           </p>
-        </div>
+        </header>
 
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col items-stretch justify-center overflow-hidden">
           <ExploreSwiper initialCities={initialCities} />
         </div>
       </div>
