@@ -29,6 +29,7 @@ const NAV_LINKS = [
 
 function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-via-white border-r border-via-grey-light z-30">
@@ -71,6 +72,24 @@ function Sidebar({ user }: SidebarProps) {
               </li>
             );
           })}
+
+          {/* Admin Link */}
+          {isAdmin && (
+            <li className="pt-4 mt-4 border-t border-via-grey-light">
+              <Link
+                href="/admin"
+                className={[
+                  "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin")
+                    ? "bg-via-red/5 border-l-2 border-via-red text-via-red"
+                    : "text-via-grey-mid hover:text-via-red hover:bg-via-red/5 border-l-2 border-transparent",
+                ].join(" ")}
+              >
+                <LayoutDashboard size={18} />
+                Admin Control
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
 
