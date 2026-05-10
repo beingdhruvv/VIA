@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { ActivityBadge, StatusBadge } from "@/components/ui/Badge";
 import { Modal, ModalContent, ModalHeader, ModalFooter } from "@/components/ui/Modal";
 import { TripSubNav } from "@/components/trip/TripSubNav";
-import { RouteMap } from "@/components/trip/RouteMap";
+import { TripMapTimeline } from "@/components/trip/TripMapTimeline";
 import { formatCurrency, formatDateRange, diffInDays } from "@/lib/utils";
 import type { TripFull, StopWithCity, ActivityCategory } from "@/types";
 
@@ -214,11 +214,10 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
 
       {/* ── Body ── */}
       <main className="max-w-3xl mx-auto px-4 py-8">
-        {/* Route map — rendered when stops have coordinates */}
-        {trip.stops.length > 1 && (
+        {/* Interactive route + timeline map */}
+        {trip.stops.length >= 1 && (
           <div className="mb-8">
-            <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-2">Route Map</p>
-            <RouteMap stops={trip.stops} />
+            <TripMapTimeline stops={trip.stops} />
           </div>
         )}
 

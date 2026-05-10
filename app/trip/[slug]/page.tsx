@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { MapPin, Calendar, Wallet } from "lucide-react";
 import { formatDateRange, formatCurrency, getCityImageUrl } from "@/lib/utils";
 import { PublicShareActions } from "./_PublicShareActions";
+import { TripMapTimeline } from "@/components/trip/TripMapTimeline";
 import type { Metadata } from "next";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -95,13 +96,38 @@ export default async function PublicTripPage({ params }: Props) {
 
       {/* Description */}
       {trip.description && (
-        <div className="max-w-3xl mx-auto px-6 pb-3">
+        <div className="max-w-4xl mx-auto px-6 pb-3">
           <p className="font-mono text-sm text-via-grey-mid leading-relaxed">{trip.description}</p>
         </div>
       )}
 
-      {/* Stops timeline */}
-      <div className="max-w-3xl mx-auto px-6 pb-12 space-y-6">
+      {/* Interactive route timeline map */}
+      {trip.stops.length >= 1 && (
+        <div className="max-w-4xl mx-auto px-6 pb-6">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <TripMapTimeline stops={trip.stops.map((s) => ({
+            id: s.id,
+            startDate: s.startDate.toISOString(),
+            endDate: s.endDate.toISOString(),
+            city: s.city,
+            activities: s.activities.map((sa) => ({
+              id: sa.id,
+              activityId: sa.activityId,
+              scheduledDate: sa.scheduledDate?.toISOString() ?? null,
+              activity: {
+                id: sa.activity.id,
+                name: sa.activity.name,
+                estimatedCost: sa.activity.estimatedCost,
+                durationHours: sa.activity.durationHours,
+                rating: sa.activity.rating,
+              },
+            })),
+          })) as Parameters<typeof TripMapTimeline>[0]["stops"]} />
+        </div>
+      )}
+
+      {/* Stops detail */}
+      <div className="max-w-4xl mx-auto px-6 pb-12 space-y-6">
         {trip.stops.map((stop, idx) => (
           <div key={stop.id} className="relative">
             {idx < trip.stops.length - 1 && (
