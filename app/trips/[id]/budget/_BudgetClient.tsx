@@ -158,6 +158,24 @@ export function BudgetClient({
     }))
     .sort((a, b) => b.amount - a.amount);
 
+  const categoryTotals = CATEGORIES.map((cat) => ({
+    category: cat,
+    amount: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount, 0),
+  }));
+
+  const maxCategoryAmount = Math.max(...categoryTotals.map((c) => c.amount), 1);
+
+  const pieData = categoryTotals.filter((c) => c.amount > 0);
+
+  const barData = Object.entries(
+    expenses.reduce((acc, exp) => {
+      acc[exp.date] = (acc[exp.date] || 0) + exp.amount;
+      return acc;
+    }, {} as Record<string, number>)
+  )
+    .map(([date, amount]) => ({ date, amount }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   // ── Actions ─────────────────────────────────────────────────────────────────
 
   async function onAddExpense(values: ExpenseFormValues) {
