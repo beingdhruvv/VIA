@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, Badge, Button, Avatar, ProgressBar } from "@/components/ui";
 import { 
   Users, 
@@ -63,7 +63,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, usersRes] = await Promise.all([
         fetch("/api/admin/stats"),
@@ -78,14 +78,20 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
+    const initialFetch = setTimeout(() => {
+      void fetchData();
+    }, 0);
+    const interval = setInterval(() => {
+      void fetchData();
+    }, 30000);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+    };
+  }, [fetchData]);
 
   const handleRoleUpdate = async (userId: string, currentRole: string) => {
     if (currentUserRole !== "SUPER_ADMIN") return;

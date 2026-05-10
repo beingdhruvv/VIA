@@ -29,23 +29,35 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCollaborators = useCallback(async () => {
+  const fetchCollaborators = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch(`/api/trips/${tripId}/collaborators`);
+      const res = await fetch(`/api/trips/${tripId}/collaborators`, { signal });
       if (res.ok) {
         const data = await res.json();
-        setCollaborators(data);
+        if (!signal?.aborted) {
+          setCollaborators(data);
+        }
       }
     } catch (err) {
-      console.error(err);
+      if (!signal?.aborted) {
+        console.error(err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [tripId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchCollaborators();
+    const abortController = new AbortController();
+    const initialFetch = setTimeout(() => {
+      void fetchCollaborators(abortController.signal);
+    }, 0);
+    return () => {
+      clearTimeout(initialFetch);
+      abortController.abort();
+    };
   }, [fetchCollaborators]);
 
   const handleAdd = async (e: React.FormEvent) => {

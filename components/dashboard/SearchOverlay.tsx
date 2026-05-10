@@ -31,44 +31,52 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
   // Debounced search
   useEffect(() => {
     if (query.length < 2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResults({ cities: [], trips: [] });
       return;
     }
 
+    const abortController = new AbortController();
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
         const [citiesRes, tripsRes] = await Promise.all([
-          fetch(`/api/cities/search?q=${encodeURIComponent(query)}&limit=5`),
-          fetch(`/api/search/trips?q=${encodeURIComponent(query)}&limit=5`)
+          fetch(`/api/cities/search?q=${encodeURIComponent(query)}&limit=5`, { signal: abortController.signal }),
+          fetch(`/api/search/trips?q=${encodeURIComponent(query)}&limit=5`, { signal: abortController.signal })
         ]);
-        
+        if (abortController.signal.aborted) return;
         const cities = citiesRes.ok ? await citiesRes.json() : [];
         const trips = tripsRes.ok ? await tripsRes.json() : [];
-        
         setResults({ cities, trips });
       } catch (err) {
-        console.error(err);
+        if (!abortController.signal.aborted) {
+          console.error(err);
+        }
       } finally {
-        setSearching(false);
+        if (!abortController.signal.aborted) {
+          setSearching(false);
+        }
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      abortController.abort();
+      clearTimeout(timer);
+    };
   }, [query]);
 
-  const handleSelect = useCallback((item: CityData | TripCard, type: "city" | "trip") => {
+  const handleCitySelect = useCallback((city: CityData) => {
     onOpenChange(false);
     setQuery("");
-    if (type === "city") {
-      router.push(`/trips/new?cityName=${encodeURIComponent(item.name)}`);
-    } else {
-      router.push(`/trips/${item.id}`);
-    }
+    router.push(`/trips/new?cityName=${encodeURIComponent(city.name)}`);
   }, [onOpenChange, router]);
 
-  const totalResults = results.cities.length + results.trips.length;
+  const handleTripSelect = useCallback((trip: TripCard) => {
+    onOpenChange(false);
+    setQuery("");
+    router.push(`/trips/${trip.id}`);
+  }, [onOpenChange, router]);
+
+  const displayedResults = query.length < 2 ? { cities: [], trips: [] } : results;
+  const totalResults = displayedResults.cities.length + displayedResults.trips.length;
 
   if (!open) return null;
 
@@ -91,7 +99,13 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
             type="text"
             autoFocus
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              const nextQuery = e.target.value;
+              setQuery(nextQuery);
+              if (nextQuery.length < 2) {
+                setSearching(false);
+              }
+            }}
             placeholder="Search cities, trips, or activities..."
             className="min-w-0 flex-1 px-3 sm:px-4 py-4 sm:py-5 bg-transparent font-grotesk font-bold text-base sm:text-lg md:text-xl text-via-black outline-none placeholder:text-via-grey-light"
           />
@@ -129,14 +143,14 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
             </div>
           ) : totalResults > 0 ? (
             <div className="space-y-4 py-2">
-              {results.cities.length > 0 && (
+              {displayedResults.cities.length > 0 && (
                 <div>
                   <p className="px-3 text-[10px] font-mono text-via-grey-mid uppercase tracking-widest mb-2">Destinations</p>
                   <div className="space-y-1">
-                    {results.cities.map((city) => (
+                    {displayedResults.cities.map((city) => (
                       <button
                         key={city.id}
-                        onClick={() => handleSelect(city, "city")}
+                        onClick={() => handleCitySelect(city)}
                         className="w-full flex items-center gap-4 px-3 py-3 hover:bg-via-black hover:text-via-white transition-colors text-left group"
                       >
                         <div className="w-10 h-10 border border-via-black overflow-hidden shrink-0">
@@ -158,14 +172,14 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
                 </div>
               )}
 
-              {results.trips.length > 0 && (
+              {displayedResults.trips.length > 0 && (
                 <div>
                   <p className="px-3 text-[10px] font-mono text-via-grey-mid uppercase tracking-widest mb-2">My Trips</p>
                   <div className="space-y-1">
-                    {results.trips.map((trip) => (
+                    {displayedResults.trips.map((trip) => (
                       <button
                         key={trip.id}
-                        onClick={() => handleSelect(trip, "trip")}
+                        onClick={() => handleTripSelect(trip)}
                         className="w-full flex items-center gap-4 px-3 py-3 hover:bg-via-black hover:text-via-white transition-colors text-left group"
                       >
                         <div className="w-10 h-10 bg-via-navy flex items-center justify-center shrink-0">

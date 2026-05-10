@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MapPin, Search, Star, Plus } from "lucide-react";
@@ -11,17 +11,8 @@ interface Props { cities: CityData[] }
 
 export function CitiesClient({ cities }: Props) {
   const searchParams = useSearchParams();
-  const [q, setQ] = useState(searchParams.get("q") ?? "");
+  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const [country, setCountry] = useState("ALL");
-
-  useEffect(() => {
-    const param = searchParams.get("q");
-    if (param && param !== q) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setQ(param);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
 
   const countries = useMemo(() => {
     const set = new Set(cities.map((c) => c.country));
