@@ -490,7 +490,7 @@ const activitiesData: Record<string, ActivityData[]> = {
     { name: "Borough Market Food Tour", description: "London's famous foodie market with artisan producers from across the UK.", category: "FOOD", estimatedCost: 1500, durationHours: 3, rating: 4.7 },
     { name: "Thames Walk — Westminster to Greenwich", description: "Walk along the South Bank past the Tate Modern, Shakespeare's Globe, and Tower Bridge.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 4, rating: 4.6 },
     { name: "Notting Hill Portobello Market", description: "Iconic antiques market in the colourful Notting Hill neighbourhood.", category: "SHOPPING", estimatedCost: 2000, durationHours: 3, rating: 4.5 },
-    { name: "West End Theatre Show", description: "Catch a world-class musical or play in the heart of London's theatre district.", category: "CULTURE", estimatedCost: 5000, durationHours: 3, rating: 4.9 },
+    { name: "West End Theatre Show", description: "Catch a world-class musical or play in the heart of London's theatre district. (£100 avg ≈ ₹10,600)", category: "CULTURE", estimatedCost: 10600, durationHours: 3, rating: 4.9 },
   ],
 
   // ─── Amsterdam ───────────────────────────────────────────────────────────────
@@ -523,7 +523,7 @@ const activitiesData: Record<string, ActivityData[]> = {
   // ─── Rome ────────────────────────────────────────────────────────────────────
   Rome: [
     { name: "Colosseum & Roman Forum", description: "Walk through the world's greatest amphitheatre and the ancient city centre.", category: "CULTURE", estimatedCost: 2500, durationHours: 4, rating: 4.8 },
-    { name: "Vatican Museums & Sistine Chapel", description: "Michelangelo's masterpiece ceiling in the world's most visited museum complex.", category: "CULTURE", estimatedCost: 2800, durationHours: 4, rating: 4.9 },
+    { name: "Vatican Museums & Sistine Chapel", description: "Michelangelo's masterpiece ceiling in the world's most visited museum complex. (€17 ≈ ₹1,530)", category: "CULTURE", estimatedCost: 1530, durationHours: 4, rating: 4.9 },
     { name: "Trastevere Evening Walk", description: "Wander Rome's most romantic neighbourhood after dark.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 2, rating: 4.7 },
     { name: "Gelato Tour — Centro Storico", description: "Try artisanal gelato from 5 of Rome's best gelaterie.", category: "FOOD", estimatedCost: 1000, durationHours: 2, rating: 4.8 },
     { name: "Trevi Fountain & Spanish Steps", description: "Toss a coin at the Baroque fountain and climb the famous 135 steps.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 2, rating: 4.6 },
@@ -540,7 +540,7 @@ const activitiesData: Record<string, ActivityData[]> = {
 
   // ─── Istanbul ────────────────────────────────────────────────────────────────
   Istanbul: [
-    { name: "Hagia Sophia", description: "6th-century Byzantine cathedral turned mosque — one of the world's greatest buildings.", category: "CULTURE", estimatedCost: 900, durationHours: 2, rating: 4.8 },
+    { name: "Hagia Sophia", description: "6th-century Byzantine cathedral turned mosque — one of the world's greatest buildings. Free entry.", category: "CULTURE", estimatedCost: 0, durationHours: 2, rating: 4.8 },
     { name: "Grand Bazaar", description: "One of the world's oldest and largest covered markets — 4,000 shops.", category: "SHOPPING", estimatedCost: 1500, durationHours: 3, rating: 4.6 },
     { name: "Bosphorus Cruise", description: "Boat past the skyline, palaces, and two continents.", category: "SIGHTSEEING", estimatedCost: 800, durationHours: 2.5, rating: 4.7 },
     { name: "Turkish Breakfast Spread", description: "Feast on cheese, olives, tomatoes, eggs, and simit at a local café.", category: "FOOD", estimatedCost: 600, durationHours: 1.5, rating: 4.8 },
@@ -553,7 +553,7 @@ const activitiesData: Record<string, ActivityData[]> = {
     { name: "Desert Safari with BBQ Dinner", description: "Dune bashing, camel ride, sandboarding, and traditional Emirati dinner.", category: "ADVENTURE", estimatedCost: 5000, durationHours: 6, rating: 4.8 },
     { name: "Dubai Mall & Aquarium", description: "World's largest mall — visit the 10 million litre aquarium and ice rink.", category: "SHOPPING", estimatedCost: 2000, durationHours: 4, rating: 4.5 },
     { name: "Dubai Creek Dhow Cruise", description: "Traditional wooden dhow dinner cruise on the historic Creek.", category: "CULTURE", estimatedCost: 3000, durationHours: 3, rating: 4.6 },
-    { name: "Dubai Frame", description: "Walk across a glass bridge 150m high framing old and new Dubai.", category: "SIGHTSEEING", estimatedCost: 2000, durationHours: 1.5, rating: 4.5 },
+    { name: "Dubai Frame", description: "Walk across a glass bridge 150m high framing old and new Dubai. (AED 50 ≈ ₹1,130)", category: "SIGHTSEEING", estimatedCost: 1130, durationHours: 1.5, rating: 4.5 },
   ],
 
   // ─── Singapore ───────────────────────────────────────────────────────────────
@@ -579,10 +579,10 @@ const activitiesData: Record<string, ActivityData[]> = {
   Tokyo: [
     { name: "Senso-ji Temple", description: "Tokyo's oldest and most significant Buddhist temple in Asakusa.", category: "CULTURE", estimatedCost: 0, durationHours: 2, rating: 4.7 },
     { name: "Shibuya Crossing & Walk", description: "Experience the world's busiest pedestrian crossing and Shibuya district.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 3, rating: 4.6 },
-    { name: "Tsukiji Outer Market", description: "Fresh sushi breakfast and street food at Tokyo's famous fish market.", category: "FOOD", estimatedCost: 3000, durationHours: 2, rating: 4.8 },
-    { name: "teamLab Planets", description: "Immersive digital art museum — walk through infinite light and water.", category: "CULTURE", estimatedCost: 3200, durationHours: 2.5, rating: 4.8 },
-    { name: "Akihabara Electronics Walk", description: "Explore Tokyo's anime, manga, and electronics district.", category: "SHOPPING", estimatedCost: 5000, durationHours: 3, rating: 4.4 },
-    { name: "Shinjuku Gyoen Garden", description: "Spacious national garden blending Japanese, French, and English styles.", category: "WELLNESS", estimatedCost: 500, durationHours: 2, rating: 4.6 },
+    { name: "Tsukiji Outer Market", description: "Fresh sushi breakfast and street food at Tokyo's famous fish market. (¥3,000 ≈ ₹1,700)", category: "FOOD", estimatedCost: 1700, durationHours: 2, rating: 4.8 },
+    { name: "teamLab Planets", description: "Immersive digital art museum — walk through infinite light and water. (¥3,200 ≈ ₹1,800)", category: "CULTURE", estimatedCost: 1800, durationHours: 2.5, rating: 4.8 },
+    { name: "Akihabara Electronics Walk", description: "Explore Tokyo's anime, manga, and electronics district. Budget ¥5,000 ≈ ₹2,800.", category: "SHOPPING", estimatedCost: 2800, durationHours: 3, rating: 4.4 },
+    { name: "Shinjuku Gyoen Garden", description: "Spacious national garden blending Japanese, French, and English styles. (¥500 ≈ ₹280)", category: "WELLNESS", estimatedCost: 280, durationHours: 2, rating: 4.6 },
   ],
 
   // ─── Bali ────────────────────────────────────────────────────────────────────
@@ -599,7 +599,7 @@ const activitiesData: Record<string, ActivityData[]> = {
   Sydney: [
     { name: "Sydney Opera House Tour", description: "Guided tour of one of the world's most iconic architectural masterpieces.", category: "CULTURE", estimatedCost: 2800, durationHours: 2, rating: 4.7 },
     { name: "Bondi to Coogee Coastal Walk", description: "6km cliffside walk with stunning Pacific Ocean views and ocean pools.", category: "WELLNESS", estimatedCost: 0, durationHours: 3, rating: 4.8 },
-    { name: "Sydney Harbour Bridge Climb", description: "Climb to the summit of the Coathanger for 360° harbour views.", category: "ADVENTURE", estimatedCost: 8000, durationHours: 3.5, rating: 4.8 },
+    { name: "Sydney Harbour Bridge Climb", description: "Climb to the summit of the Coathanger for 360° harbour views. (AUD 388 ≈ ₹21,000)", category: "ADVENTURE", estimatedCost: 21000, durationHours: 3.5, rating: 4.8 },
     { name: "Manly Ferry & Beach", description: "30-minute iconic ferry ride from Circular Quay to Manly beach.", category: "SIGHTSEEING", estimatedCost: 800, durationHours: 4, rating: 4.6 },
     { name: "Darling Harbour Seafood Dinner", description: "Fresh Sydney rock oysters and barramundi at a waterfront restaurant.", category: "FOOD", estimatedCost: 4000, durationHours: 2, rating: 4.7 },
     { name: "Blue Mountains Day Trip", description: "Three Sisters rock formation, Scenic Railway, and eucalyptus forests.", category: "ADVENTURE", estimatedCost: 2000, durationHours: 8, rating: 4.7 },
@@ -607,11 +607,11 @@ const activitiesData: Record<string, ActivityData[]> = {
 
   // ─── New York ────────────────────────────────────────────────────────────────
   "New York": [
-    { name: "Statue of Liberty & Ellis Island", description: "Ferry to the iconic statue and the historic immigration museum.", category: "CULTURE", estimatedCost: 4000, durationHours: 5, rating: 4.7 },
+    { name: "Statue of Liberty & Ellis Island", description: "Ferry to the iconic statue and the historic immigration museum. (USD 24 ≈ ₹2,000)", category: "CULTURE", estimatedCost: 2000, durationHours: 5, rating: 4.7 },
     { name: "Metropolitan Museum of Art", description: "2 million objects across 5,000 years of art — one of the world's greatest museums.", category: "CULTURE", estimatedCost: 2500, durationHours: 4, rating: 4.8 },
     { name: "Central Park Walk & Picnic", description: "840 acres of green space in the middle of Manhattan.", category: "WELLNESS", estimatedCost: 500, durationHours: 3, rating: 4.7 },
     { name: "Brooklyn Bridge Walk", description: "Cross the 140-year-old suspension bridge on foot for skyline views.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 1.5, rating: 4.7 },
-    { name: "Times Square & Broadway Show", description: "Neon-lit crossroads of the world + a world-class Broadway musical.", category: "CULTURE", estimatedCost: 8000, durationHours: 5, rating: 4.8 },
+    { name: "Times Square & Broadway Show", description: "Neon-lit crossroads of the world + a world-class Broadway musical. (USD 150 avg ≈ ₹12,500)", category: "CULTURE", estimatedCost: 12500, durationHours: 5, rating: 4.8 },
     { name: "High Line Park Walk", description: "Elevated linear park on a former railway line through West Chelsea.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 2, rating: 4.6 },
   ],
 };
