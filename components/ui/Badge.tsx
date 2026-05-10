@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
 import type { TripStatus, ActivityCategory, ExpenseCategory } from "@/types";
 
-interface BadgeProps {
+export interface BadgeProps {
   children: React.ReactNode;
   variant?: "default" | "navy" | "red" | "grey" | "outline";
   className?: string;
 }
+
+export type BadgeVariant = BadgeProps["variant"];
 
 /** Base badge — monospace uppercase label */
 export function Badge({ children, variant = "default", className }: BadgeProps) {

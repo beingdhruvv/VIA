@@ -3,9 +3,11 @@
  * Run via: npx prisma db seed (or npm run db:seed)
  */
 
-import { PrismaClient, ActivityCategory } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+type ActivityCategory = "SIGHTSEEING" | "FOOD" | "ADVENTURE" | "CULTURE" | "NATURE" | "SHOPPING" | "NIGHTLIFE" | "WELLNESS";
 
 type CityData = {
   name: string;

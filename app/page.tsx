@@ -99,18 +99,12 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-via-grey-light px-8 md:px-16 lg:px-24 py-6 flex items-center justify-between">
+      <footer className="border-t border-via-grey-light px-8 md:px-16 lg:px-24 py-6 flex items-center justify-start">
         <span
           className="text-xs text-via-grey-mid"
           style={{ fontFamily: "var(--font-ibm-plex-mono)" }}
         >
-          VIA — Team StormLabs
-        </span>
-        <span
-          className="text-xs text-via-grey-light"
-          style={{ fontFamily: "var(--font-ibm-plex-mono)" }}
-        >
-          Odoo Hackathon 2026
+          VIA
         </span>
       </footer>
     </div>

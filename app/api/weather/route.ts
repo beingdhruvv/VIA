@@ -37,3 +37,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Weather fetch failed" }, { status: 502 });
   }
 }
+
