@@ -16,11 +16,31 @@ Plan multi-city trips, build day-wise itineraries, track budgets, manage packing
 
 ```bash
 npm install
+```
+
+### Environment Variables
+Create a `.env.local` file in the root directory and add the following:
+```env
+DATABASE_URL="file:./prisma/dev.db"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your_secure_random_string"
+AUTH_SECRET="your_secure_random_string"
+# Optional: GEODB_API_KEY="your_geodb_api_key"
+```
+
+### Database Setup
+Run the following commands to initialize the database and seed it with starter data (cities and activities):
+```bash
 npx prisma migrate dev
+npm run db:seed
+```
+
+### Start Development Server
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Deploy
 
