@@ -1,6 +1,7 @@
-# VIA
+# VIA 
+## VISIT: via.stromlabs.tech
 
-Travel planner built for Odoo Hackathon 2026 by Team StormLabs.
+Travel planner built for Odoo Hackathon 2026 by Team StormLabs. 
 
 Plan multi-city trips, build day-wise itineraries, track budgets, manage packing lists, and share trips publicly.
 
