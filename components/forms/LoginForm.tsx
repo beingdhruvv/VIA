@@ -57,11 +57,29 @@ export default function LoginForm() {
       const { auth, googleProvider } = await import("@/lib/firebase");
       
       const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
       
-      // Successfully authenticated with Firebase
-      // Next steps: you likely need to pass the Firebase token to your backend
-      // or handle session state based on `result.user`
-      console.log("Logged in with Google:", result.user.displayName);
+      // 1. Sync with backend (Upsert user + DP)
+      await fetch("/api/auth/firebase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName,
+          image: user.photoURL,
+        }),
+      });
+
+      // 2. Create NextAuth session
+      const signInResult = await signIn("credentials", {
+        email: user.email,
+        isFirebase: "true",
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        throw new Error("NextAuth session creation failed.");
+      }
       
       router.push("/dashboard");
       router.refresh();

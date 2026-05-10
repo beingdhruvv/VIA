@@ -19,6 +19,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
+        // Check if it's a Firebase login bypass
+        if (credentials?.isFirebase === "true" && credentials?.email) {
+          const user = await prisma.user.findUnique({ 
+            where: { email: credentials.email as string } 
+          });
+          if (!user) return null;
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.avatarUrl,
+          };
+        }
+
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 

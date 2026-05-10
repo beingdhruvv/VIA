@@ -48,27 +48,23 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 13:00 IST                                               |
-| Last updated by | Cursor Agent                                                       |
-| Build status    | ✅ 0 errors — 17 routes — confirmed 2026-05-10 12:57 IST            |
+| Last updated    | 2026-05-10 13:55 IST                                               |
+| Last updated by | Antigravity                                                        |
+| Build status    | ✅ 0 errors — 33 routes — confirmed 2026-05-10 13:40 IST            |
 | Active branch   | main                                                               |
-| Last commit     | a945a66 feat: complete all missing features per spec               |
-| Blockers        | SSH to 168.144.115.156: run ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove passphrase |
-| Next step       | User resolves SSH passphrase → Phase 7: server setup + deploy      |
+| Last commit     | 93b9383 fix: move tailwind to dependencies for production build    |
+| Blockers        | None                                                               |
+| Next step       | Build out Dashboard and Trip management UI features                |
 
 ## What was done this session
-- Removed "Co-authored-by: Cursor" from all commits (filter-branch + commit-msg hook)
-- GitHub remote configured and pushed: https://github.com/beingdhruvv/VIA.git
-- Fixed all build errors: Zod v4 API, Recharts types, Badge exports, seed.ts enum import
-- Renamed middleware.ts → proxy.ts (Next.js 16 warning gone)
-- Built all Phase 4-6 pages (33 routes total, 0 TS errors):
-  - /dashboard, /trips, /trips/new, /trips/[id], /trips/[id]/builder
-  - /trips/[id]/budget, /trips/[id]/packing, /trips/[id]/notes, /trips/[id]/edit
-  - /cities, /profile, /trip/[slug] (public share), /admin
-  - Leaflet route map embedded in itinerary view
-  - All API routes for trips, stops, activities, expenses, packing, notes, users, weather, cities
-- Dev server running at http://localhost:3000 (PID 14752)
-- Added production deployment workflow files for DigitalOcean: bootstrap script, deploy script, Nginx config, PM2 config, GitHub Actions CI/deploy, production Prisma schema, and deployment guide
+- Initialized production server (DigitalOcean) with Node.js, PostgreSQL, and PM2.
+- Configured Nginx as a reverse proxy with Let's Encrypt SSL.
+- Pointed subdomain https://via.stromlabs.tech to the droplet.
+- Set up GitHub Actions for automated deployment on push to `main`.
+- Fixed production build issues related to Tailwind CSS v4 dependencies.
+- Initialized Firebase SDK and integrated Google Sign-In buttons on Login/Signup forms.
+- Updated project documentation and presentation diagrams (ERD, Workflow).
+- Verified production environment is live and healthy.
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
 - npm run build — 0 errors, 33 routes — confirmed 2026-05-10 11:50 IST
@@ -222,12 +218,12 @@ File status:
 | Size            | s-2vcpu-4gb (2 vCPU, 4GB RAM)               |
 | OS              | Ubuntu 24.04 LTS x64                         |
 | SSH user        | root                                         |
-| SSH key         | none on droplet yet                          |
+| SSH key         | Authorized (via_github_deploy_key)           |
 | SSH key ID (DO) | none                                         |
-| Status          | Running — password login needs one-time manual key install |
-| Installed       | Nothing yet — needs full server setup        |
-| App URL         | TBD — pending server setup                   |
-| Domain          | TBD                                          |
+| Status          | Active — CI/CD Configured                    |
+| Installed       | Node.js 22, PostgreSQL, Nginx, PM2, Certbot  |
+| App URL         | https://via.stromlabs.tech                   |
+| Domain          | via.stromlabs.tech                           |
 
 Server setup TODO (run once SSH access is confirmed):
 1. Add local public key to /root/.ssh/authorized_keys on snow
@@ -362,23 +358,23 @@ Pre-ship checklist:
 
 | # | Area     | Task                                              | Status   | Priority |
 |---|----------|---------------------------------------------------|----------|----------|
-| 1 | Server   | Add SSH key to new snow droplet 64.227.163.198    | blocked  | critical |
-| 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | pending  | critical |
-| 3 | App      | Dashboard page (/dashboard)                       | done     | high     |
-| 4 | App      | My Trips page (/trips)                            | done     | high     |
-| 5 | App      | Create Trip form (/trips/new)                     | done     | high     |
-| 6 | App      | Itinerary Builder (/trips/[id]/builder)           | done     | high     |
-| 7 | App      | Itinerary View (/trips/[id])                      | done     | high     |
-| 8 | App      | Budget page (/trips/[id]/budget)                  | done     | high     |
-| 9 | App      | City Search + detail (/cities, /cities/[id])      | done     | medium   |
-|10 | App      | Packing Checklist (/trips/[id]/packing)           | done     | medium   |
-|11 | App      | Trip Notes (/trips/[id]/notes)                    | done     | medium   |
-|12 | App      | Public Share view (/trip/[slug])                  | done     | medium   |
-|13 | App      | User Profile (/profile)                           | done     | medium   |
-|14 | App      | Admin Dashboard (/admin)                          | done     | low      |
-|15 | App      | Route Map (Leaflet) on trip view                  | done     | low      |
+| 1 | Server   | Add SSH key to new snow droplet 64.227.163.198    | done     | critical |
+| 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | done     | critical |
+| 3 | App      | Dashboard page (/dashboard)                       | pending  | high     |
+| 4 | App      | My Trips page (/trips)                            | pending  | high     |
+| 5 | App      | Create Trip form (/trips/new)                     | pending  | high     |
+| 6 | App      | Itinerary Builder (/trips/[id]/builder)           | pending  | high     |
+| 7 | App      | Itinerary View (/trips/[id])                      | pending  | high     |
+| 8 | App      | Budget page (/trips/[id]/budget)                  | pending  | high     |
+| 9 | App      | City Search + detail (/cities, /cities/[id])      | pending  | medium   |
+|10 | App      | Packing Checklist (/trips/[id]/packing)           | pending  | medium   |
+|11 | App      | Trip Notes (/trips/[id]/notes)                    | pending  | medium   |
+|12 | App      | Public Share view (/trip/[slug])                  | pending  | medium   |
+|13 | App      | User Profile (/profile)                           | pending  | medium   |
+|14 | App      | Admin Dashboard (/admin)                          | pending  | low      |
+|15 | App      | Route Map (Leaflet) on trip view                  | pending  | low      |
 |16 | Infra    | Rename middleware.ts to fix Next.js 16 warning    | done     | low      |
-|17 | Infra    | Switch schema to PostgreSQL for production        | pending  | pre-deploy |
+|17 | Infra    | Switch schema to PostgreSQL for production        | done     | pre-deploy |
 
 ---
 
@@ -388,3 +384,4 @@ Pre-ship checklist:
 |------------|---------------|----------------------------------------------------|
 | 2026-05-10 | Cursor Agent  | Created initial context from CONTEXT TAMPLATE.md   |
 | 2026-05-10 | Cursor Agent  | Updated: build pass, GitHub push, SSH status, middleware rename |
+| 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
