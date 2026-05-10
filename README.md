@@ -1,4 +1,4 @@
-# VIA — Travel intelligence, shipped as a product
+# VIA — Travel intelligence
 
 **Live:** [via.stromlabs.tech](https://via.stromlabs.tech) 
 
