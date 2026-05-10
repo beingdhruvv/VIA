@@ -48,38 +48,37 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 (session: deploy version + responsive + context)        |
+| Last updated    | 2026-05-10 (session: CONTEXT + public /api/config + proxy fix)     |
 | Last updated by | Cursor                                                              |
-| Build status    | Run `npm run build` after pull — dashboard JSX verified clean       |
+| Build status    | Run `npm run build` after pull                                      |
 | Active branch   | main                                                                |
 | Last commit     | (update when committing)                                            |
 | Blockers        | None                                                                |
-| Next step       | Push main → verify Actions sets DEPLOY_VERSION → health check        |
+| Next step       | Deploy main → confirm `/api/config/firebase` JSON + Google on login |
 
 ## What was done this session
-- **Deploy version:** `NEXT_PUBLIC_APP_VERSION` from `DEPLOY_VERSION` (CI) or date+sha in `deploy.sh`; `next.config.ts` env fallback to `package.json`; `lib/app-version.ts`; Sidebar + Profile show build label; `package.json` → `0.1.2-beta`.
-- **Responsive / theme:** `overflow-x-clip` on root body + AppShell; main `min-w-0`; PageHeader title scales `text-2xl`→`md:text-[32px]`, actions wrap; breadcrumb `flex-wrap`; dashboard `SectionHeader` stacks on narrow screens; GlobalCitySearch / SearchOverlay `min-w-0` + responsive padding; profile hero stacks on mobile; system status uses `text-via-navy` (palette) not generic green.
-- **Docs:** `docs/DEPLOYMENT_WORKFLOW.md` — Build version section.
+- **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once (PM2 often omits file vars); `GET /api/config/firebase` + `useFirebaseReady` + login/signup `force-dynamic` + server bootstrap prop; **`proxy.ts`** — allow **`/api/config/*`** without session (was blocking client fetch on login → no Google).
+- **Deploy:** `deploy.sh` uses `git reset --hard` after fetch only; GitHub Actions SSH pre-runs hard reset; `postinstall` Prisma generate.
+- **Cities:** `/api/cities/search` is **DB-only** (no GeoDB merge).
+- **Explore:** images via `lib/place-images`; removed Live Discovery strip; mobile sizing; `/api/user/taste`, explore swiper.
+- **Repo hygiene:** secrets scrubbed earlier; `LOCAL_OPERATIONS.md.template`; gitignore `LOCAL_OPERATIONS.md`, `DOCS/VIDEO_DEMO_SCRIPT.md`.
 
 ## What reliably works
-- Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
-- npm run build — 0 errors (post perf-fix build in progress)
-- GitHub push → GitHub Actions → auto-deploy to production (canonical URL in server `.env.production`, not in this repo)
-- Google Sign-In → NextAuth session → dashboard access ✅
+- Prisma + seed (SQLite dev / PostgreSQL prod)
+- `npm run build` when CI env clean
+- GitHub Actions → droplet deploy (`deploy.sh`)
+- Google Sign-In when `FIREBASE_WEB_*` set + **Authorized domains** in Firebase + **`/api/config/*` public in `proxy.ts`**
 - Dev server at http://localhost:3000
 
 ## Deployment
-- Production URL, droplet addresses, SSH: **`LOCAL_OPERATIONS.md`** only (copy from `LOCAL_OPERATIONS.md.template`; never commit the filled file).
-- App on server: `/var/www/via`
-- Deploy: push to main → GitHub Actions → `infra/server/deploy.sh`
-- DB: PostgreSQL in production (`schema.production.prisma`)
-- Auth: NextAuth v5 JWT + Firebase Google Sign-In
+- Production URL, SSH, keys: **`LOCAL_OPERATIONS.md`** (gitignored; copy from `LOCAL_OPERATIONS.md.template`).
+- App on server: `/var/www/via`; deploy: push `main` → Actions → `infra/server/deploy.sh`.
+- **Production Firebase:** set **`FIREBASE_WEB_*`** in `/var/www/via/.env.production` (same values as Firebase web SDK config); optional `NEXT_PUBLIC_FIREBASE_*` if rebuilding with keys baked in.
 
 ## Known issues / caveats
-- Prefer a passphrase-free **deploy key** for CI; keep a personal passphrase key only on your machine.
-- NextAuth serverActions.allowedOrigins experimental warning (non-breaking)
-- Prisma enums stored as String in SQLite; switch to postgresql + real enums before prod deploy
-- Firebase: set `NEXT_PUBLIC_FIREBASE_*` in env; add your production hostname under Firebase Console → Authentication → Authorized domains
+- Prefer passphrase-free deploy key for CI.
+- NextAuth `serverActions.allowedOrigins` experimental warning (non-breaking).
+- Prisma SQLite uses String enums; prod uses `schema.production.prisma`.
 
 ---
 
@@ -89,7 +88,7 @@ Purpose: VIA — personalized multi-city travel planning web app for Odoo Hackat
 
 Stack:
 - Frontend: Next.js 16.2.6 (App Router), TypeScript, Tailwind CSS v4
-- Auth: NextAuth v5 beta (Credentials + JWT)
+- Auth: NextAuth v5 beta (Credentials + JWT) + **Firebase Google** (client SDK; config via `FIREBASE_WEB_*` / bootstrap / `/api/config/firebase`)
 - DB (local): SQLite via Prisma 5
 - DB (production): PostgreSQL via Prisma 5
 - UI: Custom Tailwind components + Radix UI headless primitives
@@ -122,7 +121,9 @@ Stack:
 │   │   ├── stops/[id]/         # PATCH, DELETE stop
 │   │   ├── stops/[id]/activities/ # GET, POST (toggle) activities
 │   │   ├── packing/[id]/       # PATCH, DELETE item
-│   │   ├── cities/search/      # GET city search (GeoDB proxy + seed)
+│   │   ├── cities/search/      # GET city search (Prisma City table only)
+│   │   ├── cities/explore/     # GET explore deck (auth)
+│   │   ├── config/firebase/    # GET public Firebase web config (no auth)
 │   │   ├── cities/[id]/activities/ # GET activities for city
 │   │   └── weather/            # GET Open-Meteo weather
 │   ├── auth/login/             # ✅ DONE
@@ -138,6 +139,7 @@ Stack:
 │   ├── trips/[id]/notes/       # ✅ DONE
 │   ├── cities/                 # ✅ DONE
 │   ├── cities/[id]/            # ✅ DONE
+│   ├── explore/                # ✅ Swipe / taste (auth)
 │   ├── trip/[slug]/            # ✅ DONE (public view)
 │   ├── profile/                # ✅ DONE
 │   ├── admin/                  # ✅ DONE
@@ -156,6 +158,9 @@ Stack:
 │   ├── auth.ts                 # ✅ NextAuth config
 │   ├── utils.ts                # ✅ cn, formatDate, getCityImageUrl, etc.
 │   ├── place-images.ts         # ✅ Wikimedia city image map + fallback
+│   ├── firebase.ts             # ✅ Firebase web SDK init + runtime override
+│   ├── firebase-server-config.ts # ✅ FIREBASE_WEB_* + merge .env.production
+│   ├── useFirebaseReady.ts     # ✅ Client: bootstrap + /api/config/firebase
 │   └── app-version.ts          # ✅ NEXT_PUBLIC_APP_VERSION (build label)
 ├── store/
 │   └── index.ts                # ✅ Zustand UI store
@@ -167,7 +172,7 @@ Stack:
 │   ├── seed.ts                 # ✅ 57 cities + 295 activities
 │   ├── dev.db                  # ✅ SQLite DB (local, gitignored)
 │   └── migrations/             # ✅ 20260510_init
-├── middleware.ts               # ✅ Route protection (deprecation warning in Next.js 16)
+├── proxy.ts                    # ✅ Auth gate (Next 16); public: /, /auth, /trip, /api/auth, /api/config, /api/users
 ├── next.config.ts              # ✅ Image domains configured
 ├── .env                        # ✅ DATABASE_URL=file:./prisma/dev.db
 └── .env.local                  # ✅ NextAuth secrets + GeoDB key placeholder
@@ -180,8 +185,8 @@ File status:
 | prisma/seed.ts                | active      | 2026-05-10   | 57 cities, 295 activities                     |
 | app/globals.css               | active      | 2026-05-10   | VIA design tokens via @theme                  |
 | app/layout.tsx                | active      | 2026-05-10   | Space Grotesk + Inter + IBM Plex Mono         |
-| lib/auth.ts                   | active      | 2026-05-10   | NextAuth v5 beta Credentials provider         |
-| middleware.ts                 | active      | 2026-05-10   | Has Next.js 16 deprecation warning            |
+| lib/auth.ts                   | active      | 2026-05-10   | NextAuth v5; redirect uses AUTH_URL / NEXTAUTH_URL |
+| proxy.ts                      | active      | 2026-05-10   | Public: /api/config/* for Firebase on login     |
 | components/ui/*               | active      | 2026-05-10   | All base UI components                        |
 | components/layout/*           | active      | 2026-05-10   | Sidebar, Navbar, BottomNav, AppShell          |
 
@@ -193,8 +198,11 @@ File status:
 |-----------------------|---------------------------------------------------|-------------------------------------|
 | App entry / routing   | app/page.tsx, proxy.ts                            | Landing + auth guard                |
 | Root layout           | app/layout.tsx, app/globals.css                   | Fonts, design tokens                |
-| Auth pages            | app/auth/*/page.tsx                               | Login, signup, forgot               |
-| Auth forms            | components/forms/LoginForm.tsx, SignupForm.tsx     | RHF + Zod                           |
+| Auth pages            | app/auth/*/page.tsx                               | Login/signup `force-dynamic` + Firebase bootstrap |
+| Auth forms            | components/forms/LoginForm.tsx, SignupForm.tsx     | RHF + Zod; `useFirebaseReady`                     |
+| Auth gate             | proxy.ts                                          | Next 16 middleware; **must** allow `/api/config/*` unauthenticated |
+| Firebase server       | lib/firebase-server-config.ts, app/api/config/firebase/ | `FIREBASE_WEB_*` + `.env.production` merge |
+| Firebase client       | lib/firebase.ts, lib/useFirebaseReady.ts          | Runtime init + Google                           |
 | Auth API              | lib/auth.ts, app/api/auth/*/                      | NextAuth + bcryptjs                 |
 | DB client             | lib/prisma.ts                                     | Singleton Prisma 5                  |
 | DB schema             | prisma/schema.prisma                              | 9 models                            |
@@ -202,12 +210,15 @@ File status:
 | UI components         | components/ui/*                                   | All custom Tailwind                 |
 | Layout components     | components/layout/*                               | Sidebar, AppShell etc.              |
 | Trip components       | components/trip/*                                 | TripCard, StopCard etc. (pending)   |
+| Explore (swipe)       | app/explore/page.tsx, components/explore/ExploreSwiper.tsx | Auth; `place-images` heroes      |
 | Shared types          | types/index.ts                                    | TripCard, StopWithCity etc.         |
 | API: trips            | app/api/trips/*/route.ts                          | Full CRUD                           |
 | API: stops            | app/api/stops/[id]/route.ts                       | PATCH, DELETE + reorder             |
 | API: expenses         | app/api/trips/[id]/expenses/route.ts              | GET, POST, DELETE                   |
 | API: packing          | app/api/trips/[id]/packing/route.ts               | GET, POST, bulk                     |
 | API: notes            | app/api/trips/[id]/notes/route.ts                 | GET, POST                           |
+| API: city search      | app/api/cities/search/route.ts                    | Prisma `City` only (no GeoDB)       |
+| API: config           | app/api/config/firebase/route.ts                  | Public Firebase web fields          |
 | Utility functions     | lib/utils.ts, lib/place-images.ts                 | City/activity image URLs (Wikimedia) |
 | App build label       | lib/app-version.ts, next.config.ts `env`          | `NEXT_PUBLIC_APP_VERSION`            |
 
@@ -258,14 +269,14 @@ API routes:
 | /api/packing/[id]                 | PATCH/DELETE| Yes  | Toggle/delete packing item       |
 | /api/trips/[id]/notes             | GET, POST   | Yes  | Trip notes                       |
 | /api/trips/[id]/share             | POST        | Yes  | Generate public slug             |
-| /api/cities/search                | GET         | No   | City search (GeoDB + seed)       |
+| /api/cities/search                | GET         | No   | City search (Prisma City table)  |
 | /api/cities/[id]/activities       | GET         | No   | Activities for a city            |
 | /api/weather                      | GET         | No   | Open-Meteo weather               |
 
 External APIs:
 | API              | URL                                              | Key required |
 |------------------|--------------------------------------------------|--------------|
-| GeoDB Cities     | https://wft-geo-db.p.rapidapi.com/v1/geo/cities  | Yes (GEODB_API_KEY) |
+| GeoDB Cities     | https://wft-geo-db.p.rapidapi.com (distance route only; search does not use) | Optional `GEODB_API_KEY` |
 | Open-Meteo       | https://api.open-meteo.com/v1/forecast           | No           |
 | Unsplash Source  | https://source.unsplash.com/800x600/?{query}     | No           |
 | ExchangeRate     | https://open.er-api.com/v6/latest/INR            | No           |
@@ -301,7 +312,7 @@ Pre-ship checklist:
 - [ ] No console errors in production build
 - [ ] Responsive at 375px and 768px
 - [ ] SSH to droplet resolved + server setup done
-- [ ] .env.production set with production DATABASE_URL, NEXTAUTH_SECRET, GEODB_API_KEY
+- [ ] `.env.production` on droplet: `DATABASE_URL`, `NEXTAUTH_*`, **`FIREBASE_WEB_*`** (Google), optional `GEODB_API_KEY`
 
 ---
 
@@ -338,9 +349,9 @@ Pre-ship checklist:
 | 2026-05-10 | Next.js 16.2.6 (via create-next-app)                  | Latest stable at time of install; plan said 14+ but 16 ok  |
 | 2026-05-10 | Tailwind CSS v4 (CSS-based config via @theme)         | Installed by create-next-app; v4 uses CSS not tailwind.config.ts |
 | 2026-05-10 | Deploy build id via NEXT_PUBLIC_APP_VERSION + DEPLOY_VERSION in CI | Unique production label per deploy; semver stays in package.json for releases |
-| 2026-05-10 | DigitalOcean blr1 (Bangalore) droplet, s-2vcpu-4gb   | Per plan + GitHub Education credits; 2vCPU/4GB for Next.js build |
-
----
+| 2026-05-10 | City search DB-only; no GeoDB merge in `/api/cities/search` | Product requirement; seeded cities as destinations |
+| 2026-05-10 | Firebase: `FIREBASE_WEB_*` + merge `.env.production` + `force-dynamic` auth pages | PM2/build empty `NEXT_PUBLIC_*`; static bootstrap was null |
+| 2026-05-10 | `proxy.ts` allow `/api/config/*` without auth | Login page fetch must work while logged out |
 
 # VALIDATION LOG
 
@@ -385,4 +396,4 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent  | Updated: build pass, GitHub push, SSH status, middleware rename |
 | 2026-05-10 | Cursor Agent  | Deploy version pipeline, responsive shell tweaks, CONTEXT sync |
 | 2026-05-10 | Antigravity   | Updated: server setup, CI/CD, subdomain, Firebase setup         |
-| 2026-05-10 | Cursor Agent  | Removed committed secrets/infra literals; LOCAL_OPERATIONS template |
+| 2026-05-10 | Cursor Agent  | CONTEXT: handoff, FILE MAP, cities/search, Firebase/proxy, WORKING DIRECTORY lib + proxy |

@@ -14,6 +14,7 @@ export default auth((req) => {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/trip/") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/config/") || // Firebase public web config for login/signup
     pathname === "/api/users"; // signup endpoint — no auth needed
 
   if (!isPublic && !isLoggedIn) {
