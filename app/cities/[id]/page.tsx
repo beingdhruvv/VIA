@@ -4,6 +4,7 @@ import { MapPin, Star, Wallet, Clock, ArrowRight, Thermometer, Wind, Globe } fro
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
+import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatCurrency, getCityImageUrl, getActivityImageUrl } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -77,6 +78,7 @@ export default async function CityDetailPage({ params }: Props) {
     name: session.user.name ?? "Traveler",
     email: session.user.email ?? "",
     image: session.user.image,
+    role: session.user.role as SessionUser["role"],
   };
 
   // Group activities by category
@@ -121,11 +123,12 @@ export default async function CityDetailPage({ params }: Props) {
           className="relative h-52 sm:h-72 overflow-hidden border border-via-black mt-1"
           style={{ boxShadow: "3px 3px 0px #111111" }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}
             alt={city.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-via-black/30" />
 
@@ -220,12 +223,12 @@ export default async function CityDetailPage({ params }: Props) {
                         style={{ boxShadow: "3px 3px 0px #111111" }}
                       >
                         {/* Activity image */}
-                        <div className="h-28 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                        <div className="h-28 relative overflow-hidden">
+                          <Image
                             src={act.imageUrl ?? getActivityImageUrl(act.name, city.name, city.country)}
                             alt={act.name}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             loading="lazy"
                           />
                         </div>

@@ -71,6 +71,7 @@ interface AdminCity {
   country: string;
   region: string;
   popularityScore: number;
+  imageUrl?: string | null;
 }
 
 interface AdminTrip {

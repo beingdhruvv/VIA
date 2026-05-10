@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { ExploreClient } from "./_ExploreClient";
+import { toSessionUserRole } from "@/lib/roles";
+import type { SessionUser } from "@/types";
 
 export default async function ExplorePage() {
   const session = await auth();

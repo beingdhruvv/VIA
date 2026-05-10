@@ -159,7 +159,7 @@ export interface MemoryData {
   longitude: number | null;
   locationName: string | null;
   createdAt: string;
-  trip?: { name: string };
+  trip?: { name: string } | null;
 }
 
 export interface TripFull extends TripCard {

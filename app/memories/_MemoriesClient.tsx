@@ -16,26 +16,10 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { formatDate } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Memory {
-  id: string;
-  imageUrl: string;
-  thumbnailUrl?: string;
-  caption?: string;
-  fileName: string;
-  fileSize: number;
-  mimeType: string;
-  takenAt?: string;
-  latitude?: number;
-  longitude?: number;
-  locationName?: string;
-  createdAt: string;
-  trip?: { name: string };
-  tripId?: string;
-}
+import type { MemoryData } from "@/types";
 
 interface Props {
-  initialMemories: Memory[];
+  initialMemories: MemoryData[];
   trips: { id: string; name: string }[];
 }
 
