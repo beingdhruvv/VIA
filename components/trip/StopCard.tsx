@@ -17,17 +17,6 @@ import { Badge } from "@/components/ui/Badge";
 import { diffInDays, formatDateRange } from "@/lib/utils";
 import type { StopWithCity } from "@/types";
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  India: "🇮🇳", "United States": "🇺🇸", France: "🇫🇷", Japan: "🇯🇵",
-  Italy: "🇮🇹", Spain: "🇪🇸", Thailand: "🇹🇭", "United Kingdom": "🇬🇧",
-  Germany: "🇩🇪", Australia: "🇦🇺", Canada: "🇨🇦", Singapore: "🇸🇬",
-  Indonesia: "🇮🇩", Vietnam: "🇻🇳", Nepal: "🇳🇵", "Sri Lanka": "🇱🇰",
-  "United Arab Emirates": "🇦🇪", Turkey: "🇹🇷", Greece: "🇬🇷",
-  Portugal: "🇵🇹", Netherlands: "🇳🇱", Switzerland: "🇨🇭",
-  "New Zealand": "🇳🇿", Brazil: "🇧🇷", Mexico: "🇲🇽",
-  China: "🇨🇳", "South Korea": "🇰🇷", Morocco: "🇲🇦",
-};
-
 interface StopCardProps {
   stop: StopWithCity;
   index: number;
@@ -62,7 +51,6 @@ export function StopCard({
   };
 
   const nights = diffInDays(stop.startDate, stop.endDate);
-  const flag = COUNTRY_FLAGS[stop.city.country] ?? "🌍";
   const activityCount = stop.activities.length;
 
   return (
@@ -89,14 +77,18 @@ export function StopCard({
         </div>
 
         {/* City info */}
-        <div className="flex-1 px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl leading-none">{flag}</span>
-            <div>
-              <h3 className="font-semibold text-base text-via-black leading-tight font-grotesk">
+        <div className="flex-1 px-4 py-3 min-w-0">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-9 h-9 border border-via-black flex items-center justify-center bg-via-off-white" aria-hidden>
+              <MapPin size={16} strokeWidth={1.5} className="text-via-black" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-base text-via-black leading-tight font-grotesk truncate">
                 {stop.city.name}
               </h3>
-              <p className="text-xs text-via-grey-mid">{stop.city.country}</p>
+              <p className="text-xs text-via-grey-mid font-mono uppercase tracking-wide truncate">
+                {stop.city.country}
+              </p>
             </div>
           </div>
         </div>

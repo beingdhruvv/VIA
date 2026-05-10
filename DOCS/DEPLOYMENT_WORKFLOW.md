@@ -144,19 +144,16 @@ npm run lint
 npm run build
 ```
 
-## Rollback
+## NextAuth and IP Redirects
 
-Find the previous good commit:
-
-```bash
-cd /var/www/via
-git log --oneline -10
-git checkout <commit_sha>
-npm ci
-npx prisma generate --schema prisma/schema.production.prisma
-npm run build
-pm2 startOrReload ecosystem.config.cjs --update-env
-pm2 save
-```
-
-For database rollbacks, restore from a PostgreSQL backup. Do not use `db push` as a rollback tool.
+If the application redirects to the server IP (http://64.227.163.198) after authentication:
+1. Ensure `AUTH_TRUST_HOST=true` is set in the production `.env`.
+2. Ensure Nginx passes `proxy_set_header Host $host;` and `proxy_set_header X-Forwarded-Proto $scheme;`.
+3. Add a `redirect` callback in `lib/auth.ts` to force the production domain:
+   ```typescript
+   async redirect({ url, baseUrl }) {
+     if (process.env.NODE_ENV === "production") return "https://via.stromlabs.tech/dashboard";
+     return url.startsWith(baseUrl) ? url : baseUrl;
+   }
+   ```
+4. Verify that the production domain `via.stromlabs.tech` is added to the Authorized Domains list in the Firebase Console (Authentication > Settings > Authorized domains).

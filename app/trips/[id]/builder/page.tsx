@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { AppShell } from "@/components/layout/AppShell";
 import { ItineraryBuilderClient } from "@/components/trip/ItineraryBuilderClient";
 import type { TripFull } from "@/types";
 
@@ -117,5 +118,16 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
     })),
   };
 
-  return <ItineraryBuilderClient trip={serialized} />;
+  const user = {
+    id: session.user.id,
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
+    image: session.user.image,
+  };
+
+  return (
+    <AppShell user={user} showBack>
+      <ItineraryBuilderClient trip={serialized} />
+    </AppShell>
+  );
 }

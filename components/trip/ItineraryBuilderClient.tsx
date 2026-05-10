@@ -117,20 +117,21 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
   }, [reloadStops]);
 
   return (
-    <div className="min-h-screen bg-via-white">
+    <div className="pb-8">
       {/* ── Top header bar ── */}
-      <header className="border-b border-via-black bg-via-white sticky top-0 z-20 no-print">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-via-black font-grotesk leading-tight">
+      <header className="border-b border-via-black bg-via-white sticky top-14 md:top-0 z-20 no-print">
+        <div className="max-w-4xl mx-auto px-4 md:px-8 py-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-via-grey-mid mb-0.5">Itinerary builder</p>
+            <h1 className="text-xl md:text-2xl font-bold text-via-black font-grotesk leading-tight truncate">
               {trip.name}
             </h1>
-            <p className="text-xs text-via-grey-mid font-mono mt-0.5">
+            <p className="text-xs text-via-grey-mid font-mono mt-1">
               {formatDateRange(trip.startDate, trip.endDate)}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
             <Link href={`/trips/${trip.id}`}>
               <Button variant="secondary" size="sm">
                 <Eye size={14} />
@@ -145,7 +146,7 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
         </div>
 
         {/* Tab nav */}
-        <div className="max-w-2xl mx-auto px-4 border-t border-via-grey-light">
+        <div className="max-w-4xl mx-auto px-4 md:px-8 border-t border-via-grey-light">
           <div className="flex gap-0 overflow-x-auto">
             {[
               { label: "Overview", href: `/trips/${trip.id}` },
@@ -172,7 +173,16 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
       </header>
 
       {/* ── Main content ── */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-8">
+        <div
+          className="mb-6 border border-via-black bg-via-off-white px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+          style={{ boxShadow: "2px 2px 0px #111111" }}
+        >
+          <p className="font-mono text-[11px] uppercase tracking-wider text-via-grey-dark shrink-0">How it works</p>
+          <p className="text-sm text-via-black">
+            <span className="font-mono text-via-grey-mid">Drag</span> the grip to reorder stops. Use arrows for precision. Add activities per city from each stop card.
+          </p>
+        </div>
         {stops.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="border border-via-grey-light p-6 mb-6">

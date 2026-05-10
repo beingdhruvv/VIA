@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
   Modal,
@@ -66,6 +65,9 @@ interface TripCardProps {
   deleting: boolean;
 }
 
+// Left stripe width — boarding-pass accent (spec: colored stripe)
+const STRIPE_WIDTH = 4;
+
 function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
   const firstStop = trip.stops[0];
   const firstCity = firstStop?.city?.name;
@@ -78,15 +80,18 @@ function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
       className="bg-via-white border border-via-black relative overflow-hidden flex flex-col"
       style={{ boxShadow: "3px 3px 0px #111111" }}
     >
-      {/* Status stripe */}
+      {/* Status stripe — boarding pass stub */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1"
-        style={{ backgroundColor: STRIPE_COLOR[trip.status] }}
+        className="absolute left-0 top-0 bottom-0 z-[1]"
+        style={{ width: STRIPE_WIDTH, backgroundColor: STRIPE_COLOR[trip.status] }}
         aria-hidden
       />
 
-      {/* Cover image — always shown */}
-      <div className="relative h-36 w-full overflow-hidden ml-1">
+      {/* Cover image */}
+      <div
+        className="relative h-40 w-full overflow-hidden border-b border-dashed border-via-black"
+        style={{ marginLeft: STRIPE_WIDTH }}
+      >
         <Image
           src={coverSrc}
           alt={`Cover image for ${trip.name}`}
@@ -94,44 +99,46 @@ function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
           className="object-cover"
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 bg-via-black px-3 py-2 flex items-center justify-between gap-2">
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-via-grey-light">Trip</span>
+          <StatusBadge status={trip.status} />
+        </div>
       </div>
 
       {/* Body */}
-      <div className="pl-4 pr-4 pt-3 pb-4 flex flex-col gap-2 flex-1">
-        {/* Name + status */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-grotesk font-semibold text-base text-via-black leading-tight line-clamp-2">
-            {trip.name}
-          </h3>
-          <StatusBadge status={trip.status} />
-        </div>
+      <div className="pl-5 pr-4 pt-4 pb-4 flex flex-col gap-3 flex-1" style={{ marginLeft: STRIPE_WIDTH }}>
+        {/* Name */}
+        <h3 className="font-grotesk font-bold text-lg text-via-black leading-tight line-clamp-2 pr-2">
+          {trip.name}
+        </h3>
 
-        {/* Date range */}
-        <p className="font-mono text-xs text-via-grey-mid flex items-center gap-1.5">
-          <Calendar size={12} className="shrink-0" />
-          {formatDateRange(trip.startDate, trip.endDate)}
-        </p>
+        {/* Date range — navy chip */}
+        <div className="inline-flex items-center gap-1.5 bg-via-navy px-2 py-1 self-start">
+          <Calendar size={11} className="text-via-white shrink-0" strokeWidth={1.5} />
+          <span className="font-mono text-[10px] text-via-white tracking-wide">
+            {formatDateRange(trip.startDate, trip.endDate)}
+          </span>
+        </div>
 
         {/* Stops */}
         {stopCount > 0 && (
-          <p className="text-xs text-via-grey-mid flex items-center gap-1.5">
-            <MapPin size={12} className="shrink-0" />
+          <p className="text-xs text-via-grey-mid flex items-center gap-1.5 font-mono">
+            <MapPin size={12} className="shrink-0" strokeWidth={1.5} />
             {stopCount} stop{stopCount !== 1 ? "s" : ""}
-            {firstCity ? ` · Starting in ${firstCity}` : ""}
+            {firstCity ? ` · ${firstCity}` : ""}
           </p>
         )}
 
         {/* Budget */}
         {trip.totalBudget != null && (
-          <p className="font-mono text-xs text-via-black flex items-center gap-1.5">
-            <Wallet size={12} className="shrink-0" />
+          <p className="font-mono text-xs text-via-black flex items-center gap-1.5 border border-via-grey-light px-2 py-1 w-fit">
+            <Wallet size={12} className="shrink-0" strokeWidth={1.5} />
             {formatCurrency(trip.totalBudget)}
           </p>
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2 mt-auto pt-3 border-t border-via-grey-light">
+        <div className="flex items-center gap-2 mt-auto pt-4 border-t border-via-grey-light">
           <Link href={`/trips/${trip.id}`} className="flex-1">
             <Button variant="primary" size="sm" className="w-full gap-1.5">
               <Eye size={13} />
@@ -324,7 +331,7 @@ export function TripsListClient({ trips: initialTrips }: TripsListClientProps) {
 
       {/* Grid */}
       {filtered.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filtered.map((trip) => (
             <TripCardItem
               key={trip.id}

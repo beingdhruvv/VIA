@@ -25,10 +25,10 @@ export default async function NewTripPage({ searchParams }: Props) {
 
   return (
     <AppShell user={user} showBack>
-      <div className="px-4 md:px-8 py-6 max-w-2xl">
+      <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
         <PageHeader
           title="Plan a New Trip"
-          subtitle={cityName ? `Starting in ${cityName}` : "Fill in the details — you can always edit later."}
+          subtitle={cityName ? `Starting in ${cityName}` : "Four steps — name, dates, details, then review."}
           breadcrumb={[
             { label: "Trips", href: "/trips" },
             { label: "New Trip" },

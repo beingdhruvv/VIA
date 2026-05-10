@@ -266,74 +266,80 @@ export function BudgetClient({
       </section>
 
       {/* ── Charts Row ── */}
-      {expenses.length > 0 && (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Pie chart */}
-          <div
-            className="bg-via-white border border-via-black p-4"
-            style={{ boxShadow: "3px 3px 0px #111111" }}
-          >
-            <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
-              By Category
-            </p>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  dataKey="amount"
-                  nameKey="category"
-                  paddingAngle={2}
-                >
-                  {pieData.map((entry) => (
-                    <Cell
-                      key={entry.category}
-                      fill={CHART_COLORS[entry.category as ExpenseCategory]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
-                  contentStyle={{
-                    border: "1px solid #111111",
-                    borderRadius: 0,
-                    fontFamily: "var(--font-ibm-plex-mono, monospace)",
-                    fontSize: 12,
-                    background: "#F5F5F2",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
-              {pieData.map((entry) => (
-                <div key={entry.category} className="flex items-center gap-2">
-                  <div
-                    className="w-2.5 h-2.5 shrink-0"
-                    style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          className="bg-via-white border border-via-black p-4"
+          style={{ boxShadow: "3px 3px 0px #111111" }}
+        >
+          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
+            By Category
+          </p>
+          {pieData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    dataKey="amount"
+                    nameKey="category"
+                    paddingAngle={2}
+                  >
+                    {pieData.map((entry) => (
+                      <Cell
+                        key={entry.category}
+                        fill={CHART_COLORS[entry.category as ExpenseCategory]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
+                    contentStyle={{
+                      border: "1px solid #111111",
+                      borderRadius: 0,
+                      fontFamily: "var(--font-ibm-plex-mono, monospace)",
+                      fontSize: 12,
+                      background: "#F5F5F2",
+                    }}
                   />
-                  <span className="font-mono text-[10px] uppercase text-via-grey-dark truncate">
-                    {entry.category}
-                  </span>
-                  <span className="font-mono text-[10px] text-via-grey-mid ml-auto">
-                    {formatCurrency(entry.amount)}
-                  </span>
-                </div>
-              ))}
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
+                {pieData.map((entry) => (
+                  <div key={entry.category} className="flex items-center gap-2">
+                    <div
+                      className="w-2.5 h-2.5 shrink-0"
+                      style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }}
+                    />
+                    <span className="font-mono text-[10px] uppercase text-via-grey-dark truncate">
+                      {entry.category}
+                    </span>
+                    <span className="font-mono text-[10px] text-via-grey-mid ml-auto">
+                      {formatCurrency(entry.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-[200px] flex flex-col items-center justify-center border border-dashed border-via-grey-light bg-via-off-white px-4 text-center">
+              <p className="font-mono text-xs text-via-grey-mid uppercase tracking-wider mb-1">No spend data</p>
+              <p className="text-sm text-via-grey-dark">Add expenses below to populate the pie chart.</p>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Bar chart */}
-          <div
-            className="bg-via-white border border-via-black p-4"
-            style={{ boxShadow: "3px 3px 0px #111111" }}
-          >
-            <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
-              Daily Spend
-            </p>
+        <div
+          className="bg-via-white border border-via-black p-4"
+          style={{ boxShadow: "3px 3px 0px #111111" }}
+        >
+          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
+            Daily Spend
+          </p>
+          {barData.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={barData} barSize={14}>
                 <XAxis
@@ -363,9 +369,14 @@ export function BudgetClient({
                 <Bar dataKey="amount" fill="#111111" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="h-[240px] flex flex-col items-center justify-center border border-dashed border-via-grey-light bg-via-off-white px-4 text-center">
+              <p className="font-mono text-xs text-via-grey-mid uppercase tracking-wider mb-1">No timeline yet</p>
+              <p className="text-sm text-via-grey-dark">Daily bars appear once expenses have dates logged.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* ── Category Breakdown Table ── */}
       <section
