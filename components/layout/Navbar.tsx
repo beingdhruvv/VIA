@@ -24,7 +24,7 @@ function Navbar({ user, showBack = false, rightSlot }: NavbarProps) {
   const router = useRouter();
 
   return (
-    <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-via-white border-b border-via-grey-light flex items-center px-4">
+    <header className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-via-white border-b border-via-black flex items-center px-4">
       {/* Left: back or menu */}
       <div className="w-10 flex items-center">
         {showBack ? (
@@ -51,10 +51,11 @@ function Navbar({ user, showBack = false, rightSlot }: NavbarProps) {
       <div className="flex-1 flex justify-center">
         <Link
           href="/dashboard"
-          className="font-bold text-xl text-via-black leading-none tracking-tight"
-          style={{ fontFamily: "var(--font-space-grotesk, sans-serif)" }}
+          className="flex items-baseline gap-1.5 font-bold text-xl text-via-black leading-none tracking-tight"
+          style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", letterSpacing: "-0.02em" }}
         >
           VIA
+          <span className="w-1.5 h-1.5 bg-via-red shrink-0 mb-0.5" aria-hidden />
         </Link>
       </div>
 

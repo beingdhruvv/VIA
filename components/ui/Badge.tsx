@@ -33,18 +33,24 @@ export function Badge({ children, variant = "default", className }: BadgeProps) 
 }
 
 /** Trip status rubber-stamp badge */
-const statusConfig: Record<TripStatus, { label: string; variant: BadgeProps["variant"] }> = {
-  PLANNING: { label: "PLANNING", variant: "outline" },
-  ACTIVE: { label: "ACTIVE", variant: "navy" },
-  COMPLETED: { label: "COMPLETED", variant: "default" },
+const stampConfig: Record<TripStatus, { label: string; color: string }> = {
+  PLANNING: { label: "PLANNING", color: "border-via-black text-via-black bg-via-white" },
+  ACTIVE:   { label: "ACTIVE",   color: "border-via-navy text-via-navy bg-via-white" },
+  COMPLETED:{ label: "COMPLETED",color: "border-via-grey-dark text-via-grey-dark bg-via-white" },
 };
 
 export function StatusBadge({ status }: { status: TripStatus }) {
-  const config = statusConfig[status] ?? { label: status, variant: "outline" };
+  const cfg = stampConfig[status] ?? stampConfig.PLANNING;
   return (
-    <Badge variant={config.variant} className="stamp-badge">
-      {config.label}
-    </Badge>
+    <span
+      className={[
+        "inline-flex items-center font-mono text-[10px] font-medium tracking-[0.1em] uppercase px-2 py-0.5",
+        "border-2",
+        cfg.color,
+      ].join(" ")}
+    >
+      {cfg.label}
+    </span>
   );
 }
 

@@ -6,11 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { TripCard } from "@/components/trip/TripCard";
 import {
-  getGreeting,
   formatCurrency,
   diffInDays,
   getCityImageUrl,
 } from "@/lib/utils";
+import { GreetingText } from "@/components/ui/GreetingText";
 import type { SessionUser, TripCard as TripCardType } from "@/types";
 
 // ─── Weather helpers ──────────────────────────────────────────────────────────
@@ -145,8 +145,6 @@ export default async function DashboardPage() {
     image: session.user.image,
   };
 
-  const greeting = getGreeting();
-
   return (
     <AppShell user={user}>
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-10">
@@ -158,7 +156,7 @@ export default async function DashboardPage() {
               Dashboard
             </p>
             <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-via-black">
-              {greeting}, {user.name.split(" ")[0]}.
+              <GreetingText name={user.name.split(" ")[0]} />
             </h1>
           </div>
 
@@ -254,17 +252,15 @@ export default async function DashboardPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-via-black/20 group-hover:bg-via-black/10 transition-colors" />
-                </div>
-
-                {/* City info */}
-                <div className="px-3 py-2 bg-via-white">
-                  <p className="font-grotesk font-semibold text-sm text-via-black leading-tight">
-                    {city.name}
-                  </p>
-                  <p className="font-mono text-[10px] text-via-grey-mid mt-0.5 uppercase tracking-wide">
-                    {city.country}
-                  </p>
+                  {/* Solid overlay on bottom — no gradient per spec */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-via-black px-3 py-1.5">
+                    <p className="font-grotesk font-bold text-xs text-via-white leading-tight truncate">
+                      {city.name}
+                    </p>
+                    <p className="font-mono text-[9px] text-via-grey-light uppercase tracking-wide">
+                      {city.country}
+                    </p>
+                  </div>
                 </div>
               </Link>
             ))}

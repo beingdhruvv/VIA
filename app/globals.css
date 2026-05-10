@@ -76,12 +76,17 @@ h1, h2, h3, h4, h5, h6 {
 /* Rubber stamp badge */
 .stamp-badge {
   font-family: var(--font-ibm-plex-mono), monospace;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  border: 1.5px solid currentColor;
-  padding: 2px 8px;
+  border: 2px solid currentColor;
+  padding: 1px 6px;
+}
+
+/* Boarding pass divider (perforated line) */
+.perforated-line {
+  border-top: 2px dashed #D6D6D6;
 }
 
 /* Scrollbar styling */

@@ -32,16 +32,22 @@ function Sidebar({ user }: SidebarProps) {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-via-white border-r border-via-grey-light z-30">
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-via-white border-r border-via-black z-30">
       {/* Logo */}
-      <div className="px-5 pt-7 pb-5 border-b border-via-grey-light">
-        <span
-          className="block font-bold text-2xl text-via-black leading-none tracking-tight"
-          style={{ fontFamily: "var(--font-space-grotesk, sans-serif)" }}
-        >
-          VIA
-        </span>
-        <span className="block text-xs text-via-grey-mid mt-1 tracking-wide">
+      <div className="px-5 pt-6 pb-5 border-b border-via-black">
+        <div className="flex items-baseline gap-2">
+          <span
+            className="block font-bold text-2xl text-via-black leading-none tracking-tight"
+            style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", letterSpacing: "-0.02em" }}
+          >
+            VIA
+          </span>
+          <span
+            className="block w-2 h-2 bg-via-red shrink-0 mb-0.5"
+            aria-hidden
+          />
+        </div>
+        <span className="block font-mono text-[10px] text-via-grey-mid mt-1.5 uppercase tracking-[0.1em]">
           Travel Planner
         </span>
       </div>
@@ -60,10 +66,10 @@ function Sidebar({ user }: SidebarProps) {
                 <Link
                   href={href}
                   className={[
-                    "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors font-mono tracking-wide",
                     isActive
-                      ? "bg-via-off-white border-l-2 border-via-black text-via-black"
-                      : "text-via-grey-mid hover:text-via-black hover:bg-via-off-white border-l-2 border-transparent",
+                      ? "bg-via-black text-via-white border-l-2 border-via-black"
+                      : "text-via-grey-dark hover:text-via-black hover:bg-via-off-white border-l-2 border-transparent",
                   ].join(" ")}
                 >
                   <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
@@ -113,6 +119,16 @@ function Sidebar({ user }: SidebarProps) {
             Sign out
           </button>
         </form>
+
+        {/* Version & Credits */}
+        <div className="mt-4 pt-4 border-t border-via-grey-light flex items-center justify-between">
+          <span className="text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">
+            v0.1.0-beta
+          </span>
+          <span className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest">
+            StormLabs
+          </span>
+        </div>
       </div>
     </aside>
   );

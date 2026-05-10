@@ -74,12 +74,11 @@ export function CitiesClient({ cities }: Props) {
                   loading="lazy"
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`; }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-via-black/50 to-transparent" />
-                <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
-                  <h3 className="font-grotesk font-bold text-sm text-white leading-tight drop-shadow">{city.name}</h3>
-                  <div className="flex items-center gap-0.5 bg-black/30 backdrop-blur-sm px-1.5 py-0.5">
-                    <Star size={9} className="text-yellow-300" fill="currentColor" />
-                    <span className="font-mono text-[10px] text-white">{city.popularityScore.toFixed(1)}</span>
+                <div className="absolute bottom-0 left-0 right-0 bg-via-black px-3 py-1.5 flex items-center justify-between">
+                  <h3 className="font-grotesk font-bold text-sm text-via-white leading-tight truncate">{city.name}</h3>
+                  <div className="flex items-center gap-0.5 ml-2 shrink-0">
+                    <Star size={9} className="text-via-grey-light" strokeWidth={1.5} />
+                    <span className="font-mono text-[10px] text-via-grey-light">{(city.popularityScore / 10).toFixed(1)}</span>
                   </div>
                 </div>
               </div>

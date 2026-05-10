@@ -58,10 +58,10 @@ export function TripCard({ trip, onDelete }: TripCardProps) {
           {trip.name}
         </h3>
 
-        {/* Date range */}
-        <div className="flex items-center gap-1.5 text-via-grey-mid">
-          <Calendar size={13} strokeWidth={1.5} />
-          <span className="font-mono text-[11px] tracking-wide">
+        {/* Date range — navy chip per spec */}
+        <div className="inline-flex items-center gap-1.5 bg-via-navy px-2 py-0.5 self-start">
+          <Calendar size={11} strokeWidth={1.5} className="text-via-white" />
+          <span className="font-mono text-[10px] tracking-wide text-via-white">
             {formatDateRange(trip.startDate, trip.endDate)}
           </span>
         </div>
