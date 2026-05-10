@@ -13,6 +13,7 @@ import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useFirebaseReady } from "@/lib/useFirebaseReady";
+import type { FirebaseWebPublicConfig } from "@/lib/firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -21,9 +22,13 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-export default function LoginForm() {
+export default function LoginForm({
+  firebaseBootstrap = null,
+}: {
+  firebaseBootstrap?: FirebaseWebPublicConfig | null;
+}) {
   const router = useRouter();
-  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady();
+  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady(firebaseBootstrap);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 

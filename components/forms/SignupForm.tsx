@@ -13,6 +13,7 @@ import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useFirebaseReady } from "@/lib/useFirebaseReady";
+import type { FirebaseWebPublicConfig } from "@/lib/firebase";
 
 const signupSchema = z
   .object({
@@ -87,9 +88,13 @@ function Field({
   );
 }
 
-export default function SignupForm() {
+export default function SignupForm({
+  firebaseBootstrap = null,
+}: {
+  firebaseBootstrap?: FirebaseWebPublicConfig | null;
+}) {
   const router = useRouter();
-  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady();
+  const { ready: firebaseReady, configured: firebaseConfigured } = useFirebaseReady(firebaseBootstrap);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);

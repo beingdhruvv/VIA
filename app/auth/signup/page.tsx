@@ -4,10 +4,12 @@
 
 import Link from "next/link";
 import SignupForm from "@/components/forms/SignupForm";
+import { getFirebaseBootstrapForAuthPages } from "@/lib/firebase-server-config";
 
 export const metadata = { title: "Create Account — VIA" };
 
 export default function SignupPage() {
+  const firebaseBootstrap = getFirebaseBootstrapForAuthPages();
   return (
     <main className="min-h-screen bg-via-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -29,7 +31,7 @@ export default function SignupPage() {
 
         {/* Form card */}
         <div className="border border-via-black bg-via-white p-8 shadow-brutalist">
-          <SignupForm />
+          <SignupForm firebaseBootstrap={firebaseBootstrap} />
         </div>
 
         {/* Sign in link */}

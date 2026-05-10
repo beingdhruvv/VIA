@@ -84,7 +84,7 @@ function getAppSingleton(): FirebaseApp {
   const config = effectiveConfig();
   if (!isFirebaseConfigured()) {
     throw new Error(
-      "Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* on the server or in .env.local (see .env.example).",
+      "Firebase is not configured. Set FIREBASE_WEB_* or NEXT_PUBLIC_FIREBASE_* (see .env.example).",
     );
   }
   if (!app) {
