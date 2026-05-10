@@ -24,7 +24,7 @@ import { SplitExpenseModal } from "@/components/trip/SplitExpenseModal";
 import { formatCurrency, diffInDays } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import type { ExpenseData, ExpenseCategory, TripCollaboratorData } from "@/types";
-import { Split, User as UserIcon } from "lucide-react";
+import { Split, User as UserIcon, Users } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
