@@ -48,40 +48,37 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 11:55 IST                                               |
-| Last updated by | Agent                                                              |
-| Build status    | Local build blocked by locked .next artifact; lint passes with warnings |
+| Last updated    | 2026-05-10 12:00 IST                                               |
+| Last updated by | Cursor Agent                                                       |
+| Build status    | ✅ 0 errors — 33 routes — confirmed 2026-05-10 11:50 IST            |
 | Active branch   | main                                                               |
-| Last commit     | c1dd618 rename middleware to proxy for next.js 16                  |
-| Blockers        | New snow droplet uses password login; current tool cannot enter SSH password interactively |
-| Next step       | Add local public key to snow authorized_keys, then run infra/server/bootstrap-ubuntu-24-04.sh |
+| Last commit     | 4eb6778 add phase 5-6: packing, notes, cities, profile, public share, admin, map |
+| Blockers        | SSH to 168.144.115.156: run ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove passphrase |
+| Next step       | User resolves SSH passphrase → Phase 7: server setup + deploy      |
 
 ## What was done this session
-- Removed "Co-authored-by: Cursor" from all 3 historical commits using git filter-branch
-- Added .git/hooks/commit-msg to permanently block Cursor from injecting Co-authored-by
-- Configured GitHub remote: https://github.com/beingdhruvv/VIA.git, pushed main
-- Fixed all production build errors (npm run build = 0 errors):
-  - Zod v4 API: .error.errors[0] → .error.issues[0] across all 7 API route files
-  - Zod v4 API: removed invalid_type_error option from z.coerce.number()
-  - Zod v4: changed z.coerce.number() → z.number() with valueAsNumber: true in register
-  - Recharts: fixed Formatter type (value: number → value: unknown)
-  - Badge: exported BadgeProps and BadgeVariant types
-  - seed.ts: removed Prisma enum import (enums are now strings); excluded from tsconfig
-- Renamed middleware.ts → proxy.ts (fixes Next.js 16 deprecation warning)
-- SSH test: "Permission denied (publickey)" — key encrypted, agent not accessible
-  - User must: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 → remove passphrase
+- Removed "Co-authored-by: Cursor" from all commits (filter-branch + commit-msg hook)
+- GitHub remote configured and pushed: https://github.com/beingdhruvv/VIA.git
+- Fixed all build errors: Zod v4 API, Recharts types, Badge exports, seed.ts enum import
+- Renamed middleware.ts → proxy.ts (Next.js 16 warning gone)
+- Built all Phase 4-6 pages (33 routes total, 0 TS errors):
+  - /dashboard, /trips, /trips/new, /trips/[id], /trips/[id]/builder
+  - /trips/[id]/budget, /trips/[id]/packing, /trips/[id]/notes, /trips/[id]/edit
+  - /cities, /profile, /trip/[slug] (public share), /admin
+  - Leaflet route map embedded in itinerary view
+  - All API routes for trips, stops, activities, expenses, packing, notes, users, weather, cities
+- Dev server running at http://localhost:3000 (PID 14752)
 - Added production deployment workflow files for DigitalOcean: bootstrap script, deploy script, Nginx config, PM2 config, GitHub Actions CI/deploy, production Prisma schema, and deployment guide
-- Updated deployment target from old droplet to new `snow` droplet at 64.227.163.198
-
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
-- npm run build — PASSES with 0 TypeScript errors — confirmed 2026-05-10 11:30 IST
-- GitHub push/pull — confirmed working, main branch tracking origin/main
+- npm run build — 0 errors, 33 routes — confirmed 2026-05-10 11:50 IST
+- GitHub push/pull — main tracking origin/main
+- Dev server at http://localhost:3000
 
 ## Known issues / caveats
-- SSH to old droplet blocked by key auth; new `snow` droplet is password-based, but this non-interactive shell cannot type the password into OpenSSH
-- NextAuth `serverActions.allowedOrigins` experimental warning (non-breaking)
-- All Prisma enum types stored as String in SQLite; switch to postgresql + real enums before prod deploy
+- SSH key has passphrase; must run: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove
+- NextAuth serverActions.allowedOrigins experimental warning (non-breaking)
+- Prisma enums stored as String in SQLite; switch to postgresql + real enums before prod deploy
 
 ---
 
@@ -218,29 +215,27 @@ File status:
 |-----------------|----------------------------------------------|
 | Provider        | DigitalOcean                                 |
 | Region          | blr1 (Bangalore)                             |
-| Droplet name    | ubuntu-s-2vcpu-4gb-blr1                      |
-| Public IPv4     | 168.144.115.156                              |
-| Private IP      | 10.122.0.2                                   |
+| Droplet name    | snow                                         |
+| Public IPv4     | 64.227.163.198                               |
+| Private IP      | 10.122.0.3                                   |
+| Public IPv6     | 2400:6180:100:d0:0:1:415a:2001              |
 | Size            | s-2vcpu-4gb (2 vCPU, 4GB RAM)               |
 | OS              | Ubuntu 24.04 LTS x64                         |
 | SSH user        | root                                         |
-| SSH key         | C:\Users\pavan\.ssh\id_ed25519               |
-| SSH key ID (DO) | 56212668                                     |
-| Status          | Running — SSH connection hanging (passphrase?)|
+| SSH key         | none on droplet yet                          |
+| SSH key ID (DO) | none                                         |
+| Status          | Running — password login needs one-time manual key install |
 | Installed       | Nothing yet — needs full server setup        |
 | App URL         | TBD — pending server setup                   |
 | Domain          | TBD                                          |
 
 Server setup TODO (run once SSH access is confirmed):
-1. apt update && apt upgrade -y
-2. Install Node.js 20 via nvm
-3. Install PostgreSQL 15
-4. Install PM2, Nginx, Certbot
-5. Clone repo + npm install
-6. Set .env.production
-7. prisma migrate deploy + seed
-8. npm run build
-9. pm2 start + nginx config + certbot SSL
+1. Add local public key to /root/.ssh/authorized_keys on snow
+2. SSH as root with key and clone repo
+3. Run infra/server/bootstrap-ubuntu-24-04.sh
+4. Set .env.production
+5. Run infra/server/deploy.sh
+6. Verify PM2, Nginx, app URL, and logs
 
 ---
 
@@ -367,7 +362,7 @@ Pre-ship checklist:
 
 | # | Area     | Task                                              | Status   | Priority |
 |---|----------|---------------------------------------------------|----------|----------|
-| 1 | Server   | Resolve SSH passphrase issue for 168.144.115.156  | blocked  | critical |
+| 1 | Server   | Add SSH key to new snow droplet 64.227.163.198    | blocked  | critical |
 | 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | pending  | critical |
 | 3 | App      | Dashboard page (/dashboard)                       | pending  | high     |
 | 4 | App      | My Trips page (/trips)                            | pending  | high     |
