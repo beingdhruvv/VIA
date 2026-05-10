@@ -213,8 +213,13 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                         `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-3`,
                         `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-4`,
                       ].map((img, i) => (
-                        <div key={i} className="w-32 aspect-square shrink-0 border border-via-black overflow-hidden bg-via-off-white">
-                           <img src={img} alt={`${currentCity.name} preview ${i+1}`} className="w-full h-full object-cover" />
+                        <div key={i} className="relative w-32 aspect-square shrink-0 border border-via-black overflow-hidden bg-via-off-white">
+                           <Image 
+                             src={img} 
+                             alt={`${currentCity.name} preview ${i+1}`} 
+                             fill
+                             className="object-cover" 
+                           />
                         </div>
                       ))}
                     </div>

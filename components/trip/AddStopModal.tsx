@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MapPin, DollarSign, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
+import Image from "next/image";
 import {
   Modal,
   ModalContent,
@@ -163,14 +164,14 @@ export function AddStopModal({
                         onClick={() => selectCity(city)}
                         className="w-full flex items-center gap-3 px-3 py-3 hover:bg-via-off-white transition-colors text-left"
                       >
-                        <img
-                          src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}
-                          alt={city.name}
-                          className="w-10 h-10 object-cover shrink-0 border border-via-grey-light"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = getCityImageUrl(city.name, city.country);
-                          }}
-                        />
+                        <div className="relative w-10 h-10 shrink-0 border border-via-grey-light">
+                          <Image
+                            src={city.imageUrl ?? getCityImageUrl(city.name, city.country)}
+                            alt={city.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-via-black truncate">{city.name}</p>
                           <p className="text-xs text-via-grey-mid flex items-center gap-1">
