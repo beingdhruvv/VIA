@@ -48,13 +48,13 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 11:32 IST                                               |
-| Last updated by | Cursor Agent                                                       |
-| Build status    | ✅ Production build passing — 0 errors, 0 warnings                  |
+| Last updated    | 2026-05-10 11:55 IST                                               |
+| Last updated by | Agent                                                              |
+| Build status    | Local build blocked by locked .next artifact; lint passes with warnings |
 | Active branch   | main                                                               |
 | Last commit     | c1dd618 rename middleware to proxy for next.js 16                  |
-| Blockers        | SSH to 168.144.115.156 — user must run: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 (remove passphrase) |
-| Next step       | Phase 4 feature pages all scaffolded; start dev server + validate UI, then server setup |
+| Blockers        | New snow droplet uses password login; current tool cannot enter SSH password interactively |
+| Next step       | Add local public key to snow authorized_keys, then run infra/server/bootstrap-ubuntu-24-04.sh |
 
 ## What was done this session
 - Removed "Co-authored-by: Cursor" from all 3 historical commits using git filter-branch
@@ -70,6 +70,8 @@
 - Renamed middleware.ts → proxy.ts (fixes Next.js 16 deprecation warning)
 - SSH test: "Permission denied (publickey)" — key encrypted, agent not accessible
   - User must: ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 → remove passphrase
+- Added production deployment workflow files for DigitalOcean: bootstrap script, deploy script, Nginx config, PM2 config, GitHub Actions CI/deploy, production Prisma schema, and deployment guide
+- Updated deployment target from old droplet to new `snow` droplet at 64.227.163.198
 
 ## What reliably works
 - Prisma DB migration + seed (SQLite) — confirmed 2026-05-10
@@ -77,7 +79,7 @@
 - GitHub push/pull — confirmed working, main branch tracking origin/main
 
 ## Known issues / caveats
-- SSH to droplet blocked — key passphrase must be removed for agent-driven SSH
+- SSH to old droplet blocked by key auth; new `snow` droplet is password-based, but this non-interactive shell cannot type the password into OpenSSH
 - NextAuth `serverActions.allowedOrigins` experimental warning (non-breaking)
 - All Prisma enum types stored as String in SQLite; switch to postgresql + real enums before prod deploy
 

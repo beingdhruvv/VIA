@@ -22,6 +22,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Deploy
+
+Production runs on the DigitalOcean droplet with Nginx, PM2, Node.js, and PostgreSQL.
+See [docs/DEPLOYMENT_WORKFLOW.md](docs/DEPLOYMENT_WORKFLOW.md) for bootstrap, push deploy, GitHub Actions, and rollback steps.
+
 ## Design
 
 Gujarat-coded brutalism — Rani ki Vav stepwell geometry, Patan Patola grid, Rann of Kutch whitespace.

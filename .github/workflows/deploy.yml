@@ -1,0 +1,44 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Configure SSH
+        env:
+          DROPLET_HOST: ${{ secrets.DROPLET_HOST }}
+          DROPLET_PORT: ${{ secrets.DROPLET_PORT }}
+          DROPLET_USER: ${{ secrets.DROPLET_USER }}
+          DROPLET_SSH_KEY: ${{ secrets.DROPLET_SSH_KEY }}
+        run: |
+          test -n "$DROPLET_HOST"
+          test -n "$DROPLET_USER"
+          test -n "$DROPLET_SSH_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DROPLET_SSH_KEY" > ~/.ssh/via_deploy_key
+          chmod 600 ~/.ssh/via_deploy_key
+          ssh-keyscan -p "${DROPLET_PORT:-22}" "$DROPLET_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy on droplet
+        env:
+          DROPLET_HOST: ${{ secrets.DROPLET_HOST }}
+          DROPLET_PORT: ${{ secrets.DROPLET_PORT }}
+          DROPLET_USER: ${{ secrets.DROPLET_USER }}
+        run: |
+          ssh -i ~/.ssh/via_deploy_key \
+            -p "${DROPLET_PORT:-22}" \
+            "${DROPLET_USER}@${DROPLET_HOST}" \
+            "APP_DIR=/var/www/via APP_BRANCH=main bash /var/www/via/infra/server/deploy.sh"

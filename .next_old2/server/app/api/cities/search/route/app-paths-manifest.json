@@ -1,0 +1,3 @@
+{
+  "/api/cities/search/route": "app/api/cities/search/route.js"
+}

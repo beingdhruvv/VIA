@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, MapPin, DollarSign, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
+import { MapPin, DollarSign, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
 import {
   Modal,
   ModalContent,
@@ -63,6 +63,7 @@ export function AddStopModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep("search");
       setQuery("");
       setResults([]);

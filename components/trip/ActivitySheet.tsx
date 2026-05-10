@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Check, Plus, Minus, Star, Clock, DollarSign } from "lucide-react";
+import { Check, Plus, Star, Clock, DollarSign } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { ActivityBadge } from "@/components/ui/Badge";
@@ -51,6 +51,7 @@ export function ActivitySheet({
 
   useEffect(() => {
     if (open && stop) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchActivities();
       setActiveCategory("ALL");
       // Pre-populate added IDs from stop activities
