@@ -26,11 +26,11 @@ interface Props {
 const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
 
 export function MemoriesClient({ initialMemories, trips }: Props) {
-  const [memories, setMemories] = useState<Memory[]>(initialMemories);
+  const [memories, setMemories] = useState<MemoryData[]>(initialMemories);
   const [view, setView] = useState<"grid" | "map">("grid");
   const [uploading, setUploading] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<string>("all");
-  const [fullImage, setFullImage] = useState<Memory | null>(null);
+  const [fullImage, setFullImage] = useState<MemoryData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentStorage = memories.reduce((acc, m) => acc + m.fileSize, 0);
@@ -42,7 +42,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
       ? memories 
       : memories.filter(m => m.tripId === selectedTrip);
 
-    const groups: Record<string, Memory[]> = {};
+    const groups: Record<string, MemoryData[]> = {};
     filtered.forEach(m => {
       const date = formatDate(m.takenAt || m.createdAt);
       if (!groups[date]) groups[date] = [];
@@ -69,8 +69,8 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
           body: formData,
         });
         if (res.ok) {
-          const newMemory = await res.json();
-          setMemories(prev => [newMemory, ...prev]);
+          const newMemoryData = await res.json();
+          setMemories(prev => [newMemoryData, ...prev]);
         }
       } catch (err) {
         console.error("Upload failed:", err);

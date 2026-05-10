@@ -4,7 +4,7 @@
  */
 import Image from "next/image";
 
-type AvatarSize = "sm" | "md" | "lg" | "xl";
+type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 interface AvatarProps {
   /** Display name — first letter used as fallback */
@@ -16,6 +16,7 @@ interface AvatarProps {
 }
 
 const sizeMap: Record<AvatarSize, { px: number; textClass: string }> = {
+  xs: { px: 20, textClass: "text-[8px]" },
   sm: { px: 24, textClass: "text-[10px]" },
   md: { px: 32, textClass: "text-xs" },
   lg: { px: 48, textClass: "text-sm" },

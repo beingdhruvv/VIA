@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
@@ -28,7 +28,6 @@ const signupSchema = z
   });
 
 type SignupValues = z.infer<typeof signupSchema>;
-
 interface FieldProps {
   label: string;
   id: string;
@@ -38,8 +37,7 @@ interface FieldProps {
   showToggle?: boolean;
   visible?: boolean;
   onToggle?: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  registration: any;
+  registration: UseFormRegisterReturn;
   autoComplete?: string;
 }
 

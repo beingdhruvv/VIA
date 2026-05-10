@@ -28,6 +28,8 @@ export interface UserProfile {
   email: string;
   avatarUrl: string | null;
   language: string;
+  homeCity?: string | null;
+  homeCountry?: string | null;
   createdAt: string;
 }
 

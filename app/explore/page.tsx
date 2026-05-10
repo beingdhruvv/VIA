@@ -28,7 +28,7 @@ export default async function ExplorePage() {
   const user: SessionUser = {
     id: session.user.id,
     name: session.user.name ?? "Traveler",
-    email: session.user.email,
+    email: session.user.email ?? "",
     image: session.user.image,
     role: toSessionUserRole(session.user.role),
   };

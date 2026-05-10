@@ -594,7 +594,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                            <Badge variant="outline" className="text-[10px] font-mono uppercase">{act.category}</Badge>
                         </td>
                         <td className="px-6 py-4 text-xs font-mono text-via-grey-mid">
-                           Avg: ₹{act.avgCost || 0}
+                           Avg: ₹{act.estimatedCost || 0}
                         </td>
                         <td className="px-6 py-4 text-right space-x-2">
                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

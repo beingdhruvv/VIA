@@ -15,7 +15,7 @@ export default async function ProfilePage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, avatarUrl: true, language: true, createdAt: true },
+    select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, homeCountry: true, createdAt: true },
   });
   if (!dbUser) redirect("/auth/login");
 
@@ -40,6 +40,8 @@ export default async function ProfilePage() {
             email: dbUser.email,
             avatarUrl: dbUser.avatarUrl,
             language: dbUser.language ?? "en",
+            homeCity: dbUser.homeCity,
+            homeCountry: dbUser.homeCountry,
             createdAt: dbUser.createdAt.toISOString(),
           }}
           tripCount={tripCount}
