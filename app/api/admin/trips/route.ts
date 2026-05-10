@@ -18,7 +18,7 @@ export async function GET() {
       take: 50,
     });
     return NextResponse.json(trips);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch trips" }, { status: 500 });
   }
 }

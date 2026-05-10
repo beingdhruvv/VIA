@@ -72,7 +72,11 @@ export function ExploreClient({ initialCities }: Props) {
                   className="bg-via-white border-2 border-via-black p-3 flex gap-4 shadow-brutalist-sm"
                 >
                   <div className="w-20 h-20 shrink-0 border border-via-black overflow-hidden">
-                    <img src={t.city.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${t.city.name}`} className="w-full h-full object-cover" />
+                    <img 
+                      src={t.city.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${t.city.name}`} 
+                      alt={t.city.name}
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">

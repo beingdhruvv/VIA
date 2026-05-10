@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -12,6 +12,11 @@ export async function GET(_req: NextRequest) {
       where: { userId: session.user.id },
       select: { cityId: true },
     });
+    const likedCities = await prisma.userTaste.findMany({
+      where: { userId: session.user.id, type: "LIKE" },
+      include: { city: true },
+    });
+
     const swipedIds = swiped.map((s) => s.cityId);
 
     const likedCitiesData = likedCities.map(lc => lc.city);
@@ -82,7 +87,7 @@ export async function GET(_req: NextRequest) {
 
     // Apply Diversity Decay:
     // Ensure we don't show more than 4 cities from the same region in the final 15
-    const finalCities: any[] = [];
+    const finalCities: (typeof sortedCities[0])[] = [];
     sortedCities.forEach(city => {
       regionCounts[city.region] = (regionCounts[city.region] || 0) + 1;
       if (regionCounts[city.region] <= 4) {

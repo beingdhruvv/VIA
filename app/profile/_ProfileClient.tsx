@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signOut } from "next-auth/react";
-import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, Plus, ShieldAlert, X } from "lucide-react";
+import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, ShieldAlert, X } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
@@ -144,7 +144,9 @@ export function ProfileClient({ profile, tripCount }: Props) {
   const profileChanged = 
     name.trim() !== profile.name || 
     language !== (profile.language ?? "en") ||
-    avatarUrl !== profile.avatarUrl;
+    avatarUrl !== profile.avatarUrl ||
+    homeCity.trim() !== (profile.homeCity ?? "") ||
+    homeCountry.trim() !== (profile.homeCountry ?? "");
 
   return (
     <div className="mt-6 space-y-6 max-w-2xl">
@@ -267,6 +269,50 @@ export function ProfileClient({ profile, tripCount }: Props) {
           disabled={!name.trim() || !profileChanged}
         >
           {saved ? <><Check size={13} /> Saved</> : "Save Changes"}
+        </Button>
+      </div>
+
+      {/* Location Preferences */}
+      <div
+        className="bg-via-white border border-via-black p-5 space-y-4"
+        style={{ boxShadow: "3px 3px 0px #111111" }}
+      >
+        <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5">
+          <MapPin size={11} strokeWidth={1.5} /> Home Location
+        </p>
+        <p className="font-inter text-[11px] text-via-grey-mid leading-relaxed">
+          Set your home location to receive localized travel recommendations and accurate distance estimates.
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="font-mono text-[11px] text-via-grey-mid uppercase">City</label>
+            <input
+              value={homeCity}
+              onChange={(e) => setHomeCity(e.target.value)}
+              placeholder="e.g. Mumbai"
+              className="w-full border border-via-grey-light px-3 py-2 text-sm font-mono outline-none focus:border-via-black"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="font-mono text-[11px] text-via-grey-mid uppercase">Country</label>
+            <input
+              value={homeCountry}
+              onChange={(e) => setHomeCountry(e.target.value)}
+              placeholder="e.g. India"
+              className="w-full border border-via-grey-light px-3 py-2 text-sm font-mono outline-none focus:border-via-black"
+            />
+          </div>
+        </div>
+
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={saveProfile}
+          loading={saving}
+          disabled={!profileChanged}
+        >
+          Update Location
         </Button>
       </div>
 
