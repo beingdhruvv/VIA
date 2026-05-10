@@ -43,11 +43,10 @@ function Navbar({ user, showBack = false, rightSlot }: NavbarProps) {
       <div className="flex-1 flex justify-center">
         <Link
           href="/dashboard"
-          className="flex items-baseline gap-1.5 font-bold text-xl text-via-black leading-none tracking-tight"
+          className="font-bold text-xl text-via-black leading-none tracking-tight"
           style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", letterSpacing: "-0.02em" }}
         >
           VIA
-          <span className="w-1.5 h-1.5 bg-via-red shrink-0 mb-0.5" aria-hidden />
         </Link>
       </div>
 

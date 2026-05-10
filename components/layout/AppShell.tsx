@@ -6,6 +6,7 @@ import { Navbar } from "./Navbar";
 import { BottomNav } from "./BottomNav";
 import { SearchOverlay } from "@/components/dashboard/SearchOverlay";
 import { SessionUser } from "@/types";
+import { LocationDetector } from "@/components/location/LocationDetector";
 
 interface AppShellProps {
   user: SessionUser;
@@ -30,6 +31,7 @@ function AppShell({ user, children, showBack = false }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-via-white overflow-x-clip">
+      <LocationDetector />
       {/* Search overlay shortcut */}
       <SearchOverlay open={searchOpen} onOpenChange={setSearchOpen} />
 

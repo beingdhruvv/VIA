@@ -2,12 +2,27 @@
 
 import { useState } from "react";
 import { signOut } from "next-auth/react";
-import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check } from "lucide-react";
+import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, Plus, ShieldAlert } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { APP_PUBLIC_VERSION } from "@/lib/app-version";
 import type { UserProfile } from "@/types";
+
+const AVATAR_OPTIONS = [
+  { id: '1', seed: 'Felix' },
+  { id: '2', seed: 'Aneka' },
+  { id: '3', seed: 'Bastian' },
+  { id: '4', seed: 'Casper' },
+  { id: '5', seed: 'Dante' },
+  { id: '6', seed: 'Elsa' },
+  { id: '7', seed: 'Finn' },
+  { id: '8', seed: 'Gaya' },
+];
+
+function getDicebearUrl(seed: string) {
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+}
 
 interface Props {
   profile: UserProfile;
@@ -28,6 +43,12 @@ const LANGUAGES = [
 export function ProfileClient({ profile, tripCount }: Props) {
   const [name, setName] = useState(profile.name);
   const [language, setLanguage] = useState(profile.language ?? "en");
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  const [homeCity, setHomeCity] = useState(profile.homeCity ?? "");
+  const [homeCountry, setHomeCountry] = useState(profile.homeCountry ?? "");
+  const [tempAvatar, setTempAvatar] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [showEditor, setShowEditor] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -51,7 +72,13 @@ export function ProfileClient({ profile, tripCount }: Props) {
       const res = await fetch("/api/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), language }),
+        body: JSON.stringify({ 
+          name: name.trim(), 
+          language, 
+          avatarUrl,
+          homeCity: homeCity.trim() || null,
+          homeCountry: homeCountry.trim() || null
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -114,23 +141,73 @@ export function ProfileClient({ profile, tripCount }: Props) {
     }
   }
 
-  const profileChanged = name.trim() !== profile.name || language !== (profile.language ?? "en");
+  const profileChanged = 
+    name.trim() !== profile.name || 
+    language !== (profile.language ?? "en") ||
+    avatarUrl !== profile.avatarUrl;
 
   return (
     <div className="mt-6 space-y-6 max-w-2xl">
-      {/* Avatar + stats */}
       <div
         className="bg-via-white border border-via-black p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5"
         style={{ boxShadow: "3px 3px 0px #111111" }}
       >
-        <Avatar name={profile.name} src={profile.avatarUrl ?? undefined} size="lg" />
-        <div className="min-w-0">
+        <div className="relative group cursor-pointer" onClick={() => document.getElementById('avatar-input')?.click()}>
+          <Avatar name={profile.name} src={avatarUrl ?? undefined} size="lg" className="border-2 border-via-black" />
+          <div className="absolute inset-0 bg-via-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+            <Camera size={20} className="text-via-white" />
+          </div>
+          <input 
+            type="file" 
+            id="avatar-input" 
+            className="hidden" 
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const url = URL.createObjectURL(file);
+                setTempAvatar(url);
+                setShowEditor(true);
+              }
+            }}
+          />
+        </div>
+        <div className="min-w-0 flex-1">
           <p className="font-grotesk font-bold text-xl text-via-black">{profile.name}</p>
           <p className="font-mono text-xs text-via-grey-mid">{profile.email}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 font-mono text-xs text-via-grey-mid">
             <span className="flex items-center gap-1"><Calendar size={11} strokeWidth={1.5} /> Joined {formatDate(profile.createdAt)}</span>
             <span>{tripCount} trip{tripCount !== 1 ? "s" : ""}</span>
           </div>
+        </div>
+      </div>
+      {/* Avatar Picker */}
+      <div
+        className="bg-via-white border border-via-black p-5 space-y-4"
+        style={{ boxShadow: "3px 3px 0px #111111" }}
+      >
+        <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5">
+          <ImageIcon size={11} strokeWidth={1.5} /> Choose Avatar
+        </p>
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
+          {AVATAR_OPTIONS.map((opt) => {
+            const url = getDicebearUrl(opt.seed);
+            const isSelected = avatarUrl === url;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setAvatarUrl(url)}
+                className={`relative aspect-square border-2 transition-all p-1 hover:scale-105 ${isSelected ? 'border-via-black bg-via-off-white' : 'border-via-grey-light opacity-60 hover:opacity-100'}`}
+              >
+                <img src={url} alt={`Avatar ${opt.id}`} className="w-full h-full object-cover" />
+                {isSelected && (
+                  <div className="absolute -top-1.5 -right-1.5 bg-via-black text-via-white rounded-full p-0.5 border border-via-white">
+                    <Check size={8} />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -259,18 +336,28 @@ export function ProfileClient({ profile, tripCount }: Props) {
         <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-3 flex items-center gap-1.5">
           <LogOut size={11} strokeWidth={1.5} /> Session
         </p>
-        <Button variant="secondary" size="sm" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
-          Sign Out
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="secondary" size="sm" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
+            Sign Out
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowDelete(true)}
+            className="text-via-red hover:bg-via-red hover:text-via-white"
+          >
+            <Trash2 size={13} className="mr-1.5" /> Delete Account
+          </Button>
+        </div>
       </div>
 
-      {/* Danger zone */}
+      {/* Critical Actions */}
       <div
         className="bg-via-white border border-via-red p-5 space-y-4"
         style={{ boxShadow: "3px 3px 0px #C1121F" }}
       >
         <p className="font-mono text-xs uppercase tracking-widest text-via-red flex items-center gap-1.5">
-          <Trash2 size={11} strokeWidth={1.5} /> Danger Zone
+          <ShieldAlert size={11} strokeWidth={1.5} /> Critical Actions
         </p>
 
         {!showDelete ? (
@@ -314,6 +401,68 @@ export function ProfileClient({ profile, tripCount }: Props) {
           </div>
         )}
       </div>
+
+      {showEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-via-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-via-white border-2 border-via-black p-6 shadow-brutalist overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-4 border-b-2 border-via-black pb-4">
+              <h3 className="font-grotesk font-bold text-xl uppercase italic">Photo Editor</h3>
+              <button onClick={() => setShowEditor(false)} className="hover:bg-via-off-white p-1 border border-via-black">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="relative aspect-square w-full overflow-hidden border-2 border-via-black bg-via-off-white flex items-center justify-center">
+               <div 
+                 className="relative w-full h-full"
+                 style={{
+                   transform: `scale(${zoom})`,
+                   transition: 'transform 0.1s ease-out'
+                 }}
+               >
+                 <img src={tempAvatar!} alt="Crop preview" className="w-full h-full object-contain" />
+               </div>
+               {/* Crop guide overlay */}
+               <div className="absolute inset-0 pointer-events-none border-[40px] border-via-black/40 rounded-full box-content -m-[40px]"></div>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-[10px] uppercase text-via-grey-mid">Zoom</span>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="3" 
+                  step="0.01"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="flex-1 accent-via-black"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="secondary" 
+                  className="flex-1"
+                  onClick={() => setShowEditor(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  className="flex-1"
+                  onClick={() => {
+                    setAvatarUrl(tempAvatar);
+                    setShowEditor(false);
+                    setZoom(1);
+                  }}
+                >
+                  Set Profile Picture
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p className="font-mono text-[10px] text-via-grey-mid uppercase tracking-widest pt-2">
         Build <span className="text-via-black">{APP_PUBLIC_VERSION}</span>

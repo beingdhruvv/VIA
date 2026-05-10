@@ -33,6 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             image: user.avatarUrl,
             role: user.role,
+            homeCity: user.homeCity,
+            homeCountry: user.homeCountry,
           };
         }
 
@@ -53,6 +55,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.avatarUrl,
           role: user.role,
+          homeCity: user.homeCity,
+          homeCountry: user.homeCountry,
         };
       },
     }),
@@ -79,6 +83,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if ("role" in user && typeof user.role === "string") {
           token.role = toSessionUserRole(user.role);
         }
+        if ("homeCity" in user) token.homeCity = user.homeCity;
+        if ("homeCountry" in user) token.homeCountry = user.homeCountry;
       }
       return token;
     },
@@ -86,6 +92,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token?.id) {
         session.user.id = token.id as string;
         session.user.role = toSessionUserRole(typeof token.role === "string" ? token.role : undefined);
+        session.user.homeCity = token.homeCity as string | undefined;
+        session.user.homeCountry = token.homeCountry as string | undefined;
       }
       return session;
     },

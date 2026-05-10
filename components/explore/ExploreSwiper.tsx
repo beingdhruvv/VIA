@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Heart, X, Info, Star, Globe, MapPin, Bookmark } from "lucide-react";
+import { Heart, X, Info, Star, Globe, MapPin, Bookmark, RotateCcw, SlidersHorizontal, Check } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -20,6 +20,12 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   const [cities, setCities] = useState<City[]>(initialCities);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
+  const [history, setHistory] = useState<number[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    region: "All",
+    cost: "All",
+  });
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
@@ -34,6 +40,9 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     if (direction === "right") type = "LIKE";
     if (direction === "up") type = "SAVE";
 
+    // Record history for undo
+    setHistory((prev) => [...prev, currentIndex]);
+
     // Call API in background
     fetch("/api/user/taste", {
       method: "POST",
@@ -42,6 +51,26 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
 
     // Advance to next card
     setCurrentIndex((prev) => prev + 1);
+    setShowInfo(false);
+  };
+
+  const handleUndo = async () => {
+    if (history.length === 0) return;
+    
+    const lastIndex = history[history.length - 1];
+    const city = cities[lastIndex];
+    
+    // Remove from history
+    setHistory((prev) => prev.slice(0, -1));
+    
+    // Remove taste record via API
+    fetch("/api/user/taste", {
+      method: "DELETE",
+      body: JSON.stringify({ cityId: city.id }),
+    });
+    
+    // Set current index back
+    setCurrentIndex(lastIndex);
     setShowInfo(false);
   };
 
@@ -95,124 +124,129 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing"
           >
               <div
-                className="relative h-full min-h-[200px] w-full overflow-hidden border-2 border-via-black bg-via-white sm:min-h-[240px]"
+                className="relative h-full w-full overflow-y-auto border-2 border-via-black bg-via-white scrollbar-hide"
                 style={{ boxShadow: "4px 4px 0px var(--foreground)" }}
               >
-                {/* Image — Wikimedia / seed URLs only (Unsplash source is unreliable). */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={exploreCityImageSrc(currentCity)}
-                  alt={currentCity.name}
-                  className="pointer-events-none h-full w-full select-none object-cover"
-                  loading="eager"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                />
+                {/* Image Section */}
+                <div className="relative aspect-[4/5] w-full shrink-0 border-b-2 border-via-black">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={exploreCityImageSrc(currentCity)}
+                    alt={currentCity.name}
+                    className="pointer-events-none h-full w-full select-none object-cover"
+                    loading="eager"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                  />
+                  
+                  {/* Overlays */}
+                  <motion.div
+                    style={{ opacity: likeOpacity }}
+                    className="absolute left-3 top-4 rotate-[-16deg] border-4 border-green-500 px-2 py-1 z-10"
+                  >
+                    <span className="text-2xl font-bold uppercase text-green-500 sm:text-4xl">LIKE</span>
+                  </motion.div>
+                  <motion.div
+                    style={{ opacity: nopeOpacity }}
+                    className="absolute right-3 top-4 rotate-[16deg] border-4 border-red-500 px-2 py-1 z-10"
+                  >
+                    <span className="text-2xl font-bold uppercase text-red-500 sm:text-4xl">NOPE</span>
+                  </motion.div>
+                </div>
 
-              {/* Overlays */}
-              <motion.div
-                style={{ opacity: likeOpacity }}
-                className="absolute left-3 top-4 rotate-[-16deg] border-4 border-green-500 px-2 py-1 sm:left-6 sm:top-8 sm:px-4 sm:py-2"
-              >
-                <span className="text-2xl font-bold uppercase text-green-500 sm:text-4xl">LIKE</span>
-              </motion.div>
-              <motion.div
-                style={{ opacity: nopeOpacity }}
-                className="absolute right-3 top-4 rotate-[16deg] border-4 border-red-500 px-2 py-1 sm:right-6 sm:top-8 sm:px-4 sm:py-2"
-              >
-                <span className="text-2xl font-bold uppercase text-red-500 sm:text-4xl">NOPE</span>
-              </motion.div>
-
-              {/* Bottom Info Gradient */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-12 sm:p-6 sm:pt-20">
-                <div className="flex items-end justify-between gap-2">
-                  <div className="min-w-0">
-                    <h2 className="font-grotesk text-xl font-bold leading-tight text-white sm:text-2xl md:text-3xl">
+                {/* Content Section */}
+                <div className="p-4 sm:p-6 space-y-6">
+                  <div>
+                    <h2 className="font-grotesk text-2xl font-bold leading-tight text-via-black sm:text-3xl">
                       {currentCity.name},{" "}
-                      <span className="font-normal text-white/80">{currentCity.country}</span>
+                      <span className="font-normal text-via-grey-mid">{currentCity.country}</span>
                     </h2>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2 sm:gap-3">
-                      <div className="flex items-center gap-1 text-yellow-400">
-                        <Star size={14} fill="currentColor" />
-                        <span className="text-xs font-bold text-white">{currentCity.popularityScore / 20}</span>
+                    <div className="mt-2 flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-1 text-yellow-500">
+                        <Star size={16} fill="currentColor" />
+                        <span className="text-sm font-bold text-via-black">{currentCity.popularityScore / 20}</span>
                       </div>
-                      <div className="w-px h-3 bg-white/20" />
-                      <div className="flex items-center gap-1 text-white/80 text-xs font-mono">
-                        <MapPin size={12} />
+                      <div className="w-px h-3 bg-via-grey-light" />
+                      <div className="flex items-center gap-1 text-via-grey-mid text-xs font-mono">
+                        <MapPin size={14} />
                         {currentCity.region}
                       </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowInfo(!showInfo)}
-                    className="shrink-0 border border-white/20 bg-white/10 p-2 text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:p-3"
-                  >
-                    <Info size={18} className="sm:h-5 sm:w-5" />
-                  </button>
-                </div>
-              </div>
 
-              {/* Info Panel Overlay */}
-              <AnimatePresence>
-                {showInfo && (
-                  <motion.div
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    className="absolute inset-0 z-10 overflow-y-auto bg-via-white p-4 sm:p-6"
-                  >
-                    <button 
-                      onClick={() => setShowInfo(false)}
-                      className="absolute top-4 right-4 p-2 hover:bg-via-off-white transition-colors border border-via-black"
-                    >
-                      <X size={20} />
-                    </button>
-                    
-                    <h3 className="font-grotesk font-bold text-2xl text-via-black mb-4">About {currentCity.name}</h3>
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 border border-via-black bg-via-off-white">
-                          <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Cost Index</span>
-                          <span className="font-bold text-via-black">
-                            {"$".repeat(Math.ceil(currentCity.costIndex / 25))}
-                          </span>
-                        </div>
-                        <div className="p-3 border border-via-black bg-via-off-white">
-                          <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Coordinates</span>
-                          <span className="font-mono text-xs text-via-black">
-                            {currentCity.latitude.toFixed(2)}°, {currentCity.longitude.toFixed(2)}°
-                          </span>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 border border-via-black bg-via-off-white">
+                      <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Cost Index</span>
+                      <span className="font-bold text-via-black">
+                        {"$".repeat(Math.ceil(currentCity.costIndex / 25))}
+                      </span>
+                    </div>
+                    <div className="p-3 border border-via-black bg-via-off-white">
+                      <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Region</span>
+                      <span className="font-bold text-via-black truncate block">
+                        {currentCity.region}
+                      </span>
+                    </div>
+                  </div>
 
-                      <div>
-                        <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-2 border-b border-via-grey-light pb-1">Why visit?</h4>
-                        <p className="font-inter text-sm text-via-black leading-relaxed">
-                          Known for its stunning {currentCity.region} landscapes and vibrant culture, {currentCity.name} offers a perfect blend of history and modern amenities.
-                        </p>
-                      </div>
+                  <div>
+                    <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-2 border-b border-via-grey-light pb-1">About</h4>
+                    <p className="font-inter text-sm text-via-black leading-relaxed">
+                      Known for its stunning {currentCity.region} landscapes and vibrant culture, {currentCity.name} offers a perfect blend of history and modern amenities. Explore the local architecture, cuisine, and hidden gems.
+                    </p>
+                  </div>
 
-                      <div className="flex gap-3">
-                         <button 
-                          onClick={() => handleSwipe("up")}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-via-black text-via-white font-mono text-xs uppercase tracking-widest hover:bg-via-navy transition-all"
-                        >
-                          <Bookmark size={16} />
-                          Add to Wishlist
-                        </button>
+                  {/* Activities Preview (if available) */}
+                  {(currentCity as any).activities?.length > 0 && (
+                    <div>
+                      <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Top Activities</h4>
+                      <div className="space-y-3">
+                        {(currentCity as any).activities.map((act: any) => (
+                          <div key={act.id} className="flex gap-3 items-center">
+                            <div className="w-12 h-12 shrink-0 border border-via-black bg-via-off-white flex items-center justify-center">
+                              <Star size={16} className="text-via-black" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs truncate uppercase">{act.name}</p>
+                              <p className="text-[10px] font-mono text-via-grey-mid uppercase tracking-wide">₹{act.estimatedCost.toLocaleString()} · {act.category}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+
+                  <div className="pt-4 flex flex-col gap-2">
+                    <button 
+                      onClick={() => handleSwipe("up")}
+                      className="w-full flex items-center justify-center gap-2 py-4 bg-via-black text-via-white font-mono text-xs uppercase tracking-widest hover:bg-via-navy transition-all border-2 border-via-black"
+                    >
+                      <Bookmark size={16} />
+                      Save to Wishlist
+                    </button>
+                    <p className="text-[10px] font-mono text-via-grey-mid text-center uppercase tracking-widest py-2">
+                      End of details
+                    </p>
+                  </div>
+                </div>
+              </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex shrink-0 items-center justify-center gap-4 py-3 sm:gap-8 sm:py-6">
+      <div className="flex shrink-0 items-center justify-center gap-4 py-3 sm:gap-6 sm:py-6">
+        <button
+          type="button"
+          onClick={handleUndo}
+          disabled={history.length === 0}
+          className={`flex h-11 w-11 items-center justify-center border-2 border-via-black bg-via-white transition-all hover:scale-105 active:scale-95 ${history.length === 0 ? 'opacity-30 cursor-not-allowed' : 'text-via-black'}`}
+          style={{ boxShadow: history.length > 0 ? "2px 2px 0px #111111" : "none" }}
+          title="Undo last swipe"
+        >
+          <RotateCcw size={18} strokeWidth={2} />
+        </button>
+
         <button
           type="button"
           onClick={() => handleSwipe("left")}
@@ -221,14 +255,17 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
         >
           <X size={26} strokeWidth={3} className="sm:h-8 sm:w-8" />
         </button>
+
         <button
           type="button"
-          onClick={() => handleSwipe("up")}
-          className="flex h-11 w-11 items-center justify-center border-2 border-via-black bg-via-white text-via-red transition-all hover:scale-105 active:scale-95 sm:h-12 sm:w-12"
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex h-11 w-11 items-center justify-center border-2 border-via-black bg-via-white text-via-navy transition-all hover:scale-105 active:scale-95 sm:h-12 sm:w-12"
           style={{ boxShadow: "2px 2px 0px #111111" }}
+          title="Filter places"
         >
-          <Bookmark size={18} strokeWidth={2} className="sm:h-5 sm:w-5" />
+          <SlidersHorizontal size={18} strokeWidth={2} />
         </button>
+
         <button
           type="button"
           onClick={() => handleSwipe("right")}
@@ -238,6 +275,51 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           <Heart size={26} strokeWidth={3} fill="currentColor" className="sm:h-8 sm:w-8" />
         </button>
       </div>
+
+      {/* Filter Modal Placeholder */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-24 left-0 right-0 z-20 mx-auto w-full max-w-xs border-2 border-via-black bg-via-white p-4 shadow-brutalist"
+          >
+            <div className="flex items-center justify-between mb-3 border-b border-via-black pb-2">
+              <h4 className="font-grotesk font-bold text-sm uppercase">Filters</h4>
+              <button onClick={() => setShowFilters(false)}><X size={16} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase text-via-grey-mid mb-2">Region</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {["All", "Europe", "Asia", "Americas", "Africa"].map(r => (
+                    <button 
+                      key={r}
+                      onClick={() => setFilters(f => ({ ...f, region: r }))}
+                      className={`text-[10px] font-mono py-1.5 border ${filters.region === r ? 'bg-via-black text-via-white border-via-black' : 'bg-via-off-white border-via-grey-light'}`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                setShowFilters(false);
+                // Trigger refresh with filters
+                setCurrentIndex(0);
+                setHistory([]);
+                setCities(initialCities); // Reset or fetch filtered
+              }}
+              className="w-full mt-4 bg-via-navy text-via-white py-2 font-mono text-xs uppercase tracking-widest"
+            >
+              Apply Filters
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

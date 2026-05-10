@@ -40,17 +40,13 @@ function Sidebar({ user, onSearchClick }: SidebarProps) {
     <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-via-white border-r border-via-black z-30">
       {/* Logo */}
       <div className="px-5 pt-6 pb-5 border-b border-via-black">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline">
           <span
             className="block font-bold text-2xl text-via-black leading-none tracking-tight"
             style={{ fontFamily: "var(--font-space-grotesk, sans-serif)", letterSpacing: "-0.02em" }}
           >
             VIA
           </span>
-          <span
-            className="block w-2 h-2 bg-via-red shrink-0 mb-0.5"
-            aria-hidden
-          />
         </div>
         <span className="block font-mono text-[10px] text-via-grey-mid mt-1.5 uppercase tracking-[0.1em]">
           Travel Planner

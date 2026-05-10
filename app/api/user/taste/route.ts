@@ -51,3 +51,27 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { cityId } = await req.json();
+    if (!cityId) return NextResponse.json({ error: "City ID required" }, { status: 400 });
+
+    await prisma.userTaste.delete({
+      where: {
+        userId_cityId: {
+          userId: session.user.id,
+          cityId,
+        },
+      },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Taste DELETE Error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

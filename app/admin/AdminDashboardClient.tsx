@@ -13,7 +13,8 @@ import {
   RefreshCw,
   UserPlus,
   UserMinus,
-  Loader2
+  Loader2,
+  Trash2
 } from "lucide-react";
 import { 
   XAxis, 
@@ -22,8 +23,20 @@ import {
   Tooltip, 
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
+  BarChart,
+  Bar,
+  Cell
 } from "recharts";
+import { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger, 
+  TabsContent,
+  Modal,
+  Input,
+  Select
+} from "@/components/ui";
 
 interface Stats {
   counts: {
@@ -62,6 +75,12 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  
+  // New management states
+  const [cities, setCities] = useState<any[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [mgmtLoading, setMgmtLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -77,6 +96,21 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
       console.error("Failed to fetch admin data", error);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const fetchManagementData = useCallback(async (type: string) => {
+    setMgmtLoading(true);
+    try {
+      const res = await fetch(`/api/admin/${type}`);
+      const data = await res.json();
+      if (type === "cities") setCities(data);
+      if (type === "trips") setTrips(data);
+      if (type === "activities") setActivities(data);
+    } catch (error) {
+      console.error(`Failed to fetch ${type}`, error);
+    } finally {
+      setMgmtLoading(false);
     }
   }, []);
 
@@ -174,8 +208,17 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         </Card>
       </div>
 
-      {/* System Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-via-white border-2 border-via-black p-1 shadow-brutalist-sm">
+          <TabsTrigger value="overview" className="font-mono text-xs uppercase">Overview</TabsTrigger>
+          <TabsTrigger value="users" className="font-mono text-xs uppercase">Users</TabsTrigger>
+          <TabsTrigger value="cities" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("cities")}>Cities</TabsTrigger>
+          <TabsTrigger value="trips" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("trips")}>Trips</TabsTrigger>
+          <TabsTrigger value="activities" className="font-mono text-xs uppercase" onClick={() => fetchManagementData("activities")}>Activities</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-8 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -276,82 +319,271 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         </Card>
       </div>
 
-      {/* User Management */}
-      <Card className="p-0 overflow-hidden border border-via-black shadow-brutalist">
-        <div className="p-6 border-b border-via-grey-light bg-via-white flex items-center justify-between">
-          <div>
-            <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">User Management</h3>
-            <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Manage user roles and permissions</p>
-          </div>
-          <Badge className="bg-via-black text-via-white border-via-black">
-            {users.length} Total Users
-          </Badge>
-        </div>
+        </TabsContent>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-via-off-white border-b border-via-grey-light">
-                <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">User</th>
-                <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Email</th>
-                <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Role</th>
-                <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Joined</th>
-                <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-via-grey-light">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-via-off-white transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-                      <span className="text-sm font-medium text-via-black">{user.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-mono text-via-grey-dark">
-                    {user.email}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge 
-                      className={
-                        user.role === "SUPER_ADMIN" ? "bg-via-red text-via-white" :
-                        user.role === "ADMIN" ? "bg-via-navy text-via-white" : 
-                        "bg-via-grey-light text-via-black border-transparent"
-                      }
-                    >
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    {currentUserRole === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN" ? (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={updatingId === user.id}
-                        onClick={() => handleRoleUpdate(user.id, user.role)}
-                        className="h-8 text-[10px] font-mono uppercase gap-2 hover:bg-via-navy hover:text-via-white"
-                      >
-                        {updatingId === user.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : user.role === "ADMIN" ? (
-                          <><UserMinus size={12} /> Demote</>
+        <TabsContent value="users">
+          <Card className="p-0 overflow-hidden border-2 border-via-black shadow-brutalist">
+            <div className="p-6 border-b-2 border-via-black bg-via-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">User Management</h3>
+                <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Manage user roles and permissions</p>
+              </div>
+              <Badge className="bg-via-black text-via-white border-via-black">
+                {users.length} Total Users
+              </Badge>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-via-off-white border-b-2 border-via-black">
+                    <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">User</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Email</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Role</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Joined</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-via-grey-light">
+                  {users.map((user) => (
+                    <tr key={user.id} className="hover:bg-via-off-white transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+                          <span className="text-sm font-medium text-via-black">{user.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs font-mono text-via-grey-dark">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge 
+                          className={
+                            user.role === "SUPER_ADMIN" ? "bg-via-red text-via-white" :
+                            user.role === "ADMIN" ? "bg-via-navy text-via-white" : 
+                            "bg-via-grey-light text-via-black border-transparent"
+                          }
+                        >
+                          {user.role}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {currentUserRole === "SUPER_ADMIN" && user.role !== "SUPER_ADMIN" ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={updatingId === user.id}
+                            onClick={() => handleRoleUpdate(user.id, user.role)}
+                            className="h-8 text-[10px] font-mono uppercase gap-2 hover:bg-via-navy hover:text-via-white"
+                          >
+                            {updatingId === user.id ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            ) : user.role === "ADMIN" ? (
+                              <><UserMinus size={12} /> Demote</>
+                            ) : (
+                              <><UserPlus size={12} /> Promote</>
+                            )}
+                          </Button>
                         ) : (
-                          <><UserPlus size={12} /> Promote</>
+                          <span className="text-[10px] font-mono text-via-grey-mid italic uppercase">Locked</span>
                         )}
-                      </Button>
-                    ) : (
-                      <span className="text-[10px] font-mono text-via-grey-mid italic uppercase">Locked</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="cities">
+          <Card className="p-0 overflow-hidden border-2 border-via-black shadow-brutalist">
+            <div className="p-6 border-b-2 border-via-black bg-via-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">City Database</h3>
+                <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Add, edit or remove world cities</p>
+              </div>
+              <Button variant="primary" size="sm" className="font-mono text-xs uppercase">+ Add City</Button>
+            </div>
+            
+            {mgmtLoading ? (
+              <div className="p-12 text-center">
+                <Loader2 className="animate-spin mx-auto text-via-black" size={24} />
+              </div>
+            ) : cities.length === 0 ? (
+              <div className="p-12 text-center text-via-grey-mid font-mono text-xs uppercase tracking-widest">
+                No cities found in database
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-via-off-white border-b-2 border-via-black">
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">City</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Country</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Region</th>
+                      <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-via-grey-light">
+                    {cities.map((city) => (
+                      <tr key={city.id} className="hover:bg-via-off-white transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border border-via-black overflow-hidden bg-via-grey-light">
+                              {city.imageUrl ? (
+                                <img src={city.imageUrl} alt={city.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-via-grey-mid">
+                                  <Globe size={16} />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-sm font-medium text-via-black">{city.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-mono text-via-grey-dark uppercase">
+                          {city.country}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-mono text-via-grey-mid">
+                          {city.region}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <RefreshCw size={14} />
+                           </Button>
+                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-via-red hover:bg-via-red hover:text-via-white">
+                              <Trash2 size={14} />
+                           </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trips">
+          <Card className="p-0 overflow-hidden border-2 border-via-black shadow-brutalist">
+             <div className="p-6 border-b-2 border-via-black bg-via-white flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">Global Trips</h3>
+                  <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Overview of all planned and active trips</p>
+                </div>
+             </div>
+             {mgmtLoading ? (
+              <div className="p-12 text-center">
+                <Loader2 className="animate-spin mx-auto text-via-black" size={24} />
+              </div>
+            ) : trips.length === 0 ? (
+              <div className="p-12 text-center text-via-grey-mid font-mono text-xs uppercase tracking-widest">
+                No trips found in database
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-via-off-white border-b-2 border-via-black">
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Trip Name</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Owner</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Stats</th>
+                      <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-via-grey-light">
+                    {trips.map((trip) => (
+                      <tr key={trip.id} className="hover:bg-via-off-white transition-colors group">
+                        <td className="px-6 py-4">
+                           <span className="text-sm font-medium text-via-black">{trip.name}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                           <div className="flex flex-col">
+                              <span className="text-xs font-medium text-via-black">{trip.user.name}</span>
+                              <span className="text-[10px] font-mono text-via-grey-mid">{trip.user.email}</span>
+                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                           <div className="flex gap-2">
+                              <Badge variant="outline" className="text-[9px] font-mono">{trip._count.stops} STOPS</Badge>
+                              <Badge variant="outline" className="text-[9px] font-mono">{trip._count.expenses} EXP</Badge>
+                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-via-red hover:bg-via-red hover:text-via-white">
+                              <Trash2 size={14} />
+                           </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="activities">
+          <Card className="p-0 overflow-hidden border-2 border-via-black shadow-brutalist">
+             <div className="p-6 border-b-2 border-via-black bg-via-white flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">Activity Library</h3>
+                  <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Manage global activity templates</p>
+                </div>
+                <Button variant="primary" size="sm" className="font-mono text-xs uppercase">+ Create Template</Button>
+             </div>
+             {mgmtLoading ? (
+              <div className="p-12 text-center">
+                <Loader2 className="animate-spin mx-auto text-via-black" size={24} />
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="p-12 text-center text-via-grey-mid font-mono text-xs uppercase tracking-widest">
+                No activity templates found
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-via-off-white border-b-2 border-via-black">
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Activity</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Category</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Cost Info</th>
+                      <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-via-grey-light">
+                    {activities.map((act) => (
+                      <tr key={act.id} className="hover:bg-via-off-white transition-colors group">
+                        <td className="px-6 py-4">
+                           <span className="text-sm font-medium text-via-black">{act.name}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                           <Badge variant="outline" className="text-[10px] font-mono uppercase">{act.category}</Badge>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-mono text-via-grey-mid">
+                           Avg: ₹{act.avgCost || 0}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <RefreshCw size={14} />
+                           </Button>
+                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-via-red hover:bg-via-red hover:text-via-white">
+                              <Trash2 size={14} />
+                           </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

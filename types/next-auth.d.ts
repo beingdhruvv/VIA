@@ -13,6 +13,8 @@ declare module "next-auth" {
       email: string;
       image?: string | null;
       role?: string;
+      homeCity?: string | null;
+      homeCountry?: string | null;
     };
   }
 }

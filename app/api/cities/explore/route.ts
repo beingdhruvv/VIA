@@ -14,17 +14,64 @@ export async function GET(_req: NextRequest) {
     });
     const swipedIds = swiped.map((s) => s.cityId);
 
-    // Get random cities not swiped yet
+    const likedCitiesData = likedCities.map(lc => lc.city);
+    const preferredRegions = new Set(likedCitiesData.map(c => c.region));
+    const avgLikedCost = likedCitiesData.length > 0 
+      ? likedCitiesData.reduce((acc, c) => acc + c.costIndex, 0) / likedCitiesData.length 
+      : null;
+    
+    // Add user's home region if available
+    let homeRegion: string | undefined;
+    if (session.user.homeCity) {
+      const homeCityData = await prisma.city.findFirst({
+        where: { name: session.user.homeCity }
+      });
+      if (homeCityData) {
+        preferredRegions.add(homeCityData.region);
+        homeRegion = homeCityData.region;
+      }
+    }
+
+    const preferredRegionsList = Array.from(preferredRegions);
+
+    // Get cities not swiped yet, including their activities
     const cities = await prisma.city.findMany({
       where: {
         id: { notIn: swipedIds },
       },
-      take: 10,
-      // In a real app, we might use popularity or a better recommendation engine
-      orderBy: { popularityScore: "desc" },
+      include: {
+        activities: { take: 3 }
+      },
+      orderBy: [
+        { popularityScore: "desc" },
+      ],
+      take: 40, // Fetch more for better sorting
     });
 
-    return NextResponse.json(cities);
+    // Intense Recommendation Logic:
+    // 1. Home Region Boost (+5) - High local relevance
+    // 2. Liked Region Boost (+3) - Proven interest
+    // 3. Cost Similarity Boost (+2) - Within 25% of avg liked cost
+    // 4. Popularity Baseline (+1 per 20 points)
+    const sortedCities = [...cities].map(city => {
+      let score = 0;
+      
+      if (city.region === homeRegion) score += 5;
+      if (preferredRegionsList.includes(city.region)) score += 3;
+      
+      if (avgLikedCost !== null) {
+        const costDiff = Math.abs(city.costIndex - avgLikedCost) / avgLikedCost;
+        if (costDiff < 0.25) score += 2;
+      }
+      
+      score += city.popularityScore / 20;
+      
+      return { ...city, recScore: score };
+    })
+    .sort((a, b) => b.recScore - a.recScore)
+    .slice(0, 15);
+
+    return NextResponse.json(sortedCities);
   } catch (error) {
     console.error("Explore API Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

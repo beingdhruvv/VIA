@@ -23,6 +23,8 @@ model User {
   avatarUrl    String?  @map("avatar_url")
   role         String   @default("USER") // USER | ADMIN | SUPER_ADMIN
   language     String   @default("en")
+  homeCity     String?  @map("home_city")
+  homeCountry  String?  @map("home_country")
   createdAt    DateTime @default(now()) @map("created_at")
 
   trips    Trip[]

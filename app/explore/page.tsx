@@ -2,9 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
-import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
-import type { SessionUser } from "@/types";
-import { toSessionUserRole } from "@/lib/roles";
+import { ExploreClient } from "./_ExploreClient";
 
 export default async function ExplorePage() {
   const session = await auth();
@@ -40,13 +38,10 @@ export default async function ExplorePage() {
           <h1 className="font-grotesk text-xl font-bold leading-tight text-via-black sm:text-2xl md:text-3xl">
             Explore the World
           </h1>
-          <p className="mx-auto max-w-md px-1 font-inter text-xs text-via-grey-mid sm:text-sm">
-            Swipe right to like, left to skip. Let us learn your taste.
-          </p>
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col items-stretch justify-center overflow-hidden">
-          <ExploreSwiper initialCities={initialCities} />
+          <ExploreClient initialCities={initialCities} />
         </div>
       </div>
     </AppShell>

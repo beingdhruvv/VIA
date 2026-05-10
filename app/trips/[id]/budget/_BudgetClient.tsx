@@ -121,41 +121,46 @@ export function BudgetClient({
 
   // ── Settlements Logic ──────────────────────────────────────────────────────
   
-  const calculateBalances = () => {
+  const calculateDetailedBalances = () => {
+    // balance[userId] = how much that user is "net" in the group
+    // positive = they are owed money overall
+    // negative = they owe money overall
     const balances: Record<string, number> = {};
     collaborators.forEach(c => balances[c.user.id] = 0);
-    balances[currentUserId] = balances[currentUserId] || 0; // Ensure owner is there
+    balances[currentUserId] = balances[currentUserId] || 0;
 
     expenses.forEach(exp => {
       const payerId = exp.payerId || currentUserId;
-      const totalAmount = exp.amount;
+      if (!exp.splits || exp.splits.length === 0) return;
+
+      // Payer gets credit for the portion others owe
+      const othersPortion = exp.splits
+        .filter(s => s.userId !== payerId)
+        .reduce((sum, s) => sum + s.amount, 0);
       
-      if (!exp.splits || exp.splits.length === 0) {
-        // If no splits, assume it's personal (not shared) or split equally if collaborative?
-        // For now, if no splits, only the payer is affected.
-        return;
-      }
+      balances[payerId] += othersPortion;
 
-      // Payer gets credit
-      balances[payerId] = (balances[payerId] || 0) + totalAmount;
-
-      // Each split person gets debt
+      // Others get debt
       exp.splits.forEach(s => {
-        balances[s.userId] = (balances[s.userId] || 0) - s.amount;
+        if (s.userId !== payerId) {
+          balances[s.userId] -= s.amount;
+        }
       });
     });
 
     return balances;
   };
 
-  const balances = calculateBalances();
-  const sortedBalances = Object.entries(balances)
-    .map(([id, amount]) => ({
-      id,
-      amount,
-      user: collaborators.find(c => c.user.id === id)?.user || { name: "You", avatarUrl: null }
-    }))
-    .sort((a, b) => b.amount - a.amount);
+  const detailedBalances = calculateDetailedBalances();
+  const myBalance = detailedBalances[currentUserId] || 0;
+  
+  const youAreOwed = Object.entries(detailedBalances)
+    .filter(([id, bal]) => id !== currentUserId && bal < 0) // If they owe money (negative balance), you are potentially owed
+    // This is simplified. In a real splitwise, we track who owes WHO. 
+    // Here we'll show group-level net.
+    .reduce((sum, [_, bal]) => sum + (bal < 0 ? Math.abs(bal) : 0), 0);
+
+  const youOwe = myBalance < 0 ? Math.abs(myBalance) : 0;
 
   const categoryTotals = CATEGORIES.map((cat) => ({
     category: cat,
@@ -228,28 +233,54 @@ export function BudgetClient({
         initialSplits={pendingSplits}
       />
 
-      {/* ── Settlements (Splitwise style) ── */}
+      {/* ── Splitwise Style Dashboard ── */}
       {collaborators.length > 0 && (
-        <section
-          className="bg-via-white border border-via-black"
-          style={{ boxShadow: "3px 3px 0px #111111" }}
-        >
-          <div className="px-5 py-3 border-b border-via-grey-light flex items-center justify-between">
-            <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid">Settlements (Who owes who)</p>
-            <Users size={14} className="text-via-grey-mid" />
+        <section className="bg-via-white border-2 border-via-black overflow-hidden shadow-brutalist">
+          <div className="bg-via-black px-4 py-2 flex items-center justify-between">
+            <span className="font-mono text-[10px] text-via-white uppercase tracking-[0.2em] font-bold">Group Balances</span>
+            <Users size={14} className="text-via-white/60" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-via-grey-light">
-            {sortedBalances.map((item) => (
-              <div key={item.id} className="p-4 flex items-center gap-3">
-                <Avatar src={item.user.avatarUrl} name={item.user.name} size="sm" />
-                <div className="flex-1">
-                  <p className="text-xs font-bold font-grotesk uppercase">{item.user.name}</p>
-                  <p className={`text-xs font-mono font-medium ${item.amount > 0 ? 'text-emerald-600' : item.amount < 0 ? 'text-via-red' : 'text-via-grey-mid'}`}>
-                    {item.amount > 0 ? `is owed ₹${item.amount.toLocaleString()}` : item.amount < 0 ? `owes ₹${Math.abs(item.amount).toLocaleString()}` : 'is settled up'}
-                  </p>
-                </div>
-              </div>
-            ))}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x-2 divide-via-black">
+            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Total Balance</p>
+              <p className={`text-2xl font-grotesk font-bold ${myBalance >= 0 ? 'text-emerald-600' : 'text-via-red'}`}>
+                {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.round(myBalance))}
+              </p>
+            </div>
+            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">You Owe</p>
+              <p className="text-2xl font-grotesk font-bold text-via-red">
+                {formatCurrency(Math.round(youOwe))}
+              </p>
+            </div>
+            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">You Are Owed</p>
+              <p className="text-2xl font-grotesk font-bold text-emerald-600">
+                {formatCurrency(Math.round(myBalance > 0 ? myBalance : 0))}
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t-2 border-via-black bg-via-off-white">
+            <div className="divide-y divide-via-black/10">
+              {Object.entries(detailedBalances).map(([id, amount]) => {
+                const user = collaborators.find(c => c.user.id === id)?.user || (id === currentUserId ? { name: "You", avatarUrl: null } : null);
+                if (!user || id === currentUserId) return null;
+                return (
+                  <div key={id} className="px-5 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={user.avatarUrl} name={user.name} size="xs" />
+                      <span className="font-grotesk font-bold text-xs uppercase">{user.name}</span>
+                    </div>
+                    <p className={`font-mono text-xs font-bold ${amount >= 0 ? 'text-emerald-600' : 'text-via-red'}`}>
+                      {amount >= 0 ? 'owes you ' : 'you owe '}
+                      {formatCurrency(Math.abs(Math.round(amount)))}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}

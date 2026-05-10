@@ -92,8 +92,7 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
       
       {/* Search Modal */}
       <div 
-        className="relative w-full max-w-2xl min-w-0 bg-via-white border-2 border-via-black animate-in fade-in zoom-in duration-200 my-4"
-        style={{ boxShadow: "8px 8px 0px #111111" }}
+        className="relative w-full max-w-2xl min-w-0 bg-via-white border-4 border-via-black animate-in fade-in slide-in-from-top-4 duration-300 my-4"
       >
         <div className="flex items-center min-w-0 border-b-2 border-via-black px-3 sm:px-4">
           <Search size={20} className="text-via-grey-mid shrink-0" />
@@ -209,12 +208,12 @@ export function SearchOverlay({ open, onOpenChange }: { open: boolean, onOpenCha
           )}
         </div>
 
-        <div className="border-t-2 border-via-black px-4 py-3 bg-via-off-white flex items-center justify-between">
-          <div className="flex items-center gap-4 text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">
-            <span className="flex items-center gap-1"><kbd className="border border-via-grey-light px-1">↵</kbd> Select</span>
-            <span className="flex items-center gap-1"><kbd className="border border-via-grey-light px-1">↑↓</kbd> Navigate</span>
+        <div className="border-t-4 border-via-black px-4 py-3 bg-via-black flex items-center justify-between">
+          <div className="flex items-center gap-4 text-[10px] font-mono text-via-white uppercase tracking-widest">
+            <span className="flex items-center gap-1"><kbd className="border border-white/20 px-1 bg-white/10">↵</kbd> Select</span>
+            <span className="flex items-center gap-1"><kbd className="border border-white/20 px-1 bg-white/10">↑↓</kbd> Navigate</span>
           </div>
-          <p className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest">StormLabs VIA Search</p>
+          <p className="text-[10px] font-mono text-via-white font-bold uppercase tracking-widest">VIA Global Search</p>
         </div>
       </div>
     </div>

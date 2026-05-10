@@ -48,9 +48,12 @@ export async function POST(req: Request) {
 const patchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   language: z.string().min(2).max(10).optional(),
+  avatarUrl: z.string().url().or(z.string().length(0)).optional().nullable(),
+  homeCity: z.string().min(1).optional(),
+  homeCountry: z.string().min(1).optional(),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(8).optional(),
-}).refine((d) => d.name || d.language || (d.currentPassword && d.newPassword), {
+}).refine((d) => d.name || d.language || d.avatarUrl !== undefined || d.homeCity || d.homeCountry || (d.currentPassword && d.newPassword), {
   message: "Nothing to update",
 });
 
@@ -67,6 +70,9 @@ export async function PATCH(req: Request) {
 
   if (name) updateData.name = name;
   if (language) updateData.language = language;
+  if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl;
+  if (parsed.data.homeCity) updateData.homeCity = parsed.data.homeCity;
+  if (parsed.data.homeCountry) updateData.homeCountry = parsed.data.homeCountry;
 
   if (currentPassword && newPassword) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
