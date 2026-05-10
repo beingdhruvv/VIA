@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Avatar } from "@/components/ui/Avatar";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Card, Badge, Button, Avatar, ProgressBar } from "@/components/ui";
 import { 
   Users, 
   Map, 
