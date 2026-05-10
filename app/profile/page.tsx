@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProfileClient } from "./_ProfileClient";
+import type { SessionUser } from "@/types";
 
 export const metadata = { title: "Profile — VIA" };
 
