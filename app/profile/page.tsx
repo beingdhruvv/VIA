@@ -19,7 +19,13 @@ export default async function ProfilePage() {
 
   const tripCount = await prisma.trip.count({ where: { userId: session.user.id } });
 
-  const user = { id: session.user.id, name: session.user.name ?? "", email: session.user.email ?? "", image: session.user.image };
+  const user: SessionUser = { 
+    id: session.user.id, 
+    name: session.user.name ?? "", 
+    email: session.user.email ?? "", 
+    image: session.user.image,
+    role: session.user.role as any
+  };
 
   return (
     <AppShell user={user}>

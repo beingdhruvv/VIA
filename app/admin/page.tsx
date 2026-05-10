@@ -2,11 +2,17 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import AdminDashboardClient from "./AdminDashboardClient";
+import type { SessionUser } from "@/types";
 
 export const metadata = {
   title: "Admin Control | VIA",
   description: "Monitor and manage the VIA system.",
 };
+
+function sessionRole(userRole: string | undefined): SessionUser["role"] {
+  if (userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "USER") return userRole;
+  return "USER";
+}
 
 export default async function AdminPage() {
   const session = await auth();
@@ -15,12 +21,12 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  const user = {
+  const user: SessionUser = {
     id: session.user.id,
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role,
+    role: sessionRole(session.user.role) as any,
   };
 
   return (

@@ -154,7 +154,9 @@ E:\VIA/
 ├── lib/
 │   ├── prisma.ts               # ✅ Singleton Prisma client
 │   ├── auth.ts                 # ✅ NextAuth config
-│   └── utils.ts                # ✅ cn, formatDate, formatCurrency, etc.
+│   ├── utils.ts                # ✅ cn, formatDate, getCityImageUrl, etc.
+│   ├── place-images.ts         # ✅ Wikimedia city image map + fallback
+│   └── app-version.ts          # ✅ NEXT_PUBLIC_APP_VERSION (build label)
 ├── store/
 │   └── index.ts                # ✅ Zustand UI store
 ├── types/
