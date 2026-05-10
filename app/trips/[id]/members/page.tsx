@@ -6,7 +6,7 @@ import { TripSubNav } from "@/components/trip/TripSubNav";
 import { CollaboratorsList } from "@/components/trip/CollaboratorsList";
 import { formatDateRange } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/Badge";
-
+import type { SessionUser } from "@/types";
 interface MembersPageProps {
   params: Promise<{ id: string }>;
 }
@@ -30,12 +30,12 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   if (!trip) redirect("/trips");
 
-  const user = {
+  const user: SessionUser = {
     id: session.user.id,
     name: session.user.name ?? "",
     email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role,
+    role: session.user.role as any,
   };
 
   return (

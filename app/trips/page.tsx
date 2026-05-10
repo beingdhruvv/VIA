@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { TripsListClient } from "@/components/trip/TripsListClient";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import type { TripCard } from "@/types";
+import type { TripCard, SessionUser } from "@/types";
 
 export const metadata = { title: "My Trips — VIA" };
 
@@ -14,12 +14,12 @@ export default async function TripsPage() {
   const session = await auth();
   if (!session) redirect("/auth/login");
 
-  const user = {
+  const user: SessionUser = {
     id: session.user.id,
-    name: session.user.name,
-    email: session.user.email,
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
     image: session.user.image,
-    role: session.user.role,
+    role: session.user.role as any,
   };
 
   // Fetch all trips for this user with stops + city data
