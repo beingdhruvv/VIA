@@ -6,9 +6,15 @@ import { CreateTripForm } from "@/components/forms/CreateTripForm";
 
 export const metadata = { title: "New Trip — VIA" };
 
-export default async function NewTripPage() {
+interface Props {
+  searchParams: Promise<{ city?: string; cityName?: string }>;
+}
+
+export default async function NewTripPage({ searchParams }: Props) {
   const session = await auth();
   if (!session) redirect("/auth/login");
+
+  const { cityName } = await searchParams;
 
   const user = {
     id: session.user.id,
@@ -22,13 +28,13 @@ export default async function NewTripPage() {
       <div className="px-4 md:px-8 py-6 max-w-2xl">
         <PageHeader
           title="Plan a New Trip"
-          subtitle="Fill in the details — you can always edit later."
+          subtitle={cityName ? `Starting in ${cityName}` : "Fill in the details — you can always edit later."}
           breadcrumb={[
             { label: "Trips", href: "/trips" },
             { label: "New Trip" },
           ]}
         />
-        <CreateTripForm />
+        <CreateTripForm defaultName={cityName ? `Trip to ${cityName}` : undefined} />
       </div>
     </AppShell>
   );

@@ -48,9 +48,9 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 12:00 IST                                               |
+| Last updated    | 2026-05-10 12:35 IST                                               |
 | Last updated by | Cursor Agent                                                       |
-| Build status    | ✅ 0 errors — 33 routes — confirmed 2026-05-10 11:50 IST            |
+| Build status    | ✅ 0 errors — 36 routes — confirmed 2026-05-10 12:35 IST            |
 | Active branch   | main                                                               |
 | Last commit     | 4eb6778 add phase 5-6: packing, notes, cities, profile, public share, admin, map |
 | Blockers        | SSH to 168.144.115.156: run ssh-keygen -p -f C:\Users\pavan\.ssh\id_ed25519 to remove passphrase |
@@ -127,19 +127,19 @@ E:\VIA/
 │   ├── auth/login/             # ✅ DONE
 │   ├── auth/signup/            # ✅ DONE
 │   ├── auth/forgot-password/   # ✅ DONE
-│   ├── dashboard/              # ⏳ PENDING
-│   ├── trips/                  # ⏳ PENDING
-│   ├── trips/new/              # ⏳ PENDING
-│   ├── trips/[id]/             # ⏳ PENDING (itinerary view)
-│   ├── trips/[id]/builder/     # ⏳ PENDING
-│   ├── trips/[id]/budget/      # ⏳ PENDING
-│   ├── trips/[id]/packing/     # ⏳ PENDING
-│   ├── trips/[id]/notes/       # ⏳ PENDING
-│   ├── cities/                 # ⏳ PENDING
-│   ├── cities/[id]/            # ⏳ PENDING
-│   ├── trip/[slug]/            # ⏳ PENDING (public view)
-│   ├── profile/                # ⏳ PENDING
-│   ├── admin/                  # ⏳ PENDING
+│   ├── dashboard/              # ✅ DONE
+│   ├── trips/                  # ✅ DONE
+│   ├── trips/new/              # ✅ DONE
+│   ├── trips/[id]/             # ✅ DONE (itinerary view)
+│   ├── trips/[id]/builder/     # ✅ DONE
+│   ├── trips/[id]/budget/      # ✅ DONE
+│   ├── trips/[id]/packing/     # ✅ DONE
+│   ├── trips/[id]/notes/       # ✅ DONE
+│   ├── cities/                 # ✅ DONE
+│   ├── cities/[id]/            # ✅ DONE
+│   ├── trip/[slug]/            # ✅ DONE (public view)
+│   ├── profile/                # ✅ DONE
+│   ├── admin/                  # ✅ DONE
 │   ├── page.tsx                # ✅ Landing page
 │   ├── layout.tsx              # ✅ Root layout + fonts
 │   └── globals.css             # ✅ VIA design tokens
@@ -364,19 +364,19 @@ Pre-ship checklist:
 |---|----------|---------------------------------------------------|----------|----------|
 | 1 | Server   | Add SSH key to new snow droplet 64.227.163.198    | blocked  | critical |
 | 2 | Server   | Full server setup (Node, PostgreSQL, Nginx, PM2)  | pending  | critical |
-| 3 | App      | Dashboard page (/dashboard)                       | pending  | high     |
-| 4 | App      | My Trips page (/trips)                            | pending  | high     |
-| 5 | App      | Create Trip form (/trips/new)                     | pending  | high     |
-| 6 | App      | Itinerary Builder (/trips/[id]/builder)           | pending  | high     |
-| 7 | App      | Itinerary View (/trips/[id])                      | pending  | high     |
-| 8 | App      | Budget page (/trips/[id]/budget)                  | pending  | high     |
-| 9 | App      | City Search (/cities)                             | pending  | medium   |
-|10 | App      | Packing Checklist (/trips/[id]/packing)           | pending  | medium   |
-|11 | App      | Trip Notes (/trips/[id]/notes)                    | pending  | medium   |
-|12 | App      | Public Share view (/trip/[slug])                  | pending  | medium   |
-|13 | App      | User Profile (/profile)                           | pending  | medium   |
-|14 | App      | Admin Dashboard (/admin)                          | pending  | low      |
-|15 | App      | Route Map (Leaflet) on trip view                  | pending  | low      |
+| 3 | App      | Dashboard page (/dashboard)                       | done     | high     |
+| 4 | App      | My Trips page (/trips)                            | done     | high     |
+| 5 | App      | Create Trip form (/trips/new)                     | done     | high     |
+| 6 | App      | Itinerary Builder (/trips/[id]/builder)           | done     | high     |
+| 7 | App      | Itinerary View (/trips/[id])                      | done     | high     |
+| 8 | App      | Budget page (/trips/[id]/budget)                  | done     | high     |
+| 9 | App      | City Search + detail (/cities, /cities/[id])      | done     | medium   |
+|10 | App      | Packing Checklist (/trips/[id]/packing)           | done     | medium   |
+|11 | App      | Trip Notes (/trips/[id]/notes)                    | done     | medium   |
+|12 | App      | Public Share view (/trip/[slug])                  | done     | medium   |
+|13 | App      | User Profile (/profile)                           | done     | medium   |
+|14 | App      | Admin Dashboard (/admin)                          | done     | low      |
+|15 | App      | Route Map (Leaflet) on trip view                  | done     | low      |
 |16 | Infra    | Rename middleware.ts to fix Next.js 16 warning    | done     | low      |
 |17 | Infra    | Switch schema to PostgreSQL for production        | pending  | pre-deploy |
 

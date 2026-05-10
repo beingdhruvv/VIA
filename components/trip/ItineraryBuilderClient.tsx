@@ -100,20 +100,21 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
     }
   }, [removeTarget]);
 
+  const reloadStops = useCallback(async () => {
+    const res = await fetch(`/api/trips/${trip.id}/stops`);
+    if (!res.ok) return;
+    const data: StopWithCity[] = await res.json();
+    if (Array.isArray(data)) setStops(data);
+  }, [trip.id]);
+
   const handleStopAdded = useCallback(() => {
     router.refresh();
-    // Reload stops from server
-    fetch(`/api/trips/${trip.id}/stops`)
-      .then((r) => r.json())
-      .then((data: StopWithCity[]) => setStops(data));
-  }, [trip.id, router]);
+    reloadStops();
+  }, [reloadStops, router]);
 
   const handleActivitiesChanged = useCallback(() => {
-    // Refresh activity counts per stop
-    fetch(`/api/trips/${trip.id}/stops`)
-      .then((r) => r.json())
-      .then((data: StopWithCity[]) => setStops(data));
-  }, [trip.id]);
+    reloadStops();
+  }, [reloadStops]);
 
   return (
     <div className="min-h-screen bg-via-white">
@@ -209,7 +210,15 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
                         setActivitySheetOpen(true);
                       }}
                     />
-                    {i < stops.length - 1 && <RouteConnector transitMode="flight" />}
+                    {i < stops.length - 1 && (
+                      <RouteConnector
+                        transitMode={
+                          stops[i].city.country !== stops[i + 1].city.country
+                            ? "flight"
+                            : "train"
+                        }
+                      />
+                    )}
                   </div>
                 ))}
               </div>

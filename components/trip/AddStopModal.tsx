@@ -78,8 +78,9 @@ export function AddStopModal({
     setSearching(true);
     try {
       const res = await fetch(`/api/cities/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) { setResults([]); return; }
       const data = await res.json();
-      setResults(data);
+      setResults(Array.isArray(data) ? data : []);
     } finally {
       setSearching(false);
     }

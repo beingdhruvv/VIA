@@ -42,8 +42,9 @@ export function ActivitySheet({
     setLoading(true);
     try {
       const res = await fetch(`/api/cities/${stop.cityId}/activities`);
+      if (!res.ok) return;
       const data = await res.json();
-      setActivities(data);
+      setActivities(Array.isArray(data) ? data : []);
     } finally {
       setLoading(false);
     }
@@ -69,14 +70,12 @@ export function ActivitySheet({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ activityId }),
         });
+        if (!res.ok) return;
         const data = await res.json();
         setAddedIds((prev) => {
           const next = new Set(prev);
-          if (data.removed) {
-            next.delete(activityId);
-          } else {
-            next.add(activityId);
-          }
+          if (data.removed) next.delete(activityId);
+          else next.add(activityId);
           return next;
         });
         onActivitiesChanged();

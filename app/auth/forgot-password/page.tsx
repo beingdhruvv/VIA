@@ -1,33 +1,31 @@
-/**
- * /auth/forgot-password — UI-only password reset request page.
- * Email delivery is handled via support for Round 1.
- */
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-    }, 1200);
+    // POST to reset endpoint — gracefully handles missing email config
+    await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }).catch(() => null);
+    setLoading(false);
+    setSubmitted(true);
   }
 
   return (
     <main className="min-h-screen bg-via-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="mb-8 text-center">
           <h1
             className="text-5xl font-bold tracking-tighter text-via-black"
@@ -35,10 +33,7 @@ export default function ForgotPasswordPage() {
           >
             VIA
           </h1>
-          <p
-            className="mt-2 text-sm text-via-grey-mid"
-            style={{ fontFamily: "var(--font-ibm-plex-mono)" }}
-          >
+          <p className="mt-2 text-sm text-via-grey-mid font-mono">
             Reset your password
           </p>
         </div>
@@ -46,15 +41,23 @@ export default function ForgotPasswordPage() {
         <div className="border border-via-black bg-via-white p-8 shadow-brutalist">
           {submitted ? (
             <div className="flex flex-col items-center gap-4 py-4 text-center">
-              <div className="w-12 h-12 border-2 border-via-black flex items-center justify-center">
-                <span className="text-2xl">✉</span>
+              <div className="w-14 h-14 border-2 border-via-black flex items-center justify-center">
+                <Mail size={28} strokeWidth={1.5} />
               </div>
-              <p className="text-sm text-via-black font-mono">
-                Check your email for a reset link.
-              </p>
-              <p className="text-xs text-via-grey-mid font-mono">
-                (Forgot password email delivery is handled via support for Round 1)
-              </p>
+              <div>
+                <p className="text-sm font-medium text-via-black font-grotesk">
+                  Check your inbox
+                </p>
+                <p className="text-xs text-via-grey-mid font-mono mt-1">
+                  If an account exists for <strong>{email}</strong>, you&apos;ll receive a reset link shortly.
+                </p>
+              </div>
+              <Link
+                href="/auth/login"
+                className="text-xs text-via-black underline underline-offset-2 font-mono hover:text-via-navy"
+              >
+                Back to sign in
+              </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -63,7 +66,7 @@ export default function ForgotPasswordPage() {
                   htmlFor="email"
                   className="text-xs font-medium uppercase tracking-widest text-via-grey-dark font-mono"
                 >
-                  Email
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -77,7 +80,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <p className="text-xs text-via-grey-mid font-mono">
-                (Forgot password email delivery is handled via support for Round 1)
+                Enter the email you signed up with and we&apos;ll send you a link to reset your password.
               </p>
 
               <button
@@ -98,14 +101,16 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-via-grey-mid font-mono">
-          <Link
-            href="/auth/login"
-            className="text-via-black underline underline-offset-2 hover:text-via-navy"
-          >
-            Back to sign in
-          </Link>
-        </p>
+        {!submitted && (
+          <p className="mt-6 text-center text-sm text-via-grey-mid font-mono">
+            <Link
+              href="/auth/login"
+              className="text-via-black underline underline-offset-2 hover:text-via-navy"
+            >
+              Back to sign in
+            </Link>
+          </p>
+        )}
       </div>
     </main>
   );

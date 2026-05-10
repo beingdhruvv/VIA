@@ -99,6 +99,7 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
     setSharing(true);
     try {
       const res = await fetch(`/api/trips/${trip.id}/share`, { method: "POST" });
+      if (!res.ok) return;
       const data = await res.json();
       setShareSlug(data.slug);
       setShareOpen(true);
@@ -109,7 +110,7 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
 
   function copyShareLink() {
     if (!shareSlug) return;
-    navigator.clipboard.writeText(`${window.location.origin}/share/${shareSlug}`);
+    navigator.clipboard.writeText(`${window.location.origin}/trip/${shareSlug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -416,8 +417,8 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
               <div className="flex items-center gap-2 border border-via-grey-light bg-via-off-white px-3 py-2">
                 <p className="text-xs font-mono text-via-black flex-1 min-w-0 truncate">
                   {typeof window !== "undefined"
-                    ? `${window.location.origin}/share/${shareSlug}`
-                    : `/share/${shareSlug}`}
+                    ? `${window.location.origin}/trip/${shareSlug}`
+                    : `/trip/${shareSlug}`}
                 </p>
                 <button
                   onClick={copyShareLink}

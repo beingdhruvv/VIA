@@ -48,12 +48,13 @@ export function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+// Picsum Photos — deterministic seed from name, always returns a real photo
 export function getCityImageUrl(cityName: string): string {
-  return `https://source.unsplash.com/800x600/?${encodeURIComponent(cityName)},travel,city`;
+  return `https://picsum.photos/seed/${encodeURIComponent(cityName)}/800/500`;
 }
 
 export function getActivityImageUrl(activityName: string): string {
-  return `https://source.unsplash.com/400x300/?${encodeURIComponent(activityName)},travel`;
+  return `https://picsum.photos/seed/${encodeURIComponent(activityName)}/400/300`;
 }
 
 export function timeAgo(date: Date | string): string {

@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { MapPin, Search, Star } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { MapPin, Search, Star, Plus } from "lucide-react";
 import { getCityImageUrl, formatCurrency } from "@/lib/utils";
 import type { CityData } from "@/types";
 
 interface Props { cities: CityData[] }
 
 export function CitiesClient({ cities }: Props) {
-  const [q, setQ] = useState("");
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [country, setCountry] = useState("ALL");
+
+  useEffect(() => {
+    const param = searchParams.get("q");
+    if (param && param !== q) setQ(param);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const countries = useMemo(() => {
     const set = new Set(cities.map((c) => c.country));
@@ -53,34 +62,51 @@ export function CitiesClient({ cities }: Props) {
           {filtered.map((city) => (
             <article
               key={city.id}
-              className="bg-via-white border border-via-black overflow-hidden"
+              className="bg-via-white border border-via-black overflow-hidden group"
               style={{ boxShadow: "3px 3px 0px #111111" }}
             >
-              <div className="h-32 overflow-hidden">
+              <div className="h-36 overflow-hidden relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={city.imageUrl ?? getCityImageUrl(city.name)}
                   alt={city.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`; }}
                 />
-              </div>
-              <div className="p-3 space-y-1">
-                <h3 className="font-grotesk font-bold text-sm text-via-black">{city.name}</h3>
-                <div className="flex items-center gap-1.5 text-via-grey-mid">
-                  <MapPin size={11} strokeWidth={1.5} />
-                  <span className="font-mono text-[11px]">{city.country}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-via-black/50 to-transparent" />
+                <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
+                  <h3 className="font-grotesk font-bold text-sm text-white leading-tight drop-shadow">{city.name}</h3>
+                  <div className="flex items-center gap-0.5 bg-black/30 backdrop-blur-sm px-1.5 py-0.5">
+                    <Star size={9} className="text-yellow-300" fill="currentColor" />
+                    <span className="font-mono text-[10px] text-white">{city.popularityScore.toFixed(1)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center pt-1">
+              </div>
+              <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-via-grey-mid">
+                    <MapPin size={11} strokeWidth={1.5} />
+                    <span className="font-mono text-[11px]">{city.country}</span>
+                  </div>
                   <span className="font-mono text-[11px] text-via-grey-mid">
                     ~{formatCurrency(city.costIndex * 30)}/day
                   </span>
-                  <div className="flex items-center gap-1">
-                    <Star size={11} strokeWidth={1.5} className="text-via-grey-mid" />
-                    <span className="font-mono text-[11px] text-via-grey-mid">
-                      {city.popularityScore.toFixed(1)}
-                    </span>
-                  </div>
+                </div>
+                <div className="flex gap-1.5">
+                  <Link
+                    href={`/cities/${city.id}`}
+                    className="flex-1 flex items-center justify-center py-1.5 text-[11px] font-mono uppercase tracking-wider border border-via-grey-light hover:border-via-black transition-colors"
+                  >
+                    Details
+                  </Link>
+                  <Link
+                    href={`/trips/new?city=${city.id}&cityName=${encodeURIComponent(city.name)}`}
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-mono uppercase tracking-wider border border-via-black bg-via-black text-via-white hover:bg-via-navy transition-colors"
+                  >
+                    <Plus size={10} />
+                    Plan Trip
+                  </Link>
                 </div>
               </div>
             </article>

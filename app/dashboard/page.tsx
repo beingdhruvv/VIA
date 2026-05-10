@@ -249,7 +249,7 @@ export default async function DashboardPage() {
                 <div className="relative h-32 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={city.imageUrl || `https://source.unsplash.com/400x300/?${encodeURIComponent(city.name)},travel`}
+                    src={city.imageUrl || `https://picsum.photos/seed/${encodeURIComponent(city.name)}/400/300`}
                     alt={city.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"

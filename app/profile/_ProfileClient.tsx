@@ -16,18 +16,28 @@ export function ProfileClient({ profile, tripCount }: Props) {
   const [name, setName] = useState(profile.name);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function save() {
     if (!name.trim() || name === profile.name) return;
     setSaving(true);
-    await fetch("/api/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim() }),
-    });
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError(null);
+    try {
+      const res = await fetch("/api/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Failed to save. Try again.");
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -79,6 +89,10 @@ export function ProfileClient({ profile, tripCount }: Props) {
           <span className="flex items-center gap-1"><Globe size={11} strokeWidth={1.5} /> {profile.language.toUpperCase()}</span>
         </div>
 
+        {error && (
+          <p className="text-xs text-via-red font-mono border border-via-red px-3 py-2">{error}</p>
+        )}
+
         <Button
           variant="primary"
           size="sm"
@@ -86,7 +100,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
           loading={saving}
           disabled={!name.trim() || name === profile.name}
         >
-          {saved ? "Saved!" : "Save Changes"}
+          {saved ? "✓ Saved!" : "Save Changes"}
         </Button>
       </div>
     </div>

@@ -29,6 +29,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalFooter,
+  ModalClose,
 } from "@/components/ui/Modal";
 import { formatDateRange, formatCurrency, getCityImageUrl } from "@/lib/utils";
 import type { TripCard, TripStatus } from "@/types";
@@ -66,8 +67,10 @@ interface TripCardProps {
 }
 
 function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
-  const firstCity = trip.stops[0]?.city?.name;
-  const coverSrc = trip.coverUrl || (firstCity ? getCityImageUrl(firstCity) : null);
+  const firstStop = trip.stops[0];
+  const firstCity = firstStop?.city?.name;
+  const firstCityImage = (firstStop?.city as { imageUrl?: string | null } | undefined)?.imageUrl;
+  const coverSrc = trip.coverUrl || firstCityImage || (firstCity ? getCityImageUrl(firstCity) : `https://picsum.photos/seed/${encodeURIComponent(trip.name)}/400/300`);
   const stopCount = trip._count?.stops ?? trip.stops.length;
 
   return (
@@ -82,20 +85,17 @@ function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
         aria-hidden
       />
 
-      {/* Cover image */}
-      {coverSrc && (
-        <div className="relative h-36 w-full overflow-hidden ml-1">
-          <Image
-            src={coverSrc}
-            alt={`Cover image for ${trip.name}`}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-          {/* Scrim for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        </div>
-      )}
+      {/* Cover image — always shown */}
+      <div className="relative h-36 w-full overflow-hidden ml-1">
+        <Image
+          src={coverSrc}
+          alt={`Cover image for ${trip.name}`}
+          fill
+          className="object-cover"
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+      </div>
 
       {/* Body */}
       <div className="pl-4 pr-4 pt-3 pb-4 flex flex-col gap-2 flex-1">
@@ -165,9 +165,11 @@ function TripCardItem({ trip, onDelete, deleting }: TripCardProps) {
                 </p>
               </div>
               <ModalFooter>
-                <Button variant="ghost" size="sm" type="button">
-                  Cancel
-                </Button>
+                <ModalClose asChild>
+                  <Button variant="ghost" size="sm" type="button">
+                    Cancel
+                  </Button>
+                </ModalClose>
                 <Button
                   variant="destructive"
                   size="sm"

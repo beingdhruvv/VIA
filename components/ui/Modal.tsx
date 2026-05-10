@@ -94,4 +94,6 @@ function ModalFooter({ children, className = "" }: ModalFooterProps) {
   );
 }
 
-export { Modal, ModalTrigger, ModalContent, ModalHeader, ModalFooter };
+const ModalClose = Dialog.Close;
+
+export { Modal, ModalTrigger, ModalContent, ModalHeader, ModalFooter, ModalClose };

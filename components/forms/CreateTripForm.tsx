@@ -42,7 +42,11 @@ type FormValues = z.infer<typeof schema>;
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function CreateTripForm() {
+interface CreateTripFormProps {
+  defaultName?: string;
+}
+
+export function CreateTripForm({ defaultName }: CreateTripFormProps) {
   const router = useRouter();
 
   const {
@@ -52,7 +56,7 @@ export function CreateTripForm() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
+      name: defaultName ?? "",
       startDate: "",
       endDate: "",
       description: "",
