@@ -95,7 +95,7 @@ export async function GET() {
           name: a.name,
           estimatedCost: a.estimatedCost,
           category: a.category,
-          imageUrl: a.imageUrl && a.imageUrl !== city.imageUrl
+          imageUrl: a.imageUrl && a.imageUrl !== city.imageUrl && !a.imageUrl.includes("source.unsplash.com")
             ? a.imageUrl
             : getActivityImageUrl(a.name, city.name, city.country, a.category)
         }))

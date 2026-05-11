@@ -217,6 +217,19 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
     }
   };
 
+  const handleShareMemory = async (memory: MemoryData) => {
+    const url = `${window.location.origin}${imageSrc(memory.imageUrl)}`;
+    if (navigator.share) {
+      await navigator.share({
+        title: memory.caption || memory.fileName,
+        url,
+      }).catch(() => {});
+      return;
+    }
+    await navigator.clipboard.writeText(url).catch(() => {});
+    setShareStatus("Image link copied.");
+  };
+
   return (
     <div className="space-y-8 pb-20">
       {/* Controls & Stats */}
@@ -482,8 +495,13 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
             onClick={() => setFullImage(null)}
           >
             <button 
+              type="button"
               className="absolute top-6 right-6 text-via-white hover:rotate-90 transition-transform"
-              onClick={() => setFullImage(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setFullImage(null);
+              }}
+              aria-label="Close memory preview"
             >
               <X size={32} />
             </button>
@@ -533,6 +551,14 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
                 >
                   <Download size={16} />
                 </a>
+                <button
+                  type="button"
+                  onClick={() => void handleShareMemory(fullImage)}
+                  className="p-2 hover:bg-via-off-white border border-via-black"
+                  aria-label="Share memory image"
+                >
+                  <Share2 size={16} />
+                </button>
                 <a
                   href={imageSrc(fullImage.imageUrl)}
                   target="_blank"
@@ -618,6 +644,7 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
               </p>
             )}
             <button 
+              type="button"
               onClick={() => setIsSelectMode(false)}
               className="ml-auto p-1 hover:bg-via-off-white"
             >

@@ -42,7 +42,7 @@ export function getActivityImageUrl(
     .filter(Boolean)
     .join(",");
 
-  return `https://source.unsplash.com/800x600/?${encodeURIComponent(query || "travel destination")}`;
+  return `https://loremflickr.com/800/600/${encodeURIComponent(query || "travel destination")}`;
 }
 
 /** All cities in prisma/seed.ts — keys must match seed `name` + `country` exactly. */

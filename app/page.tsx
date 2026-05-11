@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LogIn } from "lucide-react";
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop",
@@ -35,9 +35,6 @@ export default function LandingPage() {
           >
             VIA
           </h1>
-          <div className="absolute -top-6 left-2 font-mono text-[10px] uppercase tracking-[0.4em] text-via-red font-bold">
-            Travel Protocol v1.0
-          </div>
         </div>
 
         {/* Tagline */}
@@ -50,22 +47,27 @@ export default function LandingPage() {
             <span className="text-via-black underline decoration-via-red decoration-4 underline-offset-8">LIVE THE STORY.</span>
           </p>
           
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-5">
-            <Link
-              href="/auth/signup"
-              className="group relative inline-flex items-center justify-center gap-3 border-2 border-via-black bg-via-black px-8 py-4 text-sm font-bold uppercase text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#C1121F] sm:px-12 sm:py-5"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Start Planning
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center justify-center border-2 border-via-black bg-via-white px-8 py-4 text-sm font-bold uppercase text-via-black transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#1B2A41] sm:px-12 sm:py-5"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Sign In
-            </Link>
+          <div className="max-w-sm border-2 border-via-black bg-via-white p-4 shadow-brutalist">
+            <p className="mb-3 font-mono text-[10px] font-bold uppercase tracking-widest text-via-grey-mid">
+              To start planning, create an account or sign in.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Link
+                href="/auth/signup"
+                className="group relative inline-flex items-center justify-center gap-2 border-2 border-via-black bg-via-black px-5 py-3 text-xs font-bold uppercase text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#C1121F]"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                Start Planning
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center justify-center gap-2 border-2 border-via-black bg-via-white px-5 py-3 text-xs font-bold uppercase text-via-black transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#1B2A41]"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                <LogIn size={15} /> Sign In
+              </Link>
+            </div>
           </div>
         </div>
       </main>
@@ -105,7 +107,7 @@ export default function LandingPage() {
         <div className="flex gap-10 font-mono text-[10px] uppercase tracking-[0.3em] font-bold text-via-grey-mid">
           <Link href="/privacy" className="hover:text-via-black hover:underline underline-offset-4">Privacy</Link>
           <Link href="/terms" className="hover:text-via-black hover:underline underline-offset-4">Terms</Link>
-          <Link href="https://github.com/StormLabs" className="hover:text-via-black hover:underline underline-offset-4">Source</Link>
+          <Link href="https://stromlabs.tech" className="hover:text-via-black hover:underline underline-offset-4">Source</Link>
         </div>
       </footer>
 
@@ -119,7 +121,7 @@ export default function LandingPage() {
           100% { transform: translateX(-33.33%); }
         }
         .animate-marquee {
-          animation: marquee 50s linear infinite;
+          animation: marquee 26s linear infinite;
         }
         .animate-marquee-fast {
           animation: marquee-fast 20s linear infinite;

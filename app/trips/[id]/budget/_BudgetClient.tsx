@@ -153,6 +153,32 @@ export function BudgetClient({
 
   const detailedBalances = calculateDetailedBalances();
   const myBalance = detailedBalances[currentUserId] || 0;
+  const participantNames = Object.fromEntries([
+    [currentUserId, "You"],
+    ...collaborators.map((c) => [c.user.id, c.user.name]),
+  ]);
+  const settlements = (() => {
+    const debtors = Object.entries(detailedBalances)
+      .filter(([, amount]) => amount < -0.01)
+      .map(([userId, amount]) => ({ userId, amount: Math.abs(amount) }))
+      .sort((a, b) => b.amount - a.amount);
+    const creditors = Object.entries(detailedBalances)
+      .filter(([, amount]) => amount > 0.01)
+      .map(([userId, amount]) => ({ userId, amount }))
+      .sort((a, b) => b.amount - a.amount);
+    const rows: { from: string; to: string; amount: number }[] = [];
+    let i = 0;
+    let j = 0;
+    while (i < debtors.length && j < creditors.length) {
+      const amount = Math.min(debtors[i].amount, creditors[j].amount);
+      rows.push({ from: debtors[i].userId, to: creditors[j].userId, amount });
+      debtors[i].amount -= amount;
+      creditors[j].amount -= amount;
+      if (debtors[i].amount <= 0.01) i++;
+      if (creditors[j].amount <= 0.01) j++;
+    }
+    return rows;
+  })();
   
 
   const categoryTotals = CATEGORIES.map((cat) => ({
@@ -323,6 +349,29 @@ export function BudgetClient({
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="border border-via-black bg-via-white p-4 shadow-[3px_3px_0px_#111]">
+        <div className="mb-3 flex items-center justify-between gap-3 border-b border-via-grey-light pb-2">
+          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid">Settlement Plan</p>
+          <p className="font-mono text-[10px] uppercase text-via-grey-mid">{settlements.length || "No"} payments</p>
+        </div>
+        {settlements.length > 0 ? (
+          <div className="grid gap-2 md:grid-cols-2">
+            {settlements.map((row) => (
+              <div key={`${row.from}-${row.to}-${row.amount}`} className="flex items-center justify-between gap-3 border border-via-grey-light bg-via-off-white px-3 py-2">
+                <p className="min-w-0 text-xs text-via-black">
+                  <span className="font-bold">{participantNames[row.from] ?? "Member"}</span>
+                  <span className="mx-2 font-mono text-[10px] uppercase text-via-grey-mid">pays</span>
+                  <span className="font-bold">{participantNames[row.to] ?? "Member"}</span>
+                </p>
+                <p className="shrink-0 font-mono text-xs font-bold text-via-black">{formatCurrency(Math.round(row.amount))}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="font-mono text-[10px] uppercase text-via-grey-mid">Add split expenses to see who should pay whom.</p>
+        )}
       </section>
 
       {/* ── Add Expense Form ── */}

@@ -6,6 +6,7 @@ import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Bookmark, Globe, Heart, MapPin, XCircle } from "lucide-react";
 import type { City } from "@prisma/client";
+import { getCityImageUrl } from "@/lib/utils";
 
 interface UserTaste {
   id: string;
@@ -56,14 +57,15 @@ export function ExploreClient({ initialCities }: Props) {
     >
       <div className="flex justify-center mb-4">
         <TabsList className="bg-via-white border-2 border-via-black p-1 shadow-brutalist-sm">
-          <TabsTrigger value="swipe" className="font-mono text-xs uppercase gap-2">
-            <Globe size={14} /> Explore
+          <TabsTrigger value="swipe" className="h-10 w-12 justify-center px-0" aria-label="Explore destinations">
+            <Globe size={18} />
           </TabsTrigger>
           <TabsTrigger 
             value="taste" 
-            className="font-mono text-xs uppercase gap-2"
+            className="h-10 w-12 justify-center px-0"
+            aria-label="My taste"
           >
-            <Heart size={14} /> My Taste
+            <Heart size={18} />
           </TabsTrigger>
         </TabsList>
       </div>
@@ -92,7 +94,7 @@ export function ExploreClient({ initialCities }: Props) {
                 >
                   <div className="w-20 h-20 shrink-0 border border-via-black overflow-hidden relative">
                     <Image 
-                      src={t.city.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${t.city.name}`} 
+                      src={t.city.imageUrl || getCityImageUrl(t.city.name, t.city.country)}
                       alt={t.city.name}
                       fill
                       className="object-cover" 

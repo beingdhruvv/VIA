@@ -367,7 +367,7 @@ export default async function CityDetailPage({ params }: Props) {
                         <div className="h-28 relative overflow-hidden">
                           <Image
                             src={
-                              act.imageUrl && act.imageUrl !== city.imageUrl
+                              act.imageUrl && act.imageUrl !== city.imageUrl && !act.imageUrl.includes("source.unsplash.com")
                                 ? act.imageUrl
                                 : getActivityImageUrl(act.name, city.name, city.country, act.category)
                             }

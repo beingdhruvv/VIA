@@ -85,7 +85,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
       body: JSON.stringify({ cityId: city.id, type }),
     });
 
-    // Advance to next card
+    x.set(0);
     setCurrentIndex((prev) => prev + 1);
   };
 
@@ -195,17 +195,18 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           <motion.div
             key={currentCity.id}
             style={{ x, rotate }}
-            drag="x"
-            dragDirectionLock
+            drag
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.7}
+            dragElastic={0.8}
             onDragEnd={(_, info) => {
               const t = 70; // Optimized threshold
               const velocity = info.velocity.x;
-              if (info.offset.x > t || velocity > 400) handleSwipe("right");
+              if (info.offset.y < -85 || info.velocity.y < -500) handleSwipe("up");
+              else if (info.offset.x > t || velocity > 400) handleSwipe("right");
               else if (info.offset.x < -t || velocity < -400) handleSwipe("left");
+              else x.set(0);
             }}
-            className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
+            className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing"
           >
               <div
                 className="relative h-full w-full overflow-y-auto border border-via-black bg-via-white scrollbar-hide"

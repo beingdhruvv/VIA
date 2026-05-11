@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { MemoriesClient } from "./_MemoriesClient";
 import { PageHeader } from "@/components/layout/PageHeader";
-import type { MemoryData } from "@/types";
+import { AppShell } from "@/components/layout/AppShell";
+import { toSessionUserRole } from "@/lib/roles";
+import type { MemoryData, SessionUser } from "@/types";
 
 export default async function MemoriesPage() {
   const session = await auth();
@@ -59,17 +61,27 @@ export default async function MemoriesPage() {
     canDelete: m.userId === session.user.id,
   }));
 
+  const user: SessionUser = {
+    id: session.user.id,
+    name: session.user.name ?? "Traveler",
+    email: session.user.email ?? "",
+    image: session.user.image,
+    role: toSessionUserRole(session.user.role),
+  };
+
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Memories" 
-        subtitle="Your travel history, captured in moments."
-      />
-      <MemoriesClient 
-        initialMemories={mappedMemories} 
-        trips={trips}
-        storageLimit={currentUser?.storageLimit ?? undefined}
-      />
-    </div>
+    <AppShell user={user}>
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-8">
+        <PageHeader
+          title="Memories"
+          subtitle="Your travel history, captured in moments."
+        />
+        <MemoriesClient
+          initialMemories={mappedMemories}
+          trips={trips}
+          storageLimit={currentUser?.storageLimit ?? undefined}
+        />
+      </div>
+    </AppShell>
   );
 }

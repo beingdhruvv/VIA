@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "source.unsplash.com" },
+      { protocol: "https", hostname: "loremflickr.com", pathname: "/**" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "upload.wikimedia.org", pathname: "/**" },
       { protocol: "https", hostname: "res.cloudinary.com" },
