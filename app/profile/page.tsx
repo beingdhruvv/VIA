@@ -15,20 +15,17 @@ export default async function ProfilePage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, homeCountry: true, genderPreference: true, travelStyle: true, createdAt: true },
-  }).catch(async (error) => {
-    console.error("Profile extended fields unavailable", error);
-    const fallbackUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, createdAt: true },
-    });
-    return fallbackUser
-      ? { ...fallbackUser, homeCountry: null, genderPreference: null, travelStyle: null }
-      : null;
+    select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, createdAt: true },
+  }).catch((error) => {
+    console.error("Profile user lookup failed", error);
+    return null;
   });
   if (!dbUser) redirect("/auth/login");
 
-  const tripCount = await prisma.trip.count({ where: { userId: session.user.id } });
+  const tripCount = await prisma.trip.count({ where: { userId: session.user.id } }).catch((error) => {
+    console.error("Profile trip count failed", error);
+    return 0;
+  });
 
   const user: SessionUser = { 
     id: session.user.id, 
@@ -50,9 +47,9 @@ export default async function ProfilePage() {
             avatarUrl: dbUser.avatarUrl,
             language: dbUser.language ?? "en",
             homeCity: dbUser.homeCity,
-            homeCountry: dbUser.homeCountry,
-            genderPreference: dbUser.genderPreference,
-            travelStyle: dbUser.travelStyle,
+            homeCountry: null,
+            genderPreference: null,
+            travelStyle: null,
             createdAt: dbUser.createdAt.toISOString(),
           }}
           tripCount={tripCount}

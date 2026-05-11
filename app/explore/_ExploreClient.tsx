@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import { Bookmark, Compass, Heart, MapPin, Sparkles, XCircle } from "lucide-react";
+import { Bookmark, Globe, Heart, MapPin, XCircle } from "lucide-react";
 import type { City } from "@prisma/client";
 import { getCityImageUrl } from "@/lib/utils";
 
@@ -55,19 +55,17 @@ export function ExploreClient({ initialCities }: Props) {
         }
       }}
     >
-      <div className="mb-4 flex justify-center">
-        <TabsList className="grid w-full max-w-xs grid-cols-2 border border-via-black bg-via-white p-1 shadow-brutalist-sm">
-          <TabsTrigger value="swipe" className="h-10 justify-center gap-2 px-3 font-mono text-[10px] uppercase tracking-widest" aria-label="Explore destinations">
-            <Compass size={15} />
-            Explore
+      <div className="mb-3 flex justify-center">
+        <TabsList className="border border-via-black bg-via-white p-1 shadow-brutalist-sm">
+          <TabsTrigger value="swipe" className="h-10 w-12 justify-center px-0" aria-label="Explore destinations">
+            <Globe size={18} />
           </TabsTrigger>
           <TabsTrigger 
             value="taste" 
-            className="h-10 justify-center gap-2 px-3 font-mono text-[10px] uppercase tracking-widest"
+            className="h-10 w-12 justify-center px-0"
             aria-label="My taste"
           >
-            <Sparkles size={15} />
-            Saved
+            <Heart size={18} />
           </TabsTrigger>
         </TabsList>
       </div>

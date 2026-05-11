@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Bookmark, Globe, Heart, MapPin, RotateCcw, SlidersHorizontal, Star, X } from "lucide-react";
+import { Globe, MapPin, RotateCcw, SlidersHorizontal, Star, X } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -35,7 +35,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     region: "All",
-    cost: "All",
   });
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
@@ -59,13 +58,12 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     x.set(0);
   };
 
-  const handleSwipe = async (direction: "left" | "right" | "up") => {
+  const handleSwipe = async (direction: "left" | "right") => {
     const city = filteredCities[currentIndex];
     if (!city) return;
 
     let type: "LIKE" | "DISLIKE" | "SAVE" = "DISLIKE";
     if (direction === "right") type = "LIKE";
-    if (direction === "up") type = "SAVE";
 
     // Record history for undo
     setHistory((prev) => [...prev, currentIndex]);
@@ -126,7 +124,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           onClick={() => {
             setCurrentIndex(0);
             setHistory([]);
-            setFilters({ region: "All", cost: "All" });
+            setFilters({ region: "All" });
           }}
           className="mt-6 border border-via-black bg-via-black px-6 py-2 font-mono text-xs uppercase tracking-widest text-via-white transition-colors hover:bg-via-navy"
         >
@@ -204,14 +202,13 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           <motion.div
             key={currentCity.id}
             style={{ x, rotate }}
-            drag
+            drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.8}
             onDragEnd={(_, info) => {
               const t = 70; // Optimized threshold
               const velocity = info.velocity.x;
-              if (info.offset.y > 85 || info.velocity.y > 500 || info.offset.y < -95 || info.velocity.y < -550) handleSwipe("up");
-              else if (info.offset.x > t || velocity > 400) handleSwipe("right");
+              if (info.offset.x > t || velocity > 400) handleSwipe("right");
               else if (info.offset.x < -t || velocity < -400) handleSwipe("left");
               else x.set(0);
             }}
@@ -247,8 +244,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                     <span className="text-4xl font-black uppercase text-red-500 sm:text-5xl">PASS</span>
                   </motion.div>
 
-                  <div className="absolute inset-x-0 bottom-0 h-44 bg-via-black/45" />
-                  <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-via-white pointer-events-none">
+                  <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-via-white pointer-events-none [text-shadow:0_1px_2px_rgba(0,0,0,0.9)]">
                       <div>
                           <h2 className="font-grotesk text-4xl font-black leading-none uppercase italic sm:text-5xl">
                             {currentCity.name}
@@ -258,54 +254,17 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                             {currentCity.country} / {currentCity.region}
                           </p>
                       </div>
-                      
-                      <div className="mt-4 flex items-center justify-between">
+                      <div className="mt-4 flex items-center">
                         <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold">
                           <Star size={12} fill="currentColor" />
-                          {popularity} Popularity
+                          {popularity} Rating
                         </div>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleSwipe("up"); }}
-                          className="pointer-events-auto flex items-center gap-1 border border-via-white px-3 py-2 font-mono text-[10px] uppercase font-bold hover:bg-via-white hover:text-via-black"
-                        >
-                          <Bookmark size={12} /> Save
-                        </button>
                       </div>
                   </div>
                 </div>
               </div>
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Main Action Buttons */}
-      <div className="flex shrink-0 items-center justify-center gap-5 py-5">
-        <button
-          type="button"
-          onClick={() => handleSwipe("left")}
-          className="flex h-14 w-14 items-center justify-center border border-via-black bg-via-white text-red-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
-          aria-label="Pass destination"
-        >
-          <X size={32} strokeWidth={4} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleSwipe("up")}
-          className="flex h-12 w-12 items-center justify-center border border-via-black bg-via-white text-via-navy shadow-brutalist-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95"
-          aria-label="Save destination"
-        >
-          <Bookmark size={20} strokeWidth={3} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleSwipe("right")}
-          className="flex h-14 w-14 items-center justify-center border border-via-black bg-via-white text-green-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
-          aria-label="Like destination"
-        >
-          <Heart size={32} strokeWidth={4} fill="currentColor" />
-        </button>
       </div>
 
       {/* Filter Modal */}

@@ -248,18 +248,20 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
 
   return (
     <div className="space-y-6 pb-20">
-      <section className="grid gap-3 md:grid-cols-4">
-        <div className="border border-via-black bg-via-black p-4 text-via-white shadow-brutalist md:col-span-2">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-via-white/70">Memory vault</p>
-          <h2 className="mt-2 font-grotesk text-3xl font-black uppercase italic">{filteredMemories.length} moments</h2>
-        </div>
-        <div className="border border-via-black bg-via-white p-4 shadow-brutalist-sm">
-          <p className="font-mono text-[10px] uppercase text-via-grey-mid">Shared with you</p>
-          <p className="mt-2 font-mono text-2xl font-bold">{memories.filter((memory) => memory.sharedBy).length}</p>
-        </div>
-        <div className="border border-via-black bg-via-white p-4 shadow-brutalist-sm">
-          <p className="font-mono text-[10px] uppercase text-via-grey-mid">Mapped photos</p>
-          <p className="mt-2 font-mono text-2xl font-bold">{mapMemories.length}</p>
+      <section className="border border-via-black bg-via-white shadow-brutalist">
+        <div className="grid divide-y divide-via-black md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="bg-via-black p-4 text-via-white">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-via-white/70">Memory vault</p>
+            <p className="mt-2 font-grotesk text-2xl font-black uppercase italic">{filteredMemories.length} moments</p>
+          </div>
+          <div className="p-4">
+            <p className="font-mono text-[10px] uppercase text-via-grey-mid">Shared with you</p>
+            <p className="mt-2 font-mono text-2xl font-bold">{memories.filter((memory) => memory.sharedBy).length}</p>
+          </div>
+          <div className="p-4">
+            <p className="font-mono text-[10px] uppercase text-via-grey-mid">Mapped photos</p>
+            <p className="mt-2 font-mono text-2xl font-bold">{mapMemories.length}</p>
+          </div>
         </div>
       </section>
       {/* Controls & Stats */}
