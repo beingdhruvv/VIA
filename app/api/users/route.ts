@@ -51,9 +51,11 @@ const patchSchema = z.object({
   avatarUrl: z.string().url().or(z.string().length(0)).optional().nullable(),
   homeCity: z.string().min(1).optional(),
   homeCountry: z.string().min(1).optional(),
+  genderPreference: z.enum(["ANY", "MALE", "FEMALE", "MIXED"]).optional(),
+  travelStyle: z.enum(["SOLO", "COUPLE", "FRIENDS", "FAMILY"]).optional(),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(8).optional(),
-}).refine((d) => d.name || d.language || d.avatarUrl !== undefined || d.homeCity || d.homeCountry || (d.currentPassword && d.newPassword), {
+}).refine((d) => d.name || d.language || d.avatarUrl !== undefined || d.homeCity || d.homeCountry || d.genderPreference || d.travelStyle || (d.currentPassword && d.newPassword), {
   message: "Nothing to update",
 });
 
@@ -73,6 +75,8 @@ export async function PATCH(req: Request) {
   if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl;
   if (parsed.data.homeCity) updateData.homeCity = parsed.data.homeCity;
   if (parsed.data.homeCountry) updateData.homeCountry = parsed.data.homeCountry;
+  if (parsed.data.genderPreference) updateData.genderPreference = parsed.data.genderPreference;
+  if (parsed.data.travelStyle) updateData.travelStyle = parsed.data.travelStyle;
 
   if (currentPassword && newPassword) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
@@ -85,7 +89,7 @@ export async function PATCH(req: Request) {
   const user = await prisma.user.update({
     where: { id: session.user.id },
     data: updateData,
-    select: { id: true, name: true, email: true, language: true },
+    select: { id: true, name: true, email: true, language: true, genderPreference: true, travelStyle: true },
   });
   return NextResponse.json(user);
 }

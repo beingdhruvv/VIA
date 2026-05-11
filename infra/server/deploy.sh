@@ -26,13 +26,13 @@ git fetch origin "${APP_BRANCH}"
 # would block checkout and abort the whole deploy (502 until fixed).
 echo "Resetting to origin/${APP_BRANCH} (drops any local edits to tracked files)"
 git reset --hard "origin/${APP_BRANCH}"
-git clean -fd -e .env.production
+git clean -fd -e .env.production -e storage -e public/uploads
 
 # Unique build label for UI + support (override with DEPLOY_VERSION from CI)
 export NEXT_PUBLIC_APP_VERSION="${DEPLOY_VERSION:-$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)}"
 echo "NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}"
 
-npm ci
+npm ci --prefer-offline --no-audit --fund=false
 npx prisma generate --schema prisma/schema.production.prisma
 npx prisma db push --schema prisma/schema.production.prisma
 

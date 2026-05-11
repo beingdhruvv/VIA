@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
-import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin, Loader2 } from "lucide-react";
+import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin, Loader2, HeartHandshake } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
@@ -48,6 +48,8 @@ export function ProfileClient({ profile, tripCount }: Props) {
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
   const [homeCity, setHomeCity] = useState(profile.homeCity ?? "");
   const [homeCountry, setHomeCountry] = useState(profile.homeCountry ?? "");
+  const [genderPreference, setGenderPreference] = useState(profile.genderPreference ?? "ANY");
+  const [travelStyle, setTravelStyle] = useState(profile.travelStyle ?? "SOLO");
   const [tempAvatar, setTempAvatar] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [showEditor, setShowEditor] = useState(false);
@@ -81,7 +83,9 @@ export function ProfileClient({ profile, tripCount }: Props) {
           language, 
           // avatarUrl is now handled separately by the dedicated API
           homeCity: homeCity.trim() || null,
-          homeCountry: homeCountry.trim() || null
+          homeCountry: homeCountry.trim() || null,
+          genderPreference,
+          travelStyle,
         }),
       });
       if (!res.ok) {
@@ -178,10 +182,13 @@ export function ProfileClient({ profile, tripCount }: Props) {
     language !== (profile.language ?? "en") ||
     avatarUrl !== profile.avatarUrl ||
     homeCity.trim() !== (profile.homeCity ?? "") ||
-    homeCountry.trim() !== (profile.homeCountry ?? "");
+    homeCountry.trim() !== (profile.homeCountry ?? "") ||
+    genderPreference !== (profile.genderPreference ?? "ANY") ||
+    travelStyle !== (profile.travelStyle ?? "SOLO");
 
   return (
-    <div className="mt-6 space-y-6 max-w-2xl">
+    <div className="mt-6 grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="space-y-6">
       <div
         className="bg-via-white border border-via-black p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5"
         style={{ boxShadow: "3px 3px 0px #111111" }}
@@ -359,6 +366,52 @@ export function ProfileClient({ profile, tripCount }: Props) {
           disabled={!name.trim() || !profileChanged}
         >
           {saved ? <><Check size={13} /> Saved</> : "Save Changes"}
+        </Button>
+      </div>
+
+      <div
+        className="bg-via-white border border-via-black p-5 space-y-4"
+        style={{ boxShadow: "3px 3px 0px #111111" }}
+      >
+        <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5">
+          <HeartHandshake size={11} strokeWidth={1.5} /> Travel Matching
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="font-mono text-[11px] text-via-grey-mid uppercase">People Preference</label>
+            <select
+              value={genderPreference}
+              onChange={(e) => setGenderPreference(e.target.value)}
+              className="w-full border border-via-grey-light px-3 py-2 text-sm font-mono outline-none focus:border-via-black bg-via-white"
+            >
+              <option value="ANY">Any</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="MIXED">Mixed group</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="font-mono text-[11px] text-via-grey-mid uppercase">Travel Style</label>
+            <select
+              value={travelStyle}
+              onChange={(e) => setTravelStyle(e.target.value)}
+              className="w-full border border-via-grey-light px-3 py-2 text-sm font-mono outline-none focus:border-via-black bg-via-white"
+            >
+              <option value="SOLO">Solo</option>
+              <option value="COUPLE">Couple</option>
+              <option value="FRIENDS">Friends</option>
+              <option value="FAMILY">Family</option>
+            </select>
+          </div>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={saveProfile}
+          loading={saving}
+          disabled={!profileChanged}
+        >
+          Update Preferences
         </Button>
       </div>
 
@@ -585,6 +638,27 @@ export function ProfileClient({ profile, tripCount }: Props) {
           {APP_PUBLIC_VERSION.length > 8 ? APP_PUBLIC_VERSION.slice(0, 7) : APP_PUBLIC_VERSION}
         </span>
       </p>
+      </div>
+
+      <aside className="space-y-4">
+        <div className="border border-via-black bg-via-white p-4 shadow-brutalist-sm">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid">Profile health</p>
+          <div className="mt-4 space-y-3 font-mono text-[11px] uppercase">
+            <div className="flex justify-between border-b border-via-grey-light pb-2">
+              <span>Trips</span>
+              <span>{tripCount}</span>
+            </div>
+            <div className="flex justify-between border-b border-via-grey-light pb-2">
+              <span>Home</span>
+              <span>{homeCity || "Unset"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Style</span>
+              <span>{travelStyle.toLowerCase()}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

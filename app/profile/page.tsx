@@ -15,7 +15,7 @@ export default async function ProfilePage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, homeCountry: true, createdAt: true },
+    select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, homeCountry: true, genderPreference: true, travelStyle: true, createdAt: true },
   });
   if (!dbUser) redirect("/auth/login");
 
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
 
   return (
     <AppShell user={user}>
-      <div className="px-4 md:px-8 py-6 max-w-xl">
+      <div className="px-4 md:px-8 py-6 max-w-6xl">
         <PageHeader title="Profile" breadcrumb={[{ label: "Profile" }]} />
         <ProfileClient
           profile={{
@@ -42,6 +42,8 @@ export default async function ProfilePage() {
             language: dbUser.language ?? "en",
             homeCity: dbUser.homeCity,
             homeCountry: dbUser.homeCountry,
+            genderPreference: dbUser.genderPreference,
+            travelStyle: dbUser.travelStyle,
             createdAt: dbUser.createdAt.toISOString(),
           }}
           tripCount={tripCount}

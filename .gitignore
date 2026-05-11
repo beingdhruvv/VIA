@@ -63,6 +63,10 @@ next-env.d.ts
 
 /app/generated/prisma
 
+# Private user-uploaded files; served through authenticated API routes
+/storage/
+/public/uploads/
+
 # Playwright
 node_modules/
 /test-results/

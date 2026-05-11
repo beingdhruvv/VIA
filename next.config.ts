@@ -10,6 +10,30 @@ const nextConfig: NextConfig = {
   },
   compress: true,
   poweredByHeader: false,
+  async headers() {
+    const securityHeaders = [
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
+    ];
+
+    return [
+      {
+        source: "/(.*)",
+        headers: securityHeaders,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "source.unsplash.com" },

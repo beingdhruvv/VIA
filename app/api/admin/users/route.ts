@@ -16,6 +16,8 @@ export async function GET() {
       email: true,
       role: true,
       avatarUrl: true,
+      storageUsed: true,
+      storageLimit: true,
       createdAt: true,
     }
   });
@@ -30,15 +32,29 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const { userId, role } = await request.json();
+    const { userId, role, storageLimitMb } = await request.json();
+    const data: { role?: string; storageLimit?: number } = {};
 
-    if (!["USER", "ADMIN", "SUPER_ADMIN"].includes(role)) {
+    if (role !== undefined && !["USER", "ADMIN", "SUPER_ADMIN"].includes(role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+    if (role !== undefined) data.role = role;
+
+    if (storageLimitMb !== undefined) {
+      const mb = Number(storageLimitMb);
+      if (!Number.isFinite(mb) || mb < 10 || mb > 10240) {
+        return NextResponse.json({ error: "Storage limit must be 10MB to 10240MB" }, { status: 400 });
+      }
+      data.storageLimit = Math.round(mb * 1024 * 1024);
+    }
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { role },
+      data,
     });
 
     return NextResponse.json(updatedUser);

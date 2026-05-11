@@ -48,13 +48,13 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 (session: Infrastructure Stability + Collaborative UI) |
-| Last updated by | Antigravity                                                        |
-| Build status    | PASSING (confirmed local build after async params fix)             |
+| Last updated    | 2026-05-11 09:50 IST (session: Private Uploads + Build Verify)     |
+| Last updated by | Codex                                                              |
+| Build status    | PASSING (`npm.cmd run build`, 39 routes; `npx.cmd tsc --noEmit`)   |
 | Active branch   | main                                                                |
 | Last commit     | (update when committing)                                            |
 | Blockers        | None                                                                |
-| Next step       | Redesign Explore Swiper + Finalize collaborator trip creation      |
+| Next step       | Deploy after owner review; refresh IDE TS server if stale diagnostics remain |
 
 ## What was done this session
 - **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once; **`proxy.ts`** — allow **`/api/config/*`** without session.
@@ -62,6 +62,8 @@
 - **Profile & Avatar:** Added `/api/users/avatar` for persistent profile picture uploads. Fixed avatar display across the app. Removed redundant "Critical Actions" card.
 - **Trip Enhancements:** Added `DELETE` support for trips. Added `shareMemories` toggle. Collaborators can now be added during trip creation via email invitation.
 - **Explore Tab:** Redesigned `ExploreSwiper` with brutalist metadata overlay, corner controls, and dedicated "Save" button. Fixed Next.js 15 async params in API routes.
+- **Private uploads:** Added authenticated `/api/uploads/[...path]`, moved new memory/avatar uploads to `storage/uploads`, preserved legacy `/public/uploads` fallback, and redirects old `/uploads/*` URLs through the API route.
+- **Images & Profile:** Profile route builds as dynamic/authenticated. Things-to-do images now use per-activity image queries instead of reusing the same city hero.
 
 ## What reliably works
 - Prisma + seed (SQLite dev / PostgreSQL prod)
@@ -367,6 +369,8 @@ Pre-ship checklist:
 | 2026-05-10 | Firebase: `FIREBASE_WEB_*` + merge `.env.production` + `force-dynamic` auth pages | PM2/build empty `NEXT_PUBLIC_*`; static bootstrap was null |
 | 2026-05-10 | `proxy.ts` allow `/api/config/*` without auth | Login page fetch must work while logged out |
 | 2026-05-10 | Droplet deploy: `fetch` then `reset --hard` only (no checkout first) | Dirty server edits to tracked files blocked old flow → aborted deploy → 502 |
+| 2026-05-11 | Serve uploads through authenticated API route instead of public static files | Direct memory image URLs now require a logged-in session and ownership/share/trip access |
+| 2026-05-11 | Keep deploy clean from deleting `storage` and legacy `public/uploads` | User-uploaded files must survive `git clean` during server deploys |
 
 # VALIDATION LOG
 
@@ -376,6 +380,14 @@ Pre-ship checklist:
 | 2026-05-10 | Cursor Agent | prisma seed                  | pass    | 57 cities, 295 activities seeded |
 | 2026-05-10 | Cursor Agent | npm run dev                  | pass    | localhost:3000 ready in 628ms    |
 | 2026-05-10 | Cursor Agent | npm run build                | pass    | 0 errors, 15 routes compiled     |
+| 2026-05-11 | Codex        | npx prisma validate          | pass    | Local SQLite schema valid after memory sharing/quota fields |
+| 2026-05-11 | Codex        | prisma validate production   | pass    | PostgreSQL schema includes Trip.shareMemories, MemoryShare, storageLimit |
+| 2026-05-11 | Codex        | npx tsc --noEmit             | pass    | TypeScript clean after Explore/Memories/Profile/Admin updates |
+| 2026-05-11 | Codex        | npm run lint                 | pass    | ESLint clean; Playwright intentionally skipped per owner request |
+| 2026-05-11 | Codex        | npm run build                | pass    | Next.js production build passed; 39 static/dynamic routes generated |
+| 2026-05-11 | Codex        | npm.cmd run db:generate      | pass    | Prisma client regenerated; storageLimit, shares, memoryShare present |
+| 2026-05-11 | Codex        | npx.cmd tsc --noEmit         | pass    | No TypeScript errors after memories/upload/profile/image fixes |
+| 2026-05-11 | Codex        | npm.cmd run build            | pass    | Production build passed; `/profile` and `/api/uploads/[...path]` included |
 
 ---
 
@@ -416,3 +428,5 @@ Pre-ship checklist:
 | 2026-05-10 | Antigravity   | FEATURE: Memories gallery (200MB quota, trip-sync, Google Photos style) |
 | 2026-05-10 | Cursor Agent  | BUILD & DEPLOY: tips for 502 / dirty-git-on-droplet; NAVIGATION + DECISION LOG sync |
 | 2026-05-10 | Antigravity   | STABILISATION: Fixed broken avatars, implemented trip deletion, redesigned Explore swiper, added collaborator support, fixed async params for Next.js 15+ |
+| 2026-05-11 | Codex         | FIX/FEATURE: production schema drift guard, memory sharing without duplicates, storage quotas, custom city creation, Manali guide, maps/cost previews, Explore/Profile/Admin/Memories polish, security headers, nginx rate limits, faster deploy npm ci |
+| 2026-05-11 | Codex         | SECURITY/FIX: private upload serving, profile/build verification, activity image fallback update |

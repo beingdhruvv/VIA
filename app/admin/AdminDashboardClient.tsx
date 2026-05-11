@@ -45,14 +45,24 @@ interface Stats {
     uptime: number;
     memory: {
       total: number;
+      free: number;
       used: number;
       usagePercent: string;
+      process: {
+        rss: number;
+        heapUsed: number;
+        heapTotal: number;
+      };
     };
     cpu: {
       model: string;
       cores: number;
       load: string;
+      load5: string;
+      load15: string;
     }
+    node: string;
+    processUptime: number;
   };
 }
 
@@ -63,6 +73,7 @@ interface User {
   role: string;
   avatarUrl: string | null;
   storageUsed: number;
+  storageLimit: number;
   createdAt: string;
 }
 
@@ -97,6 +108,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [quotaDrafts, setQuotaDrafts] = useState<Record<string, string>>({});
   
   // New management states
   const [cities, setCities] = useState<AdminCity[]>([]);
@@ -167,6 +179,25 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
       }
     } catch (error) {
       console.error("Failed to update role", error);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleStorageUpdate = async (userId: string) => {
+    if (currentUserRole !== "SUPER_ADMIN") return;
+    const storageLimitMb = quotaDrafts[userId];
+    if (!storageLimitMb) return;
+    setUpdatingId(userId);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, storageLimitMb: Number(storageLimitMb) }),
+      });
+      if (res.ok) await fetchData();
+    } catch (error) {
+      console.error("Failed to update storage", error);
     } finally {
       setUpdatingId(null);
     }
@@ -310,9 +341,8 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={[
-                { name: '15m', load: 0.2 },
-                { name: '10m', load: 0.5 },
-                { name: '5m', load: 0.3 },
+                { name: '15m', load: parseFloat(stats?.system.cpu.load15 || "0") },
+                { name: '5m', load: parseFloat(stats?.system.cpu.load5 || "0") },
                 { name: 'Now', load: parseFloat(stats?.system.cpu.load || "0") },
               ]}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
@@ -347,6 +377,24 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
              >
                 Refresh Now
              </Button>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="border border-via-grey-light bg-via-off-white p-3">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Node</p>
+              <p className="font-mono text-sm font-bold">{stats?.system.node}</p>
+            </div>
+            <div className="border border-via-grey-light bg-via-off-white p-3">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Process uptime</p>
+              <p className="font-mono text-sm font-bold">{Math.round((stats?.system.processUptime ?? 0) / 60)}m</p>
+            </div>
+            <div className="border border-via-grey-light bg-via-off-white p-3">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Heap used</p>
+              <p className="font-mono text-sm font-bold">{((stats?.system.memory.process.heapUsed ?? 0) / (1024 * 1024)).toFixed(0)}MB</p>
+            </div>
+            <div className="border border-via-grey-light bg-via-off-white p-3">
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Free RAM</p>
+              <p className="font-mono text-sm font-bold">{((stats?.system.memory.free ?? 0) / (1024 * 1024)).toFixed(0)}MB</p>
+            </div>
           </div>
         </Card>
       </div>
@@ -400,8 +448,36 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                           {user.role}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
-                        {(user.storageUsed / (1024 * 1024)).toFixed(2)} MB
+                      <td className="px-6 py-4">
+                        <div className="min-w-40 space-y-2">
+                          <div className="flex justify-between font-mono text-[10px] text-via-grey-mid">
+                            <span>{(user.storageUsed / (1024 * 1024)).toFixed(1)} MB</span>
+                            <span>{(user.storageLimit / (1024 * 1024)).toFixed(0)} MB</span>
+                          </div>
+                          <ProgressBar value={Math.min((user.storageUsed / user.storageLimit) * 100, 100)} />
+                          {currentUserRole === "SUPER_ADMIN" && (
+                            <div className="flex gap-2">
+                              <input
+                                type="number"
+                                min={10}
+                                max={10240}
+                                value={quotaDrafts[user.id] ?? Math.round(user.storageLimit / (1024 * 1024))}
+                                onChange={(e) => setQuotaDrafts((prev) => ({ ...prev, [user.id]: e.target.value }))}
+                                className="w-20 border border-via-black bg-via-white px-2 py-1 font-mono text-[10px] outline-none"
+                                aria-label={`Storage quota for ${user.email} in MB`}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={updatingId === user.id}
+                                onClick={() => handleStorageUpdate(user.id)}
+                                className="h-7 px-2 font-mono text-[9px] uppercase"
+                              >
+                                Save MB
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
                         {new Date(user.createdAt).toLocaleDateString()}

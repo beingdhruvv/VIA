@@ -10,6 +10,41 @@ export function cityImageKey(name: string, country: string): string {
   return `${name}|${country}`;
 }
 
+const ACTIVITY_QUERY_HINTS: Record<string, string> = {
+  ADVENTURE: "adventure travel outdoor",
+  CULTURE: "heritage architecture museum",
+  FOOD: "local food restaurant",
+  NATURE: "nature landscape",
+  NIGHTLIFE: "nightlife city",
+  SHOPPING: "market shopping",
+  SIGHTSEEING: "landmark travel",
+  WELLNESS: "wellness garden spa",
+};
+
+function cleanImageQuery(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function getActivityImageUrl(
+  activityName: string,
+  cityName?: string | null,
+  country?: string | null,
+  category?: string | null,
+): string {
+  const hint = category ? ACTIVITY_QUERY_HINTS[category] : undefined;
+  const query = [activityName, cityName, country, hint ?? "travel experience"]
+    .filter(Boolean)
+    .map((part) => cleanImageQuery(String(part)))
+    .filter(Boolean)
+    .join(",");
+
+  return `https://source.unsplash.com/800x600/?${encodeURIComponent(query || "travel destination")}`;
+}
+
 /** All cities in prisma/seed.ts — keys must match seed `name` + `country` exactly. */
 export const CITY_IMAGES: Record<string, string> = {
   "Mumbai|India":

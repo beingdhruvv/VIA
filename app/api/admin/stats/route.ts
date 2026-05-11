@@ -45,14 +45,24 @@ export async function GET() {
         uptime: os.uptime(),
         memory: {
           total: totalMem,
+          free: freeMem,
           used: usedMem,
           usagePercent: memUsage.toFixed(2),
+          process: {
+            rss: process.memoryUsage().rss,
+            heapUsed: process.memoryUsage().heapUsed,
+            heapTotal: process.memoryUsage().heapTotal,
+          },
         },
         cpu: {
           model: cpus[0].model,
           cores: cpus.length,
           load: loadAvg[0].toFixed(2),
-        }
+          load5: loadAvg[1].toFixed(2),
+          load15: loadAvg[2].toFixed(2),
+        },
+        node: process.version,
+        processUptime: process.uptime(),
       }
     });
   } catch (error) {

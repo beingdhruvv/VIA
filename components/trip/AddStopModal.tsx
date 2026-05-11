@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { MapPin, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
+import { MapPin, ChevronRight, ArrowLeft, Calendar, Plus } from "lucide-react";
 import Image from "next/image";
 import {
   Modal,
@@ -59,6 +59,9 @@ export function AddStopModal({
   const [startDate, setStartDate] = useState(tripStartDate.slice(0, 10));
   const [endDate, setEndDate] = useState(tripStartDate.slice(0, 10));
   const [submitting, setSubmitting] = useState(false);
+  const [creatingCity, setCreatingCity] = useState(false);
+  const [customCountry, setCustomCountry] = useState("India");
+  const [customRegion, setCustomRegion] = useState("Custom");
   const [error, setError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -70,6 +73,8 @@ export function AddStopModal({
       setResults([]);
       setSelectedCity(null);
       setError("");
+      setCustomCountry("India");
+      setCustomRegion("Custom");
       setRecent(getRecentSearches());
     }
   }, [open]);
@@ -126,6 +131,32 @@ export function AddStopModal({
       onStopAdded();
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function createCustomCity() {
+    if (query.trim().length < 2) return;
+    setError("");
+    setCreatingCity(true);
+    try {
+      const res = await fetch("/api/cities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: query.trim(),
+          country: customCountry.trim() || "India",
+          region: customRegion.trim() || "Custom",
+          costIndex: 3.5,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Could not create this city");
+        return;
+      }
+      selectCity(data as CityData);
+    } finally {
+      setCreatingCity(false);
     }
   }
 
@@ -196,9 +227,33 @@ export function AddStopModal({
             )}
 
             {query.length >= 2 && !searching && results.length === 0 && (
-              <p className="text-sm text-via-grey-mid text-center py-4">
-                No cities found for &ldquo;{query}&rdquo;
-              </p>
+              <div className="border border-via-black bg-via-off-white p-4 space-y-3">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid">
+                    Add new city
+                  </p>
+                  <p className="mt-1 text-sm text-via-black">
+                    No result for &ldquo;{query}&rdquo;. Add it and plan this trip from your own destination list.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={customCountry}
+                    onChange={(e) => setCustomCountry(e.target.value)}
+                    placeholder="Country"
+                    className="border border-via-black bg-via-white px-2 py-2 font-mono text-xs outline-none"
+                  />
+                  <input
+                    value={customRegion}
+                    onChange={(e) => setCustomRegion(e.target.value)}
+                    placeholder="Region"
+                    className="border border-via-black bg-via-white px-2 py-2 font-mono text-xs outline-none"
+                  />
+                </div>
+                <Button size="sm" variant="secondary" loading={creatingCity} onClick={createCustomCity} className="w-full">
+                  <Plus size={14} /> Add {query.trim()}
+                </Button>
+              </div>
             )}
 
             {query.length === 0 && recent.length === 0 && (

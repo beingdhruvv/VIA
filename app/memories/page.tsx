@@ -9,16 +9,33 @@ export default async function MemoriesPage() {
   const session = await auth();
   if (!session) redirect("/auth/login");
 
-  const [memoriesResult, trips] = await Promise.all([
+  const [memoriesResult, trips, currentUser] = await Promise.all([
     prisma.memory.findMany({
-      where: { userId: session.user.id },
-      include: { trip: { select: { name: true } } },
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { shares: { some: { userId: session.user.id } } },
+        ],
+      },
+      include: {
+        trip: { select: { name: true } },
+        shares: {
+          select: {
+            user: { select: { id: true, name: true, email: true } },
+            sharedBy: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" }
     }),
     prisma.trip.findMany({
       where: { userId: session.user.id },
       select: { id: true, name: true }
-    })
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { storageLimit: true },
+    }),
   ]);
 
   const mappedMemories: MemoryData[] = memoriesResult.map(m => ({
@@ -36,7 +53,10 @@ export default async function MemoriesPage() {
     longitude: m.longitude,
     locationName: m.locationName,
     createdAt: m.createdAt.toISOString(),
-    trip: m.trip
+    trip: m.trip,
+    sharedWith: m.shares.map((share) => share.user),
+    sharedBy: m.userId === session.user.id ? null : m.shares.find((share) => share.user.id === session.user.id)?.sharedBy ?? null,
+    canDelete: m.userId === session.user.id,
   }));
 
   return (
@@ -48,6 +68,7 @@ export default async function MemoriesPage() {
       <MemoriesClient 
         initialMemories={mappedMemories} 
         trips={trips}
+        storageLimit={currentUser?.storageLimit ?? undefined}
       />
     </div>
   );

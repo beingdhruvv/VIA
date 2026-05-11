@@ -9,6 +9,9 @@ import {
   Calendar, 
   X, 
   Trash2,
+  Download,
+  Share2,
+  Users,
   Maximize2,
   HardDrive,
   CheckSquare,
@@ -20,18 +23,24 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { formatDate } from "@/lib/utils";
+import { protectedUploadUrl } from "@/lib/upload-paths";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MemoryData } from "@/types";
 
 interface Props {
   initialMemories: MemoryData[];
   trips: { id: string; name: string }[];
+  storageLimit?: number;
 }
 
-const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
+const DEFAULT_STORAGE_LIMIT = 200 * 1024 * 1024; // 200MB
 
 function imageSrc(path: string) {
-  return path.startsWith("/") ? path : `/${path}`;
+  return protectedUploadUrl(path);
+}
+
+function isPrivateImage(path: string) {
+  return imageSrc(path).startsWith("/api/uploads/");
 }
 
 function pinPosition(latitude: number, longitude: number) {
@@ -44,7 +53,7 @@ function pinPosition(latitude: number, longitude: number) {
   };
 }
 
-export function MemoriesClient({ initialMemories, trips }: Props) {
+export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_STORAGE_LIMIT }: Props) {
   const [memories, setMemories] = useState<MemoryData[]>(initialMemories);
   const [view, setView] = useState<"grid" | "map">("grid");
   const [uploading, setUploading] = useState(false);
@@ -52,10 +61,14 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
   const [fullImage, setFullImage] = useState<MemoryData | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelectMode, setIsSelectMode] = useState(false);
+  const [shareEmails, setShareEmails] = useState("");
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentStorage = memories.reduce((acc, m) => acc + m.fileSize, 0);
-  const storagePercent = Math.min((currentStorage / MAX_STORAGE) * 100, 100);
+  const ownedMemories = memories.filter((memory) => memory.userId !== "" && memory.canDelete !== false);
+  const currentStorage = ownedMemories.reduce((acc, m) => acc + m.fileSize, 0);
+  const storagePercent = Math.min((currentStorage / storageLimit) * 100, 100);
 
   const filteredMemories = useMemo(() => {
     return selectedTrip === "all"
@@ -83,6 +96,8 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
     if (!files || files.length === 0) return;
 
     setUploading(true);
+    setUploadNotice(`Uploading ${files.length} image${files.length === 1 ? "" : "s"}...`);
+    let uploaded = 0;
     for (const file of Array.from(files)) {
       const formData = new FormData();
       formData.append("file", file);
@@ -98,12 +113,18 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
         if (res.ok) {
           const newMemoryData = await res.json();
           setMemories(prev => [newMemoryData, ...prev]);
+          uploaded++;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          setUploadNotice(data.error ?? "One upload failed.");
         }
       } catch (err) {
         console.error("Upload failed:", err);
+        setUploadNotice("Upload failed. Please try again.");
       }
     }
     setUploading(false);
+    if (uploaded > 0) setUploadNotice(`${uploaded} image${uploaded === 1 ? "" : "s"} uploaded.`);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -131,6 +152,47 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
       }
     } catch (err) {
       console.error("Delete failed:", err);
+    }
+  };
+
+  const handleDownloadSelected = () => {
+    const selected = memories.filter((memory) => selectedIds.has(memory.id));
+    selected.forEach((memory, index) => {
+      window.setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = imageSrc(memory.imageUrl);
+        link.download = memory.fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }, index * 150);
+    });
+  };
+
+  const handleShareSelected = async () => {
+    if (selectedIds.size === 0 || !shareEmails.trim()) return;
+    setShareStatus("Sharing...");
+    try {
+      const res = await fetch("/api/memories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds), emails: shareEmails }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setShareStatus(data.error ?? "Share failed.");
+        return;
+      }
+      const users = Array.isArray(data.users) ? data.users : [];
+      setMemories((prev) => prev.map((memory) => selectedIds.has(memory.id)
+        ? { ...memory, sharedWith: users }
+        : memory
+      ));
+      setShareStatus(`Shared with ${users.map((user: { email: string }) => user.email).join(", ")}.`);
+      setShareEmails("");
+    } catch (err) {
+      console.error("Share failed:", err);
+      setShareStatus("Share failed. Please try again.");
     }
   };
 
@@ -205,7 +267,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 <HardDrive size={11} /> Storage
               </p>
               <p className="font-mono text-[10px] text-via-black">
-                {(currentStorage / (1024 * 1024)).toFixed(1)}MB / 200MB
+                {(currentStorage / (1024 * 1024)).toFixed(1)}MB / {(storageLimit / (1024 * 1024)).toFixed(0)}MB
               </p>
             </div>
             <div className="h-2 bg-via-grey-light border border-via-black overflow-hidden relative">
@@ -238,6 +300,12 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
         </div>
       </div>
 
+      {uploadNotice && (
+        <div className="border border-via-black bg-via-white px-3 py-2 font-mono text-[10px] uppercase text-via-grey-dark shadow-brutalist-sm">
+          {uploadNotice}
+        </div>
+      )}
+
       {/* Grid View */}
       {view === "grid" && (
         <div className="space-y-12">
@@ -268,6 +336,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                         src={imageSrc(m.imageUrl)}
                         alt={m.caption || m.fileName}
                         fill
+                        unoptimized={isPrivateImage(m.imageUrl)}
                         className={`object-cover transition-transform duration-500 ${selectedIds.has(m.id) ? 'scale-90' : 'group-hover:scale-105'}`}
                       />
                       
@@ -292,6 +361,18 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                               {m.trip.name}
                             </span>
                           )}
+                        </div>
+                      )}
+
+                      {m.sharedWith && m.sharedWith.length > 0 && (
+                        <div className="absolute right-2 top-2 z-10 border border-via-black bg-via-white px-1.5 py-0.5 font-mono text-[8px] uppercase shadow-brutalist-sm">
+                          <Users size={10} className="mr-1 inline" />
+                          {m.sharedWith.length}
+                        </div>
+                      )}
+                      {m.sharedBy && (
+                        <div className="absolute left-2 top-2 z-10 border border-via-black bg-via-white px-1.5 py-0.5 font-mono text-[8px] uppercase shadow-brutalist-sm">
+                          Shared
                         </div>
                       )}
                     </motion.div>
@@ -333,7 +414,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                     aria-label={`Open ${memory.caption || memory.fileName}`}
                   >
                     <div className="relative h-12 w-12 overflow-hidden border border-via-black bg-via-off-white">
-                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill className="object-cover" />
+                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill unoptimized={isPrivateImage(memory.imageUrl)} className="object-cover" />
                     </div>
                     <span className="absolute -bottom-6 left-1/2 hidden -translate-x-1/2 whitespace-nowrap border border-via-black bg-via-white px-2 py-0.5 font-mono text-[9px] uppercase group-hover:block">
                       {memory.locationName || memory.trip?.name || `Pin ${index + 1}`}
@@ -366,7 +447,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                     className="flex w-full items-center gap-3 border border-via-grey-light bg-via-off-white p-2 text-left transition-colors hover:border-via-black hover:bg-via-white"
                   >
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-via-black bg-via-white">
-                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill className="object-cover" />
+                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill unoptimized={isPrivateImage(memory.imageUrl)} className="object-cover" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate font-mono text-[10px] uppercase text-via-black">
@@ -417,6 +498,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                   src={imageSrc(fullImage.imageUrl)}
                   alt={fullImage.fileName}
                   fill
+                  unoptimized={isPrivateImage(fullImage.imageUrl)}
                   className="object-contain"
                 />
               </div>
@@ -443,6 +525,16 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
               <div className="flex gap-2">
                 <a
                   href={imageSrc(fullImage.imageUrl)}
+                  download={fullImage.fileName}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 hover:bg-via-off-white border border-via-black"
+                  aria-label="Download memory image"
+                >
+                  <Download size={16} />
+                </a>
+                <a
+                  href={imageSrc(fullImage.imageUrl)}
                   target="_blank"
                   rel="noreferrer"
                   className="p-2 hover:bg-via-off-white border border-via-black"
@@ -453,7 +545,8 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 <button
                   type="button"
                   onClick={() => void handleDeleteMemory(fullImage.id)}
-                  className="p-2 hover:bg-via-red hover:text-via-white border border-via-black text-via-red"
+                  disabled={fullImage.canDelete === false}
+                  className="p-2 hover:bg-via-red hover:text-via-white border border-via-black text-via-red disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Delete memory"
                 >
                   <Trash2 size={16} />
@@ -477,7 +570,30 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
               {selectedIds.size} items selected
             </div>
             <div className="h-6 w-[1px] bg-via-grey-light" />
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+              <input
+                value={shareEmails}
+                onChange={(e) => setShareEmails(e.target.value)}
+                placeholder="email@example.com"
+                className="min-w-0 border border-via-black bg-via-off-white px-2 py-1 font-mono text-[10px] outline-none focus:bg-via-white"
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={!shareEmails.trim()}
+                onClick={handleShareSelected}
+                className="font-mono text-[10px]"
+              >
+                <Share2 size={14} className="mr-2" /> Share
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleDownloadSelected}
+                className="font-mono text-[10px]"
+              >
+                <Download size={14} className="mr-2" /> Download
+              </Button>
               <Button 
                 variant="secondary" 
                 size="sm" 
@@ -490,11 +606,17 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 variant="primary" 
                 size="sm" 
                 onClick={handleDeleteSelected}
+                disabled={memories.filter((memory) => selectedIds.has(memory.id)).some((memory) => memory.canDelete === false)}
                 className="bg-via-red border-via-red hover:bg-via-black hover:border-via-black font-mono text-[10px]"
               >
                 <Trash2 size={14} className="mr-2" /> Delete
               </Button>
             </div>
+            {shareStatus && (
+              <p className="absolute -top-8 left-0 border border-via-black bg-via-white px-2 py-1 font-mono text-[9px] uppercase text-via-grey-dark">
+                {shareStatus}
+              </p>
+            )}
             <button 
               onClick={() => setIsSelectMode(false)}
               className="ml-auto p-1 hover:bg-via-off-white"

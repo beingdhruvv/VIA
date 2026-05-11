@@ -3,6 +3,7 @@
  * Uses next/image for real images; falls back to a coloured initial circle.
  */
 import Image from "next/image";
+import { protectedUploadUrl } from "@/lib/upload-paths";
 
 type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
@@ -51,13 +52,15 @@ function Avatar({ name, src, size = "md", className = "" }: AvatarProps) {
   };
 
   if (src) {
-    const formattedSrc = src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
+    const formattedSrc = protectedUploadUrl(src);
+    const isPrivateUpload = formattedSrc.startsWith("/api/uploads/");
     return (
       <Image
         src={formattedSrc}
         alt={name ?? "User avatar"}
         width={px}
         height={px}
+        unoptimized={isPrivateUpload}
         className={["object-cover", className].filter(Boolean).join(" ")}
         style={{ ...sharedStyle, border: "1px solid #D6D6D6" }}
       />

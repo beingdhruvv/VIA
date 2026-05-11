@@ -11,22 +11,42 @@ export default async function ExplorePage() {
   if (!session) redirect("/auth/login");
 
   // Get initial batch of cities the user hasn't swiped yet
-  const swiped = await prisma.userTaste.findMany({
-    where: { userId: session.user.id },
-    select: { cityId: true },
-  });
+  const [swiped, profile] = await Promise.all([
+    prisma.userTaste.findMany({
+      where: { userId: session.user.id },
+      select: { cityId: true, type: true, city: { select: { region: true } } },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { travelStyle: true, genderPreference: true, homeCountry: true },
+    }),
+  ]);
   const swipedIds = swiped.map((s) => s.cityId);
+  const likedRegions = new Set(swiped.filter((taste) => taste.type !== "DISLIKE").map((taste) => taste.city.region));
 
-  const initialCities = await prisma.city.findMany({
+  const candidateCities = await prisma.city.findMany({
     where: {
       id: { notIn: swipedIds },
     },
     include: {
       activities: { take: 3, orderBy: { rating: "desc" } },
     },
-    take: 12,
+    take: 50,
     orderBy: { popularityScore: "desc" },
   });
+  const budgetTarget = profile?.travelStyle === "FAMILY" ? 4 : profile?.travelStyle === "SOLO" ? 3 : 5;
+  const initialCities = candidateCities
+    .map((city) => ({
+      city,
+      score:
+        city.popularityScore +
+        (likedRegions.has(city.region) ? 12 : 0) +
+        (profile?.homeCountry && city.country === profile.homeCountry ? 6 : 0) -
+        Math.abs(city.costIndex - budgetTarget) * 2,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 12)
+    .map((item) => item.city);
 
   const user: SessionUser = {
     id: session.user.id,

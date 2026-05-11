@@ -164,12 +164,33 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   }
 
   const currentCity = filteredCities[currentIndex];
+  const nextCity = filteredCities[currentIndex + 1];
   const priceLevel = Math.max(1, Math.min(4, Math.ceil(currentCity.costIndex / 25)));
   const popularity = (currentCity.popularityScore / 20).toFixed(1);
 
   return (
     <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[min(100%,22rem)] flex-1 flex-col sm:max-w-md">
+      <div className="mb-2 flex shrink-0 justify-center gap-1.5">
+        {filteredCities.slice(currentIndex, currentIndex + 5).map((city, index) => (
+          <span
+            key={city.id}
+            className={`h-1.5 rounded-full border border-via-black ${index === 0 ? "w-8 bg-via-black" : "w-3 bg-via-white"}`}
+          />
+        ))}
+      </div>
       <div className="relative min-h-[220px] flex-1 perspective-1000 sm:min-h-[280px]">
+        {nextCity && (
+          <div
+            className="absolute inset-x-3 top-4 bottom-0 overflow-hidden border border-via-black bg-via-white opacity-80"
+            style={{ boxShadow: "2px 2px 0px var(--foreground)", transform: "rotate(2deg) scale(0.96)" }}
+            aria-hidden="true"
+          >
+            <div className="relative h-full w-full">
+              <Image src={exploreCityImageSrc(nextCity)} alt="" fill className="object-cover" />
+              <div className="absolute inset-0 bg-via-white/45" />
+            </div>
+          </div>
+        )}
         <AnimatePresence mode="popLayout">
           <motion.div
             key={currentCity.id}

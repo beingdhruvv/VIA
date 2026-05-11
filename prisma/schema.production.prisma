@@ -27,9 +27,14 @@ model User {
   homeCountry  String?  @map("home_country")
   createdAt    DateTime @default(now()) @map("created_at")
   storageUsed  Int      @default(0) @map("storage_used") // Track bytes used
+  storageLimit Int      @default(209715200) @map("storage_limit")
+  genderPreference String? @map("gender_preference")
+  travelStyle String? @map("travel_style")
 
   trips    Trip[]
   memories Memory[]
+  sharedMemories MemoryShare[] @relation("MemoryShareRecipient")
+  sentMemoryShares MemoryShare[] @relation("MemoryShareSender")
   tripNotes TripNote[]
   collaboratingIn TripCollaborator[]
   paidExpenses    Expense[]          @relation("PayerRelation")
@@ -260,6 +265,22 @@ model Memory {
 
   user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   trip Trip? @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  shares MemoryShare[]
 
   @@map("memories")
+}
+
+model MemoryShare {
+  id         String   @id @default(uuid())
+  memoryId   String   @map("memory_id")
+  userId     String   @map("user_id")
+  sharedById String   @map("shared_by_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  memory   Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  user     User   @relation("MemoryShareRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  sharedBy User   @relation("MemoryShareSender", fields: [sharedById], references: [id], onDelete: Cascade)
+
+  @@unique([memoryId, userId])
+  @@map("memory_shares")
 }

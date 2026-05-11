@@ -1,12 +1,14 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Star, Wallet, Clock, ArrowRight, Thermometer, Wind, Globe } from "lucide-react";
+import { MapPin, Star, Wallet, Clock, ArrowRight, Thermometer, Wind, Globe, ExternalLink, Bus, Train, Plane } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import Image from "next/image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatCurrency, getCityImageUrl, getActivityImageUrl } from "@/lib/utils";
+import { getDestinationGuide } from "@/lib/destination-guides";
+import { estimateTravelCosts, googleMapsUrl } from "@/lib/travel-costs";
 import type { Metadata } from "next";
 import type { ActivityCategory, SessionUser } from "@/types";
 
@@ -71,7 +73,21 @@ export default async function CityDetailPage({ params }: Props) {
 
   if (!city) notFound();
 
-  const weather = await fetchWeather(city.latitude, city.longitude);
+  const [weather, currentUser] = await Promise.all([
+    fetchWeather(city.latitude, city.longitude),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { homeCity: true, homeCountry: true },
+    }),
+  ]);
+  const originCity = currentUser?.homeCity
+    ? await prisma.city.findFirst({
+        where: { name: { contains: currentUser.homeCity } },
+      })
+    : null;
+  const guide = getDestinationGuide(city.name, city.country);
+  const travelCosts = estimateTravelCosts(city, originCity);
+  const cityMapsUrl = googleMapsUrl(`${city.name} ${city.region} ${city.country}`);
 
   const user: SessionUser = {
     id: session.user.id,
@@ -108,13 +124,24 @@ export default async function CityDetailPage({ params }: Props) {
             { label: city.name },
           ]}
           actions={
-            <Link
-              href={`/trips/new?city=${city.id}&cityName=${encodeURIComponent(city.name)}`}
-              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-black text-via-white px-4 py-2 hover:bg-via-navy transition-colors"
-            >
-              Plan a trip here
-              <ArrowRight size={12} strokeWidth={1.5} />
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={cityMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-white text-via-black px-4 py-2 hover:bg-via-off-white transition-colors"
+              >
+                Maps
+                <ExternalLink size={12} strokeWidth={1.5} />
+              </a>
+              <Link
+                href={`/trips/new?city=${city.id}&cityName=${encodeURIComponent(city.name)}`}
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-black text-via-white px-4 py-2 hover:bg-via-navy transition-colors"
+              >
+                Plan a trip here
+                <ArrowRight size={12} strokeWidth={1.5} />
+              </Link>
+            </div>
           }
         />
 
@@ -174,6 +201,120 @@ export default async function CityDetailPage({ params }: Props) {
         </div>
 
         {/* ── Activities by category ── */}
+        <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="border border-via-black bg-via-white p-4" style={{ boxShadow: "3px 3px 0px #111111" }}>
+            <div className="flex items-center justify-between gap-3 border-b border-via-grey-light pb-3">
+              <div>
+                <h2 className="font-grotesk text-lg font-bold text-via-black">Map preview</h2>
+                <p className="font-mono text-[10px] uppercase text-via-grey-mid">{city.latitude.toFixed(3)}, {city.longitude.toFixed(3)}</p>
+              </div>
+              <a href={cityMapsUrl} target="_blank" rel="noreferrer" className="border border-via-black px-3 py-2 font-mono text-[10px] uppercase hover:bg-via-off-white">
+                Open Google Maps
+              </a>
+            </div>
+            <a href={cityMapsUrl} target="_blank" rel="noreferrer" className="mt-4 block overflow-hidden border border-via-black bg-via-off-white p-5 transition-colors hover:bg-via-white">
+              <div className="relative min-h-48">
+                <div className="absolute inset-0 opacity-60">
+                  <div className="absolute left-1/2 top-0 h-full w-px bg-via-grey-light" />
+                  <div className="absolute left-1/4 top-0 h-full w-px bg-via-grey-light" />
+                  <div className="absolute left-3/4 top-0 h-full w-px bg-via-grey-light" />
+                  <div className="absolute left-0 top-1/2 h-px w-full bg-via-grey-light" />
+                  <div className="absolute left-0 top-1/4 h-px w-full bg-via-grey-light" />
+                  <div className="absolute left-0 top-3/4 h-px w-full bg-via-grey-light" />
+                </div>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full border border-via-black bg-via-white px-3 py-2 shadow-brutalist-sm">
+                  <MapPin size={24} className="mx-auto text-via-red" />
+                  <p className="mt-1 whitespace-nowrap font-mono text-[10px] uppercase text-via-black">{city.name}</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div className="border border-via-black bg-via-white p-4" style={{ boxShadow: "3px 3px 0px #111111" }}>
+            <div className="border-b border-via-grey-light pb-3">
+              <h2 className="font-grotesk text-lg font-bold text-via-black">Travel charges</h2>
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid">
+                From {travelCosts.originLabel} - {travelCosts.distanceLabel}
+              </p>
+            </div>
+            <div className="mt-4 space-y-3">
+              {travelCosts.modes.map((mode) => {
+                const Icon = mode.mode.startsWith("Bus") ? Bus : mode.mode.startsWith("Train") ? Train : Plane;
+                return (
+                  <div key={mode.mode} className="border border-via-grey-light bg-via-off-white p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="flex items-center gap-2 font-mono text-xs uppercase text-via-black"><Icon size={14} /> {mode.mode}</p>
+                      <p className="font-mono text-xs font-bold text-via-black">{mode.estimate}</p>
+                    </div>
+                    <p className="mt-1 text-[11px] text-via-grey-mid">{mode.note}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {guide && (
+          <div className="mt-8 space-y-6">
+            <div className="border-b border-via-black pb-3">
+              <h2 className="font-grotesk text-xl font-bold text-via-black">Manali deep guide</h2>
+              <p className="font-mono text-xs uppercase text-via-grey-mid">Places, activities, hostels, and package references</p>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {guide.places.map((place) => (
+                <a key={place.name} href={googleMapsUrl(place.mapQuery)} target="_blank" rel="noreferrer" className="border border-via-black bg-via-white p-4 transition-colors hover:bg-via-off-white" style={{ boxShadow: "2px 2px 0px #111111" }}>
+                  <p className="font-grotesk text-sm font-bold text-via-black">{place.name}</p>
+                  <p className="mt-1 font-mono text-[10px] uppercase text-via-grey-mid">{place.area}</p>
+                  <p className="mt-2 text-xs text-via-grey-dark">{place.notes}</p>
+                </a>
+              ))}
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="border border-via-black bg-via-white p-4" style={{ boxShadow: "3px 3px 0px #111111" }}>
+                <h3 className="font-grotesk font-bold text-via-black">Activities</h3>
+                <div className="mt-3 space-y-3">
+                  {guide.activities.map((activity) => (
+                    <div key={activity.name} className="border border-via-grey-light bg-via-off-white p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-mono text-xs uppercase text-via-black">{activity.name}</p>
+                        <p className="font-mono text-[10px] text-via-black">{activity.estimate}</p>
+                      </div>
+                      <p className="mt-1 text-[11px] text-via-grey-mid">{activity.season} - {activity.notes}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="border border-via-black bg-via-white p-4" style={{ boxShadow: "3px 3px 0px #111111" }}>
+                  <h3 className="font-grotesk font-bold text-via-black">Hostel redirects</h3>
+                  <div className="mt-3 space-y-2">
+                    {guide.hostels.map((hostel) => (
+                      <a key={hostel.name} href={hostel.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 border border-via-grey-light bg-via-off-white px-3 py-2 text-xs hover:bg-via-white">
+                        <span>{hostel.name} - {hostel.area}</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <div className="border border-via-black bg-via-white p-4" style={{ boxShadow: "3px 3px 0px #111111" }}>
+                  <h3 className="font-grotesk font-bold text-via-black">Package references</h3>
+                  <div className="mt-3 space-y-2">
+                    {guide.packages.map((pkg) => (
+                      <a key={`${pkg.provider}-${pkg.title}`} href={pkg.url} target="_blank" rel="noreferrer" className="block border border-via-grey-light bg-via-off-white p-3 text-xs hover:bg-via-white">
+                        <span className="font-mono uppercase text-via-black">{pkg.title}</span>
+                        <span className="mt-1 block text-via-grey-mid">{pkg.provider} - {pkg.duration} - {pkg.priceRange}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border border-via-black bg-via-white p-4 font-mono text-[10px] uppercase text-via-grey-mid">
+              {guide.routeNotes.join(" ")}
+            </div>
+          </div>
+        )}
+
         {rawActivities.length === 0 ? (
           <div
             className="mt-8 border border-via-black bg-via-white p-8 text-center"
@@ -225,7 +366,11 @@ export default async function CityDetailPage({ params }: Props) {
                         {/* Activity image */}
                         <div className="h-28 relative overflow-hidden">
                           <Image
-                            src={act.imageUrl ?? getActivityImageUrl(act.name, city.name, city.country)}
+                            src={
+                              act.imageUrl && act.imageUrl !== city.imageUrl
+                                ? act.imageUrl
+                                : getActivityImageUrl(act.name, city.name, city.country, act.category)
+                            }
                             alt={act.name}
                             fill
                             className="object-cover"

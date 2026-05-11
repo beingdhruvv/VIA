@@ -30,6 +30,8 @@ export interface UserProfile {
   language: string;
   homeCity?: string | null;
   homeCountry?: string | null;
+  genderPreference?: string | null;
+  travelStyle?: string | null;
   createdAt: string;
 }
 
@@ -163,6 +165,9 @@ export interface MemoryData {
   locationName: string | null;
   createdAt: string;
   trip?: { name: string } | null;
+  sharedWith?: { id: string; email: string; name: string }[];
+  sharedBy?: { id: string; email: string; name: string } | null;
+  canDelete?: boolean;
 }
 
 export interface TripFull extends TripCard {

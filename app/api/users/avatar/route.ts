@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now();
     const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `avatar-${session.user.id.slice(0, 8)}-${timestamp}.${extension}`;
-    const relativePath = `/uploads/avatars/${fileName}`;
-    const absolutePath = join(process.cwd(), "public", relativePath);
-    const dirPath = join(process.cwd(), "public", "uploads", "avatars");
+    const relativePath = `/api/uploads/avatars/${fileName}`;
+    const absolutePath = join(process.cwd(), "storage", "uploads", "avatars", fileName);
+    const dirPath = join(process.cwd(), "storage", "uploads", "avatars");
     
     await mkdir(dirPath, { recursive: true });
     await writeFile(absolutePath, buffer);

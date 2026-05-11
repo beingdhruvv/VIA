@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { CITY_IMAGES, cityImageKey } from "../lib/place-images";
+import { CITY_IMAGES, cityImageKey, getActivityImageUrl } from "../lib/place-images";
 
 const prisma = new PrismaClient();
 
@@ -275,6 +275,12 @@ const activitiesData: Record<string, ActivityData[]> = {
     { name: "Old Manali Village Walk", description: "Explore the hippie haven with cafes, art galleries, and mountain views.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 2, rating: 4.5 },
     { name: "River Rafting — Beas River", description: "White water rafting through grade 3-4 rapids.", category: "ADVENTURE", estimatedCost: 800, durationHours: 2, rating: 4.7 },
     { name: "Vashisht Hot Springs", description: "Natural sulphur hot springs with open-air and private bathing pools.", category: "WELLNESS", estimatedCost: 50, durationHours: 1.5, rating: 4.3 },
+    { name: "Jogini Falls Hike", description: "A scenic village-and-forest trail from Vashisht to a tiered waterfall with valley views.", category: "ADVENTURE", estimatedCost: 300, durationHours: 3, rating: 4.6 },
+    { name: "Atal Tunnel and Sissu Drive", description: "A high-altitude road day across the tunnel into Lahaul for snow walls, waterfalls, and cafes.", category: "SIGHTSEEING", estimatedCost: 4500, durationHours: 8, rating: 4.7 },
+    { name: "Manu Temple and Cafe Trail", description: "Pair the old temple lanes with locally loved cafes, bakeries, and slow Old Manali evenings.", category: "FOOD", estimatedCost: 900, durationHours: 3, rating: 4.4 },
+    { name: "Naggar Castle and Roerich Gallery Day Trip", description: "Heritage architecture, Kullu valley viewpoints, and art stops away from the main Manali crowd.", category: "CULTURE", estimatedCost: 1800, durationHours: 6, rating: 4.5 },
+    { name: "Mall Road Winterwear and Souvenir Run", description: "Practical shopping for woolens, shawls, snacks, permits, and last-minute trip supplies.", category: "SHOPPING", estimatedCost: 1500, durationHours: 2, rating: 4.1 },
+    { name: "Sethan Snow Village", description: "Offbeat snow-play and mountain village outing above Prini, best with a local driver.", category: "ADVENTURE", estimatedCost: 3000, durationHours: 6, rating: 4.4 },
   ],
   Kasol: [
     { name: "Manikaran Sahib", description: "Sacred Sikh gurudwara with natural hot springs and legendary community kitchen.", category: "CULTURE", estimatedCost: 0, durationHours: 3, rating: 4.8 },
@@ -681,7 +687,6 @@ async function main() {
       continue;
     }
     const country = cities.find((c) => c.name === cityName)?.country ?? "";
-    const cityHero = CITY_IMAGES[cityImageKey(cityName, country)] ?? null;
     for (const act of activities) {
       await prisma.activity.create({
         data: {
@@ -692,7 +697,7 @@ async function main() {
           estimatedCost: act.estimatedCost,
           durationHours: act.durationHours,
           rating: act.rating,
-          imageUrl: cityHero,
+          imageUrl: getActivityImageUrl(act.name, cityName, country, act.category),
         },
       });
       activityCount++;

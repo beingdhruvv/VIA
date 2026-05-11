@@ -17,17 +17,20 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-via-white flex flex-col selection:bg-via-black selection:text-via-white overflow-hidden">
       {/* ─── Animated Background Layer ────────────────────────────────────────── */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-via-navy/20 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-via-red/10 blur-[120px] animate-pulse [animation-delay:2s]" />
-      </div>
-
       {/* ─── Hero ─────────────────────────────────────────────────────────────── */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center px-8 md:px-16 lg:px-24 pt-32 pb-16">
+      <main className="relative z-10 flex min-h-[92svh] flex-col justify-center overflow-hidden px-5 pb-16 pt-24 md:px-16 lg:px-24">
+        <Image
+          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1800&auto=format&fit=crop"
+          alt="Mountain road through a travel destination"
+          fill
+          priority
+          className="absolute inset-0 -z-10 object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-via-white/78" />
         {/* Wordmark */}
         <div className="relative">
           <h1
-            className="text-[clamp(6rem,24vw,18rem)] font-black leading-[0.75] tracking-tighter text-via-black select-none mb-8 mix-blend-multiply"
+            className="text-[clamp(4.8rem,22vw,18rem)] font-black leading-[0.78] text-via-black select-none mb-8 mix-blend-multiply"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             VIA
@@ -40,17 +43,17 @@ export default function LandingPage() {
         {/* Tagline */}
         <div className="flex flex-col gap-10">
           <p
-            className="text-xl md:text-2xl text-via-grey-dark max-w-md font-bold uppercase tracking-tight leading-tight"
+            className="text-lg md:text-2xl text-via-grey-dark max-w-md font-bold uppercase leading-tight"
             style={{ fontFamily: "var(--font-ibm-plex-mono)" }}
           >
             PLAN THE JOURNEY.{" "}
             <span className="text-via-black underline decoration-via-red decoration-4 underline-offset-8">LIVE THE STORY.</span>
           </p>
           
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-5">
             <Link
               href="/auth/signup"
-              className="group relative inline-flex items-center gap-3 border-2 border-via-black bg-via-black px-12 py-5 text-sm font-bold uppercase tracking-widest text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#C1121F]"
+              className="group relative inline-flex items-center justify-center gap-3 border-2 border-via-black bg-via-black px-8 py-4 text-sm font-bold uppercase text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#C1121F] sm:px-12 sm:py-5"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
               Start Planning
@@ -58,7 +61,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/auth/login"
-              className="inline-flex items-center border-2 border-via-black bg-via-white px-12 py-5 text-sm font-bold uppercase tracking-widest text-via-black transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#1B2A41]"
+              className="inline-flex items-center justify-center border-2 border-via-black bg-via-white px-8 py-4 text-sm font-bold uppercase text-via-black transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#1B2A41] sm:px-12 sm:py-5"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
               Sign In

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getActivityImageUrl } from "@/lib/place-images";
 import type { City } from "@prisma/client";
 
 interface ExploreCityResponse extends City {
   recScore: number;
-  activities: { id: string; name: string; estimatedCost: number; category: string }[];
+  activities: { id: string; name: string; estimatedCost: number; category: string; imageUrl: string | null }[];
 }
 export async function GET() {
   const session = await auth();
@@ -94,7 +95,9 @@ export async function GET() {
           name: a.name,
           estimatedCost: a.estimatedCost,
           category: a.category,
-          imageUrl: a.imageUrl
+          imageUrl: a.imageUrl && a.imageUrl !== city.imageUrl
+            ? a.imageUrl
+            : getActivityImageUrl(a.name, city.name, city.country, a.category)
         }))
       };
     })

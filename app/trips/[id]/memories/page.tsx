@@ -16,7 +16,7 @@ export default async function TripMemoriesPage({ params }: Props) {
 
   const { id } = await params;
 
-  const [trip, memoriesResult] = await Promise.all([
+  const [trip, memoriesResult, currentUser] = await Promise.all([
     prisma.trip.findFirst({
       where: { 
         id, 
@@ -29,9 +29,21 @@ export default async function TripMemoriesPage({ params }: Props) {
     }),
     prisma.memory.findMany({
       where: { tripId: id },
-      include: { trip: { select: { name: true } } },
+      include: {
+        trip: { select: { name: true } },
+        shares: {
+          select: {
+            user: { select: { id: true, name: true, email: true } },
+            sharedBy: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" }
-    })
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { storageLimit: true },
+    }),
   ]);
 
   if (!trip) redirect("/trips");
@@ -51,7 +63,10 @@ export default async function TripMemoriesPage({ params }: Props) {
     longitude: m.longitude,
     locationName: m.locationName,
     createdAt: m.createdAt.toISOString(),
-    trip: m.trip
+    trip: m.trip,
+    sharedWith: m.shares.map((share) => share.user),
+    sharedBy: m.userId === session.user.id ? null : m.shares.find((share) => share.user.id === session.user.id)?.sharedBy ?? null,
+    canDelete: m.userId === session.user.id,
   }));
 
   const sidebarUser = {
@@ -77,6 +92,7 @@ export default async function TripMemoriesPage({ params }: Props) {
         <MemoriesClient 
           initialMemories={mappedMemories} 
           trips={[trip]}
+          storageLimit={currentUser?.storageLimit ?? undefined}
         />
       </main>
     </AppShell>

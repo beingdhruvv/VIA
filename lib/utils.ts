@@ -1,5 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
-import { CITY_IMAGES, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
+import { CITY_IMAGES, FALLBACK_CITY_IMAGE, getActivityImageUrl as getCuratedActivityImageUrl } from "@/lib/place-images";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
@@ -65,12 +65,12 @@ export function getCityImageUrl(cityName: string, country?: string | null): stri
  * Activity cards: use the parent city image (real place) until a per-activity URL exists in DB.
  */
 export function getActivityImageUrl(
-  _activityName: string,
+  activityName: string,
   cityName?: string | null,
   country?: string | null,
+  category?: string | null,
 ): string {
-  if (cityName) return getCityImageUrl(cityName, country);
-  return FALLBACK_CITY_IMAGE;
+  return getCuratedActivityImageUrl(activityName, cityName, country, category);
 }
 
 export function timeAgo(date: Date | string): string {
