@@ -7,6 +7,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all public trips for sitemap
   const publicTrips = await prisma.sharedLink.findMany({
     select: { slug: true }
+  }).catch((error: unknown) => {
+    console.warn("[sitemap] public trip lookup skipped", error);
+    return [];
   })
 
   const tripUrls = publicTrips.map((link) => ({
