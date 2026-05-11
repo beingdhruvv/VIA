@@ -68,11 +68,11 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     });
   }, [cities, filters]);
 
-  useEffect(() => {
+  const resetDeckPosition = () => {
     setCurrentIndex(0);
     setHistory([]);
     x.set(0);
-  }, [filters.cost, filters.region, x]);
+  };
 
   const handleSwipe = async (direction: "left" | "right" | "up") => {
     const city = filteredCities[currentIndex];
@@ -367,8 +367,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                       key={r}
                       type="button"
                       onClick={() => {
-                        setCurrentIndex(0);
-                        setHistory([]);
+                        resetDeckPosition();
                         setFilters((f) => ({ ...f, region: r }));
                       }}
                       className={`text-[10px] font-mono py-1.5 border ${filters.region === r ? 'bg-via-black text-via-white border-via-black' : 'bg-via-off-white border-via-grey-light'}`}
@@ -388,8 +387,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                       key={cost}
                       type="button"
                       onClick={() => {
-                        setCurrentIndex(0);
-                        setHistory([]);
+                        resetDeckPosition();
                         setFilters((f) => ({ ...f, cost }));
                       }}
                       className={`border py-1.5 font-mono text-[10px] ${filters.cost === cost ? "border-via-black bg-via-black text-via-white" : "border-via-grey-light bg-via-off-white text-via-black"}`}
