@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { MapPin, IndianRupee, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
+import { MapPin, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
 import Image from "next/image";
 import {
   Modal,
@@ -134,7 +134,7 @@ export function AddStopModal({
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-w-lg">
+      <ModalContent className="max-w-md w-full mx-auto">
         <ModalHeader
           title={step === "search" ? "Add a Stop" : `Dates for ${selectedCity?.name}`}
         />
@@ -180,9 +180,11 @@ export function AddStopModal({
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-xs font-mono text-via-grey-mid flex items-center gap-0.5">
-                            <IndianRupee size={10} />
-                            {city.costIndex.toFixed(1)}
+                          <p className="text-[10px] font-mono text-via-grey-mid uppercase tracking-tighter">
+                            Cost Index
+                          </p>
+                          <p className="text-xs font-mono font-bold text-via-black">
+                            {city.costIndex.toFixed(1)}/5.0
                           </p>
                           <ChevronRight size={14} className="text-via-grey-mid ml-auto mt-1" />
                         </div>

@@ -12,6 +12,9 @@ import {
   Maximize2,
   HardDrive,
   CheckSquare,
+  Image as ImageIcon,
+  MapPin,
+  Navigation,
   Square
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -27,6 +30,20 @@ interface Props {
 
 const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
 
+function imageSrc(path: string) {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function pinPosition(latitude: number, longitude: number) {
+  const left = ((longitude + 180) / 360) * 100;
+  const top = ((90 - latitude) / 180) * 100;
+
+  return {
+    left: `${Math.min(94, Math.max(6, left))}%`,
+    top: `${Math.min(88, Math.max(12, top))}%`,
+  };
+}
+
 export function MemoriesClient({ initialMemories, trips }: Props) {
   const [memories, setMemories] = useState<MemoryData[]>(initialMemories);
   const [view, setView] = useState<"grid" | "map">("grid");
@@ -40,20 +57,26 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
   const currentStorage = memories.reduce((acc, m) => acc + m.fileSize, 0);
   const storagePercent = Math.min((currentStorage / MAX_STORAGE) * 100, 100);
 
-  // Group memories by date
-  const groupedMemories = useMemo(() => {
-    const filtered = selectedTrip === "all" 
+  const filteredMemories = useMemo(() => {
+    return selectedTrip === "all"
       ? memories 
       : memories.filter(m => m.tripId === selectedTrip);
+  }, [memories, selectedTrip]);
 
+  // Group memories by date
+  const groupedMemories = useMemo(() => {
     const groups: Record<string, MemoryData[]> = {};
-    filtered.forEach(m => {
+    filteredMemories.forEach(m => {
       const date = formatDate(m.takenAt || m.createdAt);
       if (!groups[date]) groups[date] = [];
       groups[date].push(m);
     });
     return Object.entries(groups).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
-  }, [memories, selectedTrip]);
+  }, [filteredMemories]);
+
+  const mapMemories = useMemo(() => {
+    return filteredMemories.filter((memory) => memory.latitude !== null && memory.longitude !== null);
+  }, [filteredMemories]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -105,6 +128,27 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
         setMemories(prev => prev.filter(m => !selectedIds.has(m.id)));
         setSelectedIds(new Set());
         setIsSelectMode(false);
+      }
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
+  };
+
+  const handleDeleteMemory = async (id: string) => {
+    try {
+      const res = await fetch("/api/memories", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [id] }),
+      });
+      if (res.ok) {
+        setMemories(prev => prev.filter(m => m.id !== id));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        setFullImage(null);
       }
     } catch (err) {
       console.error("Delete failed:", err);
@@ -221,7 +265,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                       className={`aspect-square relative group cursor-pointer border-2 transition-all overflow-hidden bg-via-off-white ${selectedIds.has(m.id) ? 'border-via-black ring-4 ring-via-black/20' : 'border-transparent hover:border-via-black'}`}
                     >
                       <Image 
-                        src={m.imageUrl.startsWith('/') ? m.imageUrl : `/${m.imageUrl}`} 
+                        src={imageSrc(m.imageUrl)}
                         alt={m.caption || m.fileName}
                         fill
                         className={`object-cover transition-transform duration-500 ${selectedIds.has(m.id) ? 'scale-90' : 'group-hover:scale-105'}`}
@@ -259,12 +303,89 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
         </div>
       )}
 
-      {/* Map View Placeholder */}
+      {/* Map View */}
       {view === "map" && (
-        <Card className="h-[600px] flex items-center justify-center border-dashed border-via-grey-light">
-          <div className="text-center space-y-4">
-            <MapIcon size={40} className="mx-auto text-via-grey-light" />
-            <p className="font-mono text-xs uppercase text-via-grey-mid">Interactive Memories Map coming soon.</p>
+        <Card className="overflow-hidden border-via-black">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="relative min-h-[420px] border-b border-via-black bg-via-off-white lg:border-b-0 lg:border-r">
+              <div className="absolute inset-0 opacity-70">
+                <div className="absolute left-1/2 top-0 h-full w-px bg-via-grey-light" />
+                <div className="absolute left-1/4 top-0 h-full w-px bg-via-grey-light" />
+                <div className="absolute left-3/4 top-0 h-full w-px bg-via-grey-light" />
+                <div className="absolute left-0 top-1/2 h-px w-full bg-via-grey-light" />
+                <div className="absolute left-0 top-1/4 h-px w-full bg-via-grey-light" />
+                <div className="absolute left-0 top-3/4 h-px w-full bg-via-grey-light" />
+              </div>
+              <div className="absolute left-4 top-4 border border-via-black bg-via-white px-3 py-2 shadow-brutalist-sm">
+                <p className="flex items-center gap-2 font-mono text-[10px] uppercase text-via-black">
+                  <Navigation size={12} /> Memory Atlas
+                </p>
+              </div>
+
+              {mapMemories.length > 0 ? (
+                mapMemories.map((memory, index) => (
+                  <button
+                    key={memory.id}
+                    type="button"
+                    onClick={() => setFullImage(memory)}
+                    className="group absolute -translate-x-1/2 -translate-y-1/2 border border-via-black bg-via-white p-1 shadow-brutalist-sm transition-transform hover:z-10 hover:-translate-y-[calc(50%+2px)]"
+                    style={pinPosition(memory.latitude ?? 0, memory.longitude ?? 0)}
+                    aria-label={`Open ${memory.caption || memory.fileName}`}
+                  >
+                    <div className="relative h-12 w-12 overflow-hidden border border-via-black bg-via-off-white">
+                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill className="object-cover" />
+                    </div>
+                    <span className="absolute -bottom-6 left-1/2 hidden -translate-x-1/2 whitespace-nowrap border border-via-black bg-via-white px-2 py-0.5 font-mono text-[9px] uppercase group-hover:block">
+                      {memory.locationName || memory.trip?.name || `Pin ${index + 1}`}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                  <div className="max-w-sm border border-dashed border-via-black bg-via-white p-6">
+                    <MapPin size={34} className="mx-auto mb-3 text-via-grey-mid" />
+                    <p className="font-mono text-xs uppercase text-via-grey-mid">
+                      Uploaded memories do not include location metadata yet.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-via-white p-4">
+              <div className="mb-4 flex items-center justify-between border-b border-via-black pb-2">
+                <h3 className="font-grotesk text-sm font-bold uppercase">Places</h3>
+                <span className="font-mono text-[10px] uppercase text-via-grey-mid">{filteredMemories.length} items</span>
+              </div>
+              <div className="space-y-3">
+                {filteredMemories.slice(0, 8).map((memory) => (
+                  <button
+                    key={memory.id}
+                    type="button"
+                    onClick={() => setFullImage(memory)}
+                    className="flex w-full items-center gap-3 border border-via-grey-light bg-via-off-white p-2 text-left transition-colors hover:border-via-black hover:bg-via-white"
+                  >
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-via-black bg-via-white">
+                      <Image src={imageSrc(memory.imageUrl)} alt={memory.caption || memory.fileName} fill className="object-cover" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-[10px] uppercase text-via-black">
+                        {memory.locationName || memory.trip?.name || "Unpinned memory"}
+                      </p>
+                      <p className="mt-1 truncate text-[10px] text-via-grey-mid">
+                        {formatDate(memory.takenAt || memory.createdAt)}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                {filteredMemories.length === 0 && (
+                  <div className="border border-dashed border-via-grey-light p-4 text-center">
+                    <ImageIcon size={24} className="mx-auto mb-2 text-via-grey-mid" />
+                    <p className="font-mono text-[10px] uppercase text-via-grey-mid">No memories in this filter.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </Card>
       )}
@@ -293,7 +414,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
             >
               <div className="relative w-full h-full">
                 <Image 
-                  src={fullImage.imageUrl.startsWith('/') ? fullImage.imageUrl : `/${fullImage.imageUrl}`} 
+                  src={imageSrc(fullImage.imageUrl)}
                   alt={fullImage.fileName}
                   fill
                   className="object-contain"
@@ -320,10 +441,21 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button className="p-2 hover:bg-via-off-white border border-via-black">
+                <a
+                  href={imageSrc(fullImage.imageUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 hover:bg-via-off-white border border-via-black"
+                  aria-label="Open memory image"
+                >
                   <Maximize2 size={16} />
-                </button>
-                <button className="p-2 hover:bg-via-red hover:text-via-white border border-via-black text-via-red">
+                </a>
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteMemory(fullImage.id)}
+                  className="p-2 hover:bg-via-red hover:text-via-white border border-via-black text-via-red"
+                  aria-label="Delete memory"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>

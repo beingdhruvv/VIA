@@ -93,12 +93,16 @@ export function ItineraryBuilderClient({ trip }: ItineraryBuilderClientProps) {
     setRemoving(true);
     try {
       await fetch(`/api/stops/${removeTarget.id}`, { method: "DELETE" });
-      setStops((prev) => prev.filter((s) => s.id !== removeTarget.id).map((s, i) => ({ ...s, orderIndex: i })));
+      setStops((prev) => {
+        const newStops = prev.filter((s) => s.id !== removeTarget.id).map((s, i) => ({ ...s, orderIndex: i }));
+        syncOrder(newStops);
+        return newStops;
+      });
       setRemoveTarget(null);
     } finally {
       setRemoving(false);
     }
-  }, [removeTarget]);
+  }, [removeTarget, syncOrder]);
 
   const reloadStops = useCallback(async () => {
     const res = await fetch(`/api/trips/${trip.id}/stops`);

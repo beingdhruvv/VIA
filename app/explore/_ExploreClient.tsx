@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ExploreSwiper } from "@/components/explore/ExploreSwiper";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import { Heart, Globe, Bookmark, XCircle } from "lucide-react";
+import { Bookmark, Globe, Heart, MapPin, XCircle } from "lucide-react";
 import type { City } from "@prisma/client";
 
 interface UserTaste {
@@ -13,8 +13,18 @@ interface UserTaste {
   city: City;
 }
 
+interface ExploreCity extends City {
+  activities?: Array<{
+    id: string;
+    name: string;
+    estimatedCost: number;
+    category: string;
+    imageUrl?: string | null;
+  }>;
+}
+
 interface Props {
-  initialCities: City[];
+  initialCities: ExploreCity[];
 }
 
 export function ExploreClient({ initialCities }: Props) {
@@ -69,7 +79,8 @@ export function ExploreClient({ initialCities }: Props) {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-via-black"></div>
             </div>
           ) : tastes.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-via-grey-light">
+            <div className="border border-dashed border-via-black bg-via-white px-4 py-12 text-center">
+              <MapPin size={28} className="mx-auto mb-3 text-via-grey-mid" />
               <p className="font-mono text-xs uppercase text-via-grey-mid">No swiped places yet</p>
             </div>
           ) : (

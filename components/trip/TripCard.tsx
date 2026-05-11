@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Calendar, Wallet, Eye, Pencil, Trash2 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { formatDateRange, formatCurrency, getCityImageUrl } from "@/lib/utils";
@@ -28,8 +29,8 @@ export function TripCard({ trip, onDelete }: TripCardProps) {
 
   return (
     <article
-      className="bg-via-white border border-via-black relative overflow-hidden flex flex-col"
-      style={{ boxShadow: "3px 3px 0px #111111" }}
+      className="bg-via-white border-2 border-via-black relative overflow-hidden flex flex-col"
+      style={{ boxShadow: "4px 4px 0px #111111" }}
     >
       {/* Status stripe */}
       <div
@@ -38,13 +39,13 @@ export function TripCard({ trip, onDelete }: TripCardProps) {
       />
 
       {/* Cover image */}
-      <div className="relative h-36 overflow-hidden ml-1 border-b border-via-black">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+      <div className="relative h-40 overflow-hidden ml-1 border-b-2 border-via-black bg-via-off-white">
+        <Image
           src={coverImage}
           alt={trip.name}
-          className="w-full h-full object-cover"
-          loading="lazy"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <div className="absolute top-2 right-2">
           <StatusBadge status={trip.status} />

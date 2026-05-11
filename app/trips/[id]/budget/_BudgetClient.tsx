@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Trash2, Plus, TrendingUp, TrendingDown, Split, Users } from "lucide-react";
+import { Trash2, Plus, Split } from "lucide-react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -17,7 +17,6 @@ import {
   Tooltip,
 } from "recharts";
 import { Button } from "@/components/ui/Button";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ExpenseBadge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
 import { SplitExpenseModal } from "@/components/trip/SplitExpenseModal";
@@ -101,7 +100,7 @@ export function BudgetClient({
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ExpenseFormValues>({
@@ -109,7 +108,8 @@ export function BudgetClient({
     defaultValues: { date: today(), category: "MISC" },
   });
 
-  const watchCategory = watch("category");
+  const watchCategory = useWatch({ control, name: "category" });
+  const watchAmount = useWatch({ control, name: "amount" });
 
   // ── Derived values ──────────────────────────────────────────────────────────
 
@@ -154,7 +154,6 @@ export function BudgetClient({
   const detailedBalances = calculateDetailedBalances();
   const myBalance = detailedBalances[currentUserId] || 0;
   
-  const youOwe = myBalance < 0 ? Math.abs(myBalance) : 0;
 
   const categoryTotals = CATEGORIES.map((cat) => ({
     category: cat,
@@ -218,7 +217,7 @@ export function BudgetClient({
       <SplitExpenseModal
         isOpen={isSplitModalOpen}
         onClose={() => setIsSplitModalOpen(false)}
-        totalAmount={watch("amount") || 0}
+        totalAmount={watchAmount || 0}
         collaborators={collaborators}
         onSave={(s) => {
           setPendingSplits(s);
@@ -227,149 +226,100 @@ export function BudgetClient({
         initialSplits={pendingSplits}
       />
       {/* ── Dashboard Grid ── */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Column 1: Core Stats & Group Balances (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Summary Stats */}
-          <div className="bg-via-white border-2 border-via-black p-5 shadow-brutalist-sm">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Financial Summary</p>
-            <div className="space-y-4">
-              <div>
-                <p className="font-mono text-[10px] text-via-grey-mid uppercase">Total Budget</p>
-                <p className="text-2xl font-grotesk font-bold text-via-black">
-                  {totalBudget != null ? formatCurrency(totalBudget) : "—"}
-                </p>
+      {/* ── Dashboard Grid ── */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Row 1: Core Stats (12 cols) */}
+        <div className="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] text-via-grey-mid uppercase">Total Budget</p>
+            <p className="text-lg font-bold text-via-black truncate">{totalBudget != null ? formatCurrency(totalBudget) : "—"}</p>
+          </div>
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] text-via-grey-mid uppercase">Logged Spend</p>
+            <p className={`text-lg font-bold ${overBudget ? 'text-via-red' : 'text-via-black'} truncate`}>{formatCurrency(totalSpend)}</p>
+          </div>
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] text-via-grey-mid uppercase">Avg/Day</p>
+            <p className="text-lg font-bold text-via-black truncate">{formatCurrency(Math.round(avgPerDay))}</p>
+          </div>
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] text-via-grey-mid uppercase">Net Balance</p>
+            <p className={`text-lg font-bold ${myBalance >= 0 ? 'text-emerald-600' : 'text-red-600'} truncate`}>{myBalance >= 0 ? '+' : ''}{formatCurrency(Math.round(myBalance))}</p>
+          </div>
+          <div className="hidden lg:block bg-via-black text-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] opacity-60 uppercase">Budget Status</p>
+            <div className="mt-1">
+              <div className="h-1 bg-via-white/20 w-full">
+                <div className="h-full bg-via-white" style={{ width: `${budgetPct}%` }} />
               </div>
-              <div className="pt-2 border-t border-via-grey-light">
-                <p className="font-mono text-[10px] text-via-grey-mid uppercase">Logged Spend</p>
-                <p className={`text-xl font-grotesk font-bold ${overBudget ? 'text-via-red' : 'text-via-black'}`}>
-                  {formatCurrency(totalSpend)}
-                </p>
-                {totalBudget != null && (
-                  <div className="mt-2 space-y-1">
-                    <ProgressBar value={budgetPct} color={overBudget ? "red" : "default"} />
-                    <p className="font-mono text-[9px] uppercase text-via-grey-mid flex justify-between">
-                      <span>{budgetPct.toFixed(0)}% used</span>
-                      <span>{overBudget ? `Over by ${formatCurrency(totalSpend - totalBudget)}` : `${formatCurrency(totalBudget - totalSpend)} left`}</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className="pt-2 border-t border-via-grey-light flex justify-between items-end">
-                <div>
-                  <p className="font-mono text-[10px] text-via-grey-mid uppercase">Avg / Day</p>
-                  <p className="text-lg font-grotesk font-bold text-via-black">{formatCurrency(Math.round(avgPerDay))}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono text-[10px] text-via-grey-mid uppercase">Days</p>
-                  <p className="text-lg font-grotesk font-bold text-via-black">{tripDays}</p>
-                </div>
-              </div>
+              <p className="font-mono text-[8px] mt-1 uppercase">{budgetPct.toFixed(0)}% Utilized</p>
             </div>
           </div>
-
-          {/* Group Balances (Compact) */}
-          {collaborators.length > 0 && (
-            <div className="bg-via-black text-via-white p-5 border-2 border-via-black shadow-brutalist-sm">
-              <div className="flex items-center justify-between mb-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest font-bold">Group Squad</p>
-                <Users size={14} className="text-via-white/40" />
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-mono text-[10px] uppercase opacity-60">Net Balance</span>
-                  <span className={`font-grotesk font-bold ${myBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.round(myBalance))}
-                  </span>
-                </div>
-                <div className="space-y-1 mt-2 pt-2 border-t border-via-white/10">
-                  {Object.entries(detailedBalances).map(([id, amount]) => {
-                    const user = collaborators.find(c => c.user.id === id)?.user;
-                    if (!user || id === currentUserId) return null;
-                    return (
-                      <div key={id} className="flex items-center justify-between gap-2">
-                        <span className="font-grotesk text-[11px] uppercase truncate">{user.name}</span>
-                        <span className={`font-mono text-[10px] shrink-0 ${amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {amount >= 0 ? 'Owes you ' : 'You owe '}
-                          {formatCurrency(Math.abs(Math.round(amount)))}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Column 2: Charts (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-            {/* Pie Chart */}
-            <div className="bg-via-white border-2 border-via-black p-4 shadow-brutalist-sm flex flex-col">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Category Mix</p>
+        {/* Row 2: Visuals & Breakdown (12 cols) */}
+        <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Pie + Key */}
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] uppercase tracking-widest text-via-grey-mid mb-2">Category Mix</p>
+            <div className="flex items-center gap-2 h-32">
               {pieData.length > 0 ? (
-                <div className="flex-1 flex flex-col justify-center">
-                  <ResponsiveContainer width="100%" height={160}>
-                    <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="amount" nameKey="category">
-                        {pieData.map((entry) => <Cell key={entry.category} fill={CHART_COLORS[entry.category as ExpenseCategory]} />)}
-                      </Pie>
-                      <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "2px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "10px" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
-                    {pieData.slice(0, 4).map((entry) => (
-                      <div key={entry.category} className="flex items-center gap-1.5 min-w-0">
-                        <div className="w-2 h-2 shrink-0" style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }} />
-                        <span className="font-mono text-[9px] uppercase truncate opacity-70">{entry.category}</span>
-                        <span className="font-mono text-[9px] ml-auto">{formatCurrency(entry.amount)}</span>
+                <>
+                  <div className="w-1/2 h-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={25} outerRadius={40} dataKey="amount" nameKey="category">
+                          {pieData.map((entry) => <Cell key={entry.category} fill={CHART_COLORS[entry.category as ExpenseCategory]} />)}
+                        </Pie>
+                        <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "1px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "9px" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="w-1/2 space-y-1">
+                    {pieData.slice(0, 3).map((entry) => (
+                      <div key={entry.category} className="flex items-center gap-1 min-w-0">
+                        <div className="w-1.5 h-1.5 shrink-0" style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }} />
+                        <span className="font-mono text-[8px] uppercase truncate opacity-70">{entry.category}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center border border-dashed border-via-grey-light bg-via-off-white font-mono text-[10px] text-via-grey-mid uppercase italic">No Data</div>
-              )}
-            </div>
-
-            {/* Daily Bar Chart */}
-            <div className="bg-via-white border-2 border-via-black p-4 shadow-brutalist-sm flex flex-col">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Daily Spend</p>
-              {barData.length > 0 ? (
-                <div className="flex-1">
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={barData} barSize={10}>
-                      <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 9, fontFamily: "monospace" }} axisLine={false} tickLine={false} />
-                      <YAxis hide />
-                      <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "2px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "10px" }} />
-                      <Bar dataKey="amount" fill="#111" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex-1 flex items-center justify-center border border-dashed border-via-grey-light bg-via-off-white font-mono text-[10px] text-via-grey-mid uppercase italic">Timeline empty</div>
-              )}
+                </>
+              ) : <div className="w-full flex items-center justify-center font-mono text-[9px] uppercase italic text-via-grey-mid">No Data</div>}
             </div>
           </div>
 
-          {/* Compact Category Progress */}
-          <div className="bg-via-white border-2 border-via-black overflow-hidden shadow-brutalist-sm">
-            <div className="px-4 py-2 border-b border-via-black bg-via-off-white">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid font-bold">Category Breakdown</p>
+          {/* Daily Trend */}
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111]">
+            <p className="font-mono text-[9px] uppercase tracking-widest text-via-grey-mid mb-2">Daily Trend</p>
+            <div className="h-32">
+              {barData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData} barSize={8}>
+                    <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 7, fontFamily: "monospace" }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "1px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "9px" }} />
+                    <Bar dataKey="amount" fill="#111" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : <div className="h-full flex items-center justify-center font-mono text-[9px] uppercase italic text-via-grey-mid">Waiting for data</div>}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-y divide-via-black/10">
-              {categoryTotals.map((row) => (
-                <div key={row.category} className="p-3 space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-[9px] uppercase font-bold tracking-tighter">{row.category}</span>
-                    <span className="font-mono text-[10px] font-bold">{row.amount > 0 ? formatCurrency(row.amount) : "—"}</span>
+          </div>
+
+          {/* Breakdown List */}
+          <div className="bg-via-white border border-via-black p-3 shadow-[2px_2px_0px_#111] overflow-hidden">
+            <p className="font-mono text-[9px] uppercase tracking-widest text-via-grey-mid mb-2">Category Breakdown</p>
+            <div className="space-y-2 max-h-32 overflow-y-auto pr-1 scrollbar-thin">
+              {categoryTotals.filter(c => c.amount > 0).length > 0 ? categoryTotals.filter(c => c.amount > 0).map((row) => (
+                <div key={row.category} className="space-y-0.5">
+                  <div className="flex justify-between items-center text-[9px] font-mono">
+                    <span className="uppercase opacity-70">{row.category}</span>
+                    <span className="font-bold">{formatCurrency(row.amount)}</span>
                   </div>
-                  <div className="h-1 bg-via-off-white overflow-hidden">
-                    <div className="h-full transition-all" style={{ width: `${(row.amount / maxCategoryAmount) * 100}%`, background: CHART_COLORS[row.category] }} />
+                  <div className="h-1 bg-via-off-white">
+                    <div className="h-full" style={{ width: `${(row.amount / maxCategoryAmount) * 100}%`, background: CHART_COLORS[row.category] }} />
                   </div>
                 </div>
-              ))}
+              )) : <div className="h-full flex items-center justify-center font-mono text-[9px] uppercase italic text-via-grey-mid py-8">Log expense to view</div>}
             </div>
           </div>
         </div>

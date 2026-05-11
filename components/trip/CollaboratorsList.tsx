@@ -6,7 +6,8 @@ import {
   Mail, 
   Loader2,
   ShieldCheck,
-  Shield
+  Shield,
+  Trash2
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -151,7 +152,7 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
                           }
                         }
                       }}
-                      className="p-1.5 text-via-grey-mid hover:text-via-red hover:bg-via-red/10 transition-colors border border-transparent hover:border-via-red/20"
+                      className="p-1.5 text-via-red hover:bg-via-red hover:text-via-white transition-colors border border-via-red/20 shadow-[2px_2px_0px_#C1121F] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
                       title="Remove Member"
                     >
                       <Trash2 size={12} />

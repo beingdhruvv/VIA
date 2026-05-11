@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Sparkles, Camera, Wallet, Share2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop",
@@ -67,19 +67,6 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* ─── Moving Info Band ─────────────────────────────────────────────────── */}
-      <div className="relative z-20 bg-via-black py-4 border-y-2 border-via-black overflow-hidden flex">
-        <div className="flex animate-marquee-fast whitespace-nowrap gap-12 items-center">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex gap-12 items-center">
-              <span className="text-via-white font-mono text-[10px] uppercase tracking-[0.3em] font-bold">Plan the journey. Live the story.</span>
-              <Sparkles size={14} className="text-via-red" />
-              <span className="text-via-white font-mono text-[10px] uppercase tracking-[0.3em] font-bold">Collaborative Travel Intelligence</span>
-              <div className="w-2 h-2 bg-via-white rounded-full" />
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ─── Image Carousel (Marquee) ────────────────────────────────────────── */}
       <section className="relative w-full overflow-hidden py-20 bg-via-white">
@@ -103,62 +90,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Features Grid ───────────────────────────────────────────────────── */}
-      <section className="px-8 md:px-16 lg:px-24 py-32 bg-via-off-white border-t-2 border-via-black">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-10">
-            <div className="space-y-4">
-              <p className="font-mono text-xs uppercase tracking-[0.3em] text-via-red font-bold">Core Modules</p>
-              <h2 className="text-5xl md:text-7xl font-black uppercase italic leading-[0.9]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                Engineered for <br/> Pure Exploration
-              </h2>
-            </div>
-            <p className="font-mono text-[11px] text-via-grey-mid max-w-xs uppercase tracking-widest leading-relaxed">
-              We stripped away the noise. <br/> No social feeds. No ads. <br/> Just you and the open road.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {[
-              {
-                icon: <Sparkles size={24} />,
-                title: "Smart Stops",
-                body: "Algorithmic routing for multi-city chains. Your time is valuable; we treat it as such.",
-              },
-              {
-                icon: <Wallet size={24} />,
-                title: "Live Budget",
-                body: "Precise expense splitting with real-time settlement tracking for your entire squad.",
-              },
-              {
-                icon: <Camera size={24} />,
-                title: "Memory Vault",
-                body: "High-fidelity photo archiving with location metadata and collaborative captions.",
-              },
-              {
-                icon: <Share2 size={24} />,
-                title: "Squad Sync",
-                body: "Real-time collaboration across devices. Plan your journey as a unified unit.",
-              },
-            ].map((f, i) => (
-              <div 
-                key={i} 
-                className="group relative p-10 border-2 border-via-black bg-via-white hover:-translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_#111] hover:shadow-[8px_8px_0px_#111]"
-              >
-                <div className="w-14 h-14 border-2 border-via-black flex items-center justify-center bg-via-white group-hover:bg-via-black group-hover:text-via-white transition-colors mb-6">
-                  {f.icon}
-                </div>
-                <h3 className="text-2xl font-bold uppercase tracking-tight mb-4" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                  {f.title}
-                </h3>
-                <p className="text-[13px] text-via-grey-dark leading-relaxed font-inter">
-                  {f.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ─── Footer ───────────────────────────────────────────────────────────── */}
       <footer className="border-t-2 border-via-black bg-via-white px-8 md:px-16 lg:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-10">

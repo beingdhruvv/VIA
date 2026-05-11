@@ -20,17 +20,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        console.log("Authorize attempt:", credentials?.email, "isFirebase:", credentials?.isFirebase);
         // Check if it's a Firebase login bypass (Google/Social)
         if (credentials?.isFirebase === "true" && credentials?.email) {
-          console.log("Firebase social auth bypass for:", credentials.email);
           let user = await prisma.user.findUnique({ 
             where: { email: credentials.email as string } 
           });
 
           // Create user if they don't exist yet (First time Social login)
           if (!user) {
-            console.log("Social user not found in DB, creating new account for:", credentials.email);
             const userCount = await prisma.user.count();
             user = await prisma.user.create({
               data: {
@@ -44,7 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
 
           // Ensure the user 'pavan' or StormLabs emails are admins for accessibility
-          if (user.email.includes("pavan") || user.email.endsWith("@stormlabs.dev")) {
+          if (user.email.includes("pavan") || user.email.endsWith("@stormlabs.dev") || user.email === "pavan.code.io@gmail.com") {
             if (user.role === "USER") {
               user = await prisma.user.update({
                 where: { id: user.id },
@@ -53,16 +50,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
           }
 
-          console.log("Auth success for:", user.email);
           return {
             id: user.id,
             name: user.name,
             email: user.email,
             image: user.avatarUrl,
             role: user.role,
-            // @ts-ignore
             homeCity: user.homeCity,
-            // @ts-ignore
             homeCountry: user.homeCountry,
           };
         }
@@ -84,9 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.avatarUrl,
           role: user.role,
-          // @ts-ignore
           homeCity: user.homeCity,
-          // @ts-ignore
           homeCountry: user.homeCountry,
         };
       },

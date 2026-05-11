@@ -52,7 +52,6 @@ export default async function TripPage({ params }: TripPageProps) {
       packingItems: { orderBy: { createdAt: "asc" } },
       notes: { orderBy: { createdAt: "desc" } },
       sharedLinks: true,
-      // @ts-ignore
       memories: { orderBy: { createdAt: "desc" } },
     },
   });
@@ -71,13 +70,11 @@ export default async function TripPage({ params }: TripPageProps) {
     totalBudget: trip.totalBudget,
     isPublic: trip.isPublic,
     publicSlug: trip.publicSlug,
-    // @ts-ignore
     shareMemories: trip.shareMemories,
     status: trip.status as TripFull["status"],
     createdAt: trip.createdAt.toISOString(),
     updatedAt: trip.updatedAt.toISOString(),
-    // @ts-ignore - Prisma relations typing can be complex in server components
-    stops: (trip.stops || []).map((s: any) => ({
+    stops: (trip.stops || []).map((s: Record<string, unknown> & { id: string, tripId: string, cityId: string, orderIndex: number, startDate: Date, endDate: Date, notes: string | null, city: { id: string, name: string, country: string, region: string | null, costIndex: number | null, popularityScore: number | null, imageUrl: string | null, latitude: number | null, longitude: number | null }, activities: Array<{ id: string, stopId: string, activityId: string, scheduledDate: Date | null, scheduledTime: string | null, actualCost: number | null, activity: { id: string, cityId: string, name: string, description: string | null, category: string, estimatedCost: number | null, durationHours: number | null, imageUrl: string | null, rating: number | null } }> }) => ({
       id: s.id,
       tripId: s.tripId,
       cityId: s.cityId,
@@ -89,14 +86,14 @@ export default async function TripPage({ params }: TripPageProps) {
         id: s.city.id,
         name: s.city.name,
         country: s.city.country,
-        region: s.city.region,
-        costIndex: s.city.costIndex,
-        popularityScore: s.city.popularityScore,
+        region: s.city.region ?? "",
+        costIndex: s.city.costIndex ?? 0,
+        popularityScore: s.city.popularityScore ?? 0,
         imageUrl: s.city.imageUrl,
-        latitude: s.city.latitude,
-        longitude: s.city.longitude,
+        latitude: s.city.latitude ?? 0,
+        longitude: s.city.longitude ?? 0,
       },
-      activities: (s.activities || []).map((a: any) => ({
+      activities: (s.activities || []).map((a: Record<string, unknown> & { id: string, stopId: string, activityId: string, scheduledDate: Date | null, scheduledTime: string | null, actualCost: number | null, activity: { id: string, cityId: string, name: string, description: string | null, category: string, estimatedCost: number | null, durationHours: number | null, imageUrl: string | null, rating: number | null } }) => ({
         id: a.id,
         stopId: a.stopId,
         activityId: a.activityId,
@@ -107,17 +104,16 @@ export default async function TripPage({ params }: TripPageProps) {
           id: a.activity.id,
           cityId: a.activity.cityId,
           name: a.activity.name,
-          description: a.activity.description,
+          description: a.activity.description ?? "",
           category: a.activity.category as TripFull["stops"][0]["activities"][0]["activity"]["category"],
-          estimatedCost: a.activity.estimatedCost,
-          durationHours: a.activity.durationHours,
+          estimatedCost: a.activity.estimatedCost ?? 0,
+          durationHours: a.activity.durationHours ?? 0,
           imageUrl: a.activity.imageUrl,
-          rating: a.activity.rating,
+          rating: a.activity.rating ?? 0,
         },
       })),
     })),
-    // @ts-ignore
-    expenses: (trip.expenses || []).map((e: any) => ({
+    expenses: (trip.expenses || []).map((e: Record<string, unknown> & { id: string, tripId: string, stopId: string | null, payerId: string | null, category: string, amount: number, description: string, date: Date, payer: { id: string, name: string, avatarUrl: string | null } | null, splits: Array<{ userId: string, amount: number, user: { name: string } }> }) => ({
       id: e.id,
       tripId: e.tripId,
       stopId: e.stopId,
@@ -131,14 +127,13 @@ export default async function TripPage({ params }: TripPageProps) {
         name: e.payer.name,
         avatarUrl: e.payer.avatarUrl
       } : undefined,
-      splits: (e.splits || []).map((s: any) => ({
+      splits: (e.splits || []).map((s: { userId: string, amount: number, user: { name: string } }) => ({
         userId: s.userId,
         amount: s.amount,
         user: { name: s.user.name }
       }))
     })),
-    // @ts-ignore
-    packingItems: (trip.packingItems || []).map((p: any) => ({
+    packingItems: (trip.packingItems || []).map((p: Record<string, unknown> & { id: string, tripId: string, name: string, category: string, isPacked: boolean, createdAt: Date }) => ({
       id: p.id,
       tripId: p.tripId,
       name: p.name,
@@ -146,8 +141,7 @@ export default async function TripPage({ params }: TripPageProps) {
       isPacked: p.isPacked,
       createdAt: p.createdAt.toISOString(),
     })),
-    // @ts-ignore
-    notes: (trip.notes || []).map((n: any) => ({
+    notes: (trip.notes || []).map((n: Record<string, unknown> & { id: string, tripId: string, stopId: string | null, content: string, createdAt: Date, updatedAt: Date }) => ({
       id: n.id,
       tripId: n.tripId,
       stopId: n.stopId,
@@ -155,14 +149,12 @@ export default async function TripPage({ params }: TripPageProps) {
       createdAt: n.createdAt.toISOString(),
       updatedAt: n.updatedAt.toISOString(),
     })),
-    // @ts-ignore
-    sharedLinks: (trip.sharedLinks || []).map((l: any) => ({
+    sharedLinks: (trip.sharedLinks || []).map((l: Record<string, unknown> & { id: string, slug: string, views: number }) => ({
       id: l.id,
       slug: l.slug,
       views: l.views,
     })),
-    // @ts-ignore
-    collaborators: (trip.collaborators || []).map((c: any) => ({
+    collaborators: (trip.collaborators || []).map((c: Record<string, unknown> & { id: string, userId: string, role: string, user: { id: string, name: string, email: string, avatarUrl: string | null } }) => ({
       id: c.id,
       userId: c.userId,
       role: c.role,
@@ -173,17 +165,16 @@ export default async function TripPage({ params }: TripPageProps) {
         avatarUrl: c.user.avatarUrl
       }
     })),
-    // @ts-ignore
-    memories: (trip.memories || []).map((m: any) => ({
+    memories: (trip.memories || []).map((m: Record<string, unknown> & { id: string, userId: string, tripId: string | null, imageUrl: string, thumbnailUrl: string | null, caption: string | null, fileName: string | null, fileSize: number | null, mimeType: string | null, takenAt: Date | null, latitude: number | null, longitude: number | null, locationName: string | null, createdAt: Date }) => ({
       id: m.id,
       userId: m.userId,
       tripId: m.tripId,
       imageUrl: m.imageUrl,
       thumbnailUrl: m.thumbnailUrl,
       caption: m.caption,
-      fileName: m.fileName,
-      fileSize: m.fileSize,
-      mimeType: m.mimeType,
+      fileName: m.fileName ?? "memory",
+      fileSize: m.fileSize ?? 0,
+      mimeType: m.mimeType ?? "image/*",
       takenAt: m.takenAt?.toISOString() ?? null,
       latitude: m.latitude,
       longitude: m.longitude,
@@ -200,8 +191,8 @@ export default async function TripPage({ params }: TripPageProps) {
     "description": trip.description,
     "startDate": trip.startDate.toISOString(),
     "endDate": trip.endDate.toISOString(),
-    // @ts-ignore
-    "itinerary": (trip.stops || []).map((s: any) => ({
+    "itinerary": (trip.stops || []).map((s: { city: { name: string } }) => ({
+      "@context": "https://schema.org",
       "@type": "City",
       "name": s.city.name
     }))

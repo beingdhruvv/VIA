@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Check, Plus, Star, Clock, DollarSign, SlidersHorizontal } from "lucide-react";
+import { Check, Plus, Star, Clock, IndianRupee, SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { ActivityBadge } from "@/components/ui/Badge";
@@ -208,7 +208,7 @@ export function ActivitySheet({
                     </p>
                     <div className="flex items-center gap-3 text-xs text-via-grey-mid">
                       <span className="font-mono flex items-center gap-0.5">
-                        <DollarSign size={10} />
+                        <IndianRupee size={10} />
                         {formatCurrency(activity.estimatedCost)}
                       </span>
                       <span className="font-mono flex items-center gap-0.5">

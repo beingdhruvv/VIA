@@ -107,10 +107,9 @@ h1, h2, h3, h4, h5, h6 {
   background: #8A8A8A;
 }
 
-/* Focus ring */
+/* Focus ring - subtle for brutalist design */
 :focus-visible {
-  outline: 2px solid #111111;
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Print styles */

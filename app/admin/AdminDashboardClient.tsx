@@ -7,7 +7,6 @@ import {
   Users, 
   Map, 
   Globe, 
-  Activity, 
   Cpu, 
   ShieldAlert, 
   CheckCircle2, 
@@ -39,6 +38,7 @@ interface Stats {
     trips: number;
     cities: number;
     activities: number;
+    storageTotal: number;
   };
   system: {
     platform: string;
@@ -62,6 +62,7 @@ interface User {
   email: string;
   role: string;
   avatarUrl: string | null;
+  storageUsed: number;
   createdAt: string;
 }
 
@@ -218,12 +219,14 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         </Card>
         <Card className="p-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-via-grey-dark text-via-white rounded-none border border-via-black">
-              <Activity size={24} />
+            <div className="p-3 bg-via-navy text-via-white rounded-none border border-via-black">
+              <Cpu size={24} />
             </div>
             <div>
-              <p className="text-xs font-mono text-via-grey-mid uppercase">Total Activities</p>
-              <p className="text-2xl font-bold font-mono">{stats?.counts.activities}</p>
+              <p className="text-xs font-mono text-via-grey-mid uppercase">Storage Used</p>
+              <p className="text-2xl font-bold font-mono">
+                {((stats?.counts.storageTotal || 0) / (1024 * 1024)).toFixed(1)} MB
+              </p>
             </div>
           </div>
         </Card>
@@ -369,6 +372,7 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                     <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">User</th>
                     <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Email</th>
                     <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Role</th>
+                    <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Storage</th>
                     <th className="px-6 py-3 text-left text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Joined</th>
                     <th className="px-6 py-3 text-right text-[10px] font-mono text-via-grey-mid uppercase tracking-widest">Actions</th>
                   </tr>
@@ -395,6 +399,9 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                         >
                           {user.role}
                         </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
+                        {(user.storageUsed / (1024 * 1024)).toFixed(2)} MB
                       </td>
                       <td className="px-6 py-4 text-[10px] font-mono text-via-grey-mid">
                         {new Date(user.createdAt).toLocaleDateString()}

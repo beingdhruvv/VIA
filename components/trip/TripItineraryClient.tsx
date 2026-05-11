@@ -11,13 +11,13 @@ import {
   Copy,
   Check,
   Clock,
-  DollarSign,
   Calendar,
   Pencil,
   Wrench,
   Trash2,
   Lock,
   Unlock,
+  IndianRupee,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ActivityBadge, StatusBadge } from "@/components/ui/Badge";
@@ -368,7 +368,7 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
                                       </span>
                                     )}
                                     <span className="font-mono flex items-center gap-0.5">
-                                      <DollarSign size={10} />
+                                      <IndianRupee size={10} />
                                       {formatCurrency(sa.activity.estimatedCost)}
                                     </span>
                                     <span className="font-mono">
@@ -444,7 +444,7 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
                               </span>
                             )}
                             <span className="font-mono flex items-center gap-0.5">
-                              <DollarSign size={10} />
+                              <IndianRupee size={10} />
                               {formatCurrency(sa.activity.estimatedCost)}
                             </span>
                             <span className="font-mono">

@@ -21,6 +21,9 @@ export default async function ExplorePage() {
     where: {
       id: { notIn: swipedIds },
     },
+    include: {
+      activities: { take: 3, orderBy: { rating: "desc" } },
+    },
     take: 12,
     orderBy: { popularityScore: "desc" },
   });

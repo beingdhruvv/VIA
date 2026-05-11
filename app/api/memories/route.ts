@@ -28,14 +28,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "Only image uploads are supported" }, { status: 400 });
+    }
+
     // Check storage limit
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      // @ts-ignore
       select: { storageUsed: true }
     });
 
-    // @ts-ignore
     if (user && user.storageUsed + file.size > MAX_STORAGE) {
       return NextResponse.json({ error: "Storage limit exceeded (200MB)" }, { status: 400 });
     }
@@ -56,7 +58,6 @@ export async function POST(req: NextRequest) {
 
     const metadata: MemoryMetadata = metadataStr ? JSON.parse(metadataStr) : {};
 
-    // @ts-ignore
     const memory = await prisma.memory.create({
       data: {
         userId: session.user.id,
@@ -76,12 +77,11 @@ export async function POST(req: NextRequest) {
     // Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      // @ts-ignore
       data: { storageUsed: { increment: file.size } }
     });
 
     return NextResponse.json(memory);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Memory Upload Error:", error);
     return NextResponse.json({ error: "Failed to upload memory" }, { status: 500 });
   }
@@ -95,7 +95,6 @@ export async function GET(req: NextRequest) {
   const tripId = searchParams.get("tripId");
 
   try {
-    // @ts-ignore
     const memories = await prisma.memory.findMany({
       where: { 
         userId: session.user.id,
@@ -110,7 +109,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(memories);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Fetch Memories Error:", error);
     return NextResponse.json({ error: "Failed to fetch memories" }, { status: 500 });
   }
@@ -121,16 +120,16 @@ export async function DELETE(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { ids } = await req.json();
-    if (!ids || !Array.isArray(ids)) {
+    const body = await req.json();
+    const ids = body.ids;
+    if (!ids || !Array.isArray(ids) || !ids.every((id) => typeof id === "string")) {
       return NextResponse.json({ error: "Invalid IDs" }, { status: 400 });
     }
 
     // 1. Get memories to find file paths and sizes
-    // @ts-ignore
     const memories = await prisma.memory.findMany({
       where: {
-        id: { in: ids as string[] },
+        id: { in: ids },
         userId: session.user.id,
       },
       select: {
@@ -152,14 +151,13 @@ export async function DELETE(req: NextRequest) {
       try {
         const absolutePath = join(process.cwd(), "public", memory.imageUrl);
         await unlink(absolutePath).catch(() => {}); // Ignore errors if file already gone
-        totalSizeRemoved += memory.fileSize;
+        totalSizeRemoved += memory.fileSize as number;
       } catch (err) {
         console.warn(`Failed to delete file: ${memory.imageUrl}`, err);
       }
     }
 
     // 3. Delete from DB
-    // @ts-ignore
     await prisma.memory.deleteMany({
       where: { id: { in: deletedIds } }
     });
@@ -167,12 +165,11 @@ export async function DELETE(req: NextRequest) {
     // 4. Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      // @ts-ignore
       data: { storageUsed: { decrement: totalSizeRemoved } }
     });
 
     return NextResponse.json({ success: true, count: deletedIds.length });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Delete Memories Error:", error);
     return NextResponse.json({ error: "Failed to delete memories" }, { status: 500 });
   }

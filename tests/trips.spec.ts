@@ -15,7 +15,7 @@ test.describe('Trips Management', () => {
     await page.fill('input[name="password"]', password);
     await page.fill('input[name="confirmPassword"]', password);
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/auth\/login/);
+    await page.waitForURL(/\/dashboard$/);
     await page.close();
   });
 
@@ -34,20 +34,22 @@ test.describe('Trips Management', () => {
     // Assuming there are input fields for trip name, dates, etc.
     // Based on MASTER_PLAN, fields are: Trip name, Start date, End date, description, budget
     await page.fill('input[name="name"]', 'My Summer Vacation');
-    
-    // Attempting to submit if it exists
-    const saveButton = page.locator('button[type="submit"]');
-    if (await saveButton.isVisible()) {
-      await saveButton.click();
-      // Should redirect to itinerary builder
-      await expect(page).toHaveURL(/\/trips\/[a-zA-Z0-9-]+\/builder/);
-    } else {
-      console.log("Create Trip form might not be fully implemented yet.");
-    }
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    await page.fill('input[name="startDate"]', '2026-06-01');
+    await page.fill('input[name="endDate"]', '2026-06-07');
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    await page.fill('textarea[name="description"]', 'Automated trip smoke test');
+    await page.fill('input[name="totalBudget"]', '50000');
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    await page.getByRole('button', { name: /create trip/i }).click();
+    await expect(page).toHaveURL(/\/trips\/[a-zA-Z0-9-]+\/builder/);
   });
 
   test('should load my trips page', async ({ page }) => {
     await page.goto('/trips');
-    await expect(page.locator('h1')).toBeVisible(); // Just verifying the page loads and doesn't crash
+    await expect(page.getByRole('heading', { name: /my trips/i })).toBeVisible();
   });
 });

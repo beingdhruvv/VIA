@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
-import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin } from "lucide-react";
+import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin, Loader2 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
@@ -227,29 +227,41 @@ export function ProfileClient({ profile, tripCount }: Props) {
               </button>
             </div>
 
-            <div className="flex flex-col items-center gap-4">
-              <Avatar name={profile.name} src={avatarUrl ?? undefined} size="xl" className="border-2 border-via-black" />
-              <div className="flex gap-3">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  onClick={() => document.getElementById('avatar-input')?.click()}
-                >
-                  <Camera size={14} className="mr-2" /> Upload Photo
-                </Button>
-                {avatarUrl && (
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative">
+                <Avatar name={profile.name} src={avatarUrl ?? undefined} size="xl" className="border-2 border-via-black ring-4 ring-via-off-white" />
+                {saving && (
+                  <div className="absolute inset-0 bg-via-black/20 flex items-center justify-center rounded-full">
+                    <Loader2 className="animate-spin text-via-white" size={24} />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col w-full gap-3">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5 px-1">
+                  <Camera size={11} strokeWidth={1.5} /> Custom Photo
+                </p>
+                <div className="flex gap-2">
                   <Button 
                     variant="secondary" 
-                    size="sm" 
-                    className="text-via-red border-via-red hover:bg-via-red hover:text-via-white"
-                    onClick={() => {
-                      setAvatarUrl(null);
-                      update({ image: null });
-                    }}
+                    className="flex-1 font-mono text-[10px] uppercase h-10"
+                    onClick={() => document.getElementById('avatar-input')?.click()}
                   >
-                    <Trash2 size={14} className="mr-2" /> Remove
+                    Upload New
                   </Button>
-                )}
+                  {avatarUrl && (
+                    <Button 
+                      variant="secondary" 
+                      className="px-3 text-via-red border-via-red hover:bg-via-red hover:text-via-white h-10"
+                      onClick={() => {
+                        setAvatarUrl(null);
+                        update({ image: null });
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -569,7 +581,9 @@ export function ProfileClient({ profile, tripCount }: Props) {
       )}
 
       <p className="font-mono text-[10px] text-via-grey-mid uppercase tracking-widest pt-2">
-        Build <span className="text-via-black">{APP_PUBLIC_VERSION}</span>
+        Build <span className="text-via-black">
+          {APP_PUBLIC_VERSION.length > 8 ? APP_PUBLIC_VERSION.slice(0, 7) : APP_PUBLIC_VERSION}
+        </span>
       </p>
     </div>
   );

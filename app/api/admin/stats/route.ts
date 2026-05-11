@@ -11,11 +11,16 @@ export async function GET() {
   }
 
   try {
-    const [userCount, tripCount, cityCount, activityCount] = await Promise.all([
+    const [userCount, tripCount, cityCount, activityCount, storageAgg] = await Promise.all([
       prisma.user.count(),
       prisma.trip.count(),
       prisma.city.count(),
       prisma.activity.count(),
+      prisma.user.aggregate({
+        _sum: {
+          storageUsed: true
+        }
+      })
     ]);
 
     // System metrics
@@ -33,6 +38,7 @@ export async function GET() {
         trips: tripCount,
         cities: cityCount,
         activities: activityCount,
+        storageTotal: storageAgg._sum.storageUsed ?? 0,
       },
       system: {
         platform: os.platform(),

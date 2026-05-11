@@ -7,9 +7,16 @@ export function LocationDetector() {
     const detectLocation = async () => {
       // Check if we already have it in localStorage to avoid redundant calls
       if (localStorage.getItem("via_location_detected")) return;
+      if (sessionStorage.getItem("via_location_attempted")) return;
+      sessionStorage.setItem("via_location_attempted", "true");
 
       try {
-        const res = await fetch("https://ipapi.co/json/");
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 2500);
+        const res = await fetch("https://ipapi.co/json/", { signal: controller.signal });
+        window.clearTimeout(timeout);
+        if (!res.ok) return;
+
         const data = await res.json();
         
         if (data.city && data.country_name) {
@@ -24,10 +31,9 @@ export function LocationDetector() {
           });
           
           localStorage.setItem("via_location_detected", "true");
-          console.log(`Detected location: ${data.city}, ${data.country_name}`);
         }
-      } catch (error) {
-        console.error("Location detection failed:", error);
+      } catch {
+        // Location enrichment is optional and must not interrupt app flows.
       }
     };
 

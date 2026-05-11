@@ -127,9 +127,11 @@ export default async function DashboardPage() {
     // If trip hasn't started yet, don't count any days
     if (start > now) return sum;
     
-    // If trip is active, count days from start to now
+    // If trip is active, count days from start to now (inclusive of current day)
     if (end > now) {
-      return sum + Math.max(0, diffInDays(start, now));
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const days = Math.floor((now.getTime() - start.getTime()) / msPerDay) + 1;
+      return sum + Math.max(0, days);
     }
     
     // If trip is finished, count total days from start to end

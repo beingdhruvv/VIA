@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckSquare, Square, Trash2, Plus, Package } from "lucide-react";
@@ -47,11 +47,11 @@ export function PackingClient({ tripId, initialItems }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const [addingTemplate, setAddingTemplate] = useState(false);
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
+  const { register, handleSubmit, setValue, control, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { category: "MISC" },
   });
-  const watchCat = watch("category");
+  const watchCat = useWatch({ control, name: "category" });
 
   const filtered = filter === "ALL" ? items : items.filter((i) => i.category === filter);
   const packed = items.filter((i) => i.isPacked).length;
@@ -248,7 +248,7 @@ export function PackingClient({ tripId, initialItems }: Props) {
               </span>
               <button
                 onClick={() => remove(item.id)}
-                className="text-via-red/40 hover:text-via-red transition-colors shrink-0 px-2"
+                className="text-via-red hover:bg-via-red hover:text-via-white transition-colors shrink-0 p-1.5 border border-via-red/20"
                 aria-label="Delete item"
               >
                 <Trash2 size={14} strokeWidth={2} />

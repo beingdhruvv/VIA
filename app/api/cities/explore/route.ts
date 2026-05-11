@@ -93,7 +93,8 @@ export async function GET() {
           id: a.id,
           name: a.name,
           estimatedCost: a.estimatedCost,
-          category: a.category
+          category: a.category,
+          imageUrl: a.imageUrl
         }))
       };
     })
