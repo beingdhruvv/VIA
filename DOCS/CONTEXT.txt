@@ -48,13 +48,13 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-11 12:35 IST (session: Explore/Memories UI Fixes)          |
+| Last updated    | 2026-05-11 13:09 IST (session: Explore/Profile Hotfix)             |
 | Last updated by | Codex                                                              |
 | Build status    | PASSING (`npm.cmd run build`, 41 routes)                           |
 | Active branch   | main                                                                |
 | Last commit     | (pending commit this session)                                       |
 | Blockers        | None                                                                |
-| Next step       | Push main and verify live deploy smoke: landing, explore swipe, memories modal, admin create |
+| Next step       | Verify live `/profile` and mobile Explore after deploy             |
 
 ## What was done this session
 - **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once; **`proxy.ts`** — allow **`/api/config/*`** without session.
@@ -66,6 +66,7 @@
 - **Images & Profile:** Profile route builds as dynamic/authenticated. Things-to-do images now use per-activity image queries instead of reusing the same city hero.
 - **Landing / Explore / Memories / Budget:** Added privacy/terms pages, fixed source link, sped landing carousel, made Explore icon tabs and swipe handling tighter, wrapped Memories in AppShell, added memory share/copy, and added budget settlement rows.
 - **Explore / Memories / Admin follow-up:** Removed landing sign-in CTA, rebuilt Explore around a fixed Bumble-style swipe card for mobile touch, removed white metadata box and dollar marker, made filters reset/apply reliably, stopped reused preview fallbacks, added Memories summary/control redesign and link/photo share mode, and wired admin Add City/Create Template forms.
+- **Explore/Profile hotfix:** Removed Explore bottom preview strip, removed budget pill/filter, lightened the card text overlay, redesigned Explore/Saved tabs, enabled vertical drag-to-save, and made `/profile` render defensively if production preference columns lag during deploy.
 
 ## What reliably works
 - Prisma + seed (SQLite dev / PostgreSQL prod)
@@ -376,6 +377,7 @@ Pre-ship checklist:
 | 2026-05-11 | Keep presenter demo script gitignored while updating it locally | Script is useful for recording but should not be in the public repo |
 | 2026-05-11 | Keep Explore detail content outside the draggable card | Mobile horizontal swipes were fighting nested vertical scroll; fixed-height card improves touch reliability |
 | 2026-05-11 | Offer memory sharing as link or photo payload | Native share targets differ; users need both copyable URLs and direct image sharing where supported |
+| 2026-05-11 | Remove Explore budget filtering from the swipe surface | It added visual noise and was called out as confusing in mobile review |
 
 # VALIDATION LOG
 
@@ -396,6 +398,7 @@ Pre-ship checklist:
 | 2026-05-11 | Codex        | repo secret grep             | pass    | No obvious hardcoded secrets found outside ignored build/deps |
 | 2026-05-11 | Codex        | npm.cmd run build            | pass    | Production build passed; 41 routes including `/privacy` and `/terms` |
 | 2026-05-11 | Codex        | npm.cmd run build            | pass    | Production build passed after Explore/Memories/Admin UI fixes; 41 routes |
+| 2026-05-11 | Codex        | targeted eslint + npm.cmd run build | pass | Explore/Profile hotfix lint clean on touched files; production build passed with 41 routes |
 
 ---
 
@@ -440,3 +443,4 @@ Pre-ship checklist:
 | 2026-05-11 | Codex         | SECURITY/FIX: private upload serving, profile/build verification, activity image fallback update |
 | 2026-05-11 | Codex         | FIX: demo script refresh, landing/legal pages, Explore/Memories/Budget/admin API safety pass |
 | 2026-05-11 | Codex         | FIX: mobile Explore swipe/card redesign, Memories layout/share modes, landing CTA cleanup, admin create forms |
+| 2026-05-11 | Codex         | HOTFIX: Explore overlay/tabs/vertical swipe cleanup and defensive profile render |

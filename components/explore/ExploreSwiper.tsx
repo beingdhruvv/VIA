@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Bookmark, CalendarDays, Globe, Heart, MapPin, Plane, RotateCcw, SlidersHorizontal, Star, WalletCards, X } from "lucide-react";
+import { Bookmark, Globe, Heart, MapPin, RotateCcw, SlidersHorizontal, Star, X } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -22,15 +22,6 @@ interface ExploreCity extends City {
     imageUrl?: string | null;
   }>;
   moreImages?: string[];
-}
-
-function cityPreviews(city: ExploreCity) {
-  const own = exploreCityImageSrc(city);
-  const activityImages = (city.activities ?? [])
-    .map((activity) => activity.imageUrl)
-    .filter((image): image is string => Boolean(image && image !== own));
-  const curated = [own, ...(city.moreImages ?? []), ...activityImages];
-  return Array.from(new Set(curated)).slice(0, 4);
 }
 
 interface ExploreSwiperProps {
@@ -58,13 +49,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   const filteredCities = useMemo(() => {
     return cities.filter((city) => {
       const regionMatches = filters.region === "All" || city.region === filters.region;
-      const costMatches =
-        filters.cost === "All" ||
-        (filters.cost === "Budget" && city.costIndex <= 35) ||
-        (filters.cost === "Balanced" && city.costIndex > 35 && city.costIndex <= 70) ||
-        (filters.cost === "Premium" && city.costIndex > 70);
-
-      return regionMatches && costMatches;
+      return regionMatches;
     });
   }, [cities, filters]);
 
@@ -172,16 +157,15 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
   const currentCity = filteredCities[currentIndex];
   const nextCity = filteredCities[currentIndex + 1];
   const popularity = (currentCity.popularityScore / 20).toFixed(1);
-  const previews = cityPreviews(currentCity);
 
   return (
-    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[min(100%,24rem)] flex-1 flex-col sm:max-w-md">
-      <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[min(100%,25rem)] flex-1 flex-col sm:max-w-md">
+      <div className="mb-3 grid shrink-0 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-3">
         <button
           type="button"
           onClick={handleUndo}
           disabled={history.length === 0}
-          className="border border-via-black bg-via-white p-2 shadow-brutalist-sm disabled:opacity-30"
+          className="flex h-10 w-10 items-center justify-center border border-via-black bg-via-white shadow-brutalist-sm disabled:opacity-30"
           aria-label="Undo last swipe"
         >
           <RotateCcw size={16} />
@@ -197,13 +181,13 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="border border-via-black bg-via-white p-2 shadow-brutalist-sm"
+          className="flex h-10 w-10 items-center justify-center border border-via-black bg-via-white shadow-brutalist-sm"
           aria-label="Open explore filters"
         >
           <SlidersHorizontal size={16} />
         </button>
       </div>
-      <div className="relative h-[min(62dvh,620px)] min-h-[430px] shrink-0 perspective-1000 sm:min-h-[560px]">
+      <div className="relative h-[min(66dvh,660px)] min-h-[500px] shrink-0 perspective-1000 sm:min-h-[580px]">
         {nextCity && (
           <div
             className="absolute inset-x-3 top-4 bottom-0 overflow-hidden border border-via-black bg-via-white opacity-80"
@@ -220,13 +204,13 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           <motion.div
             key={currentCity.id}
             style={{ x, rotate }}
-            drag="x"
+            drag
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.8}
             onDragEnd={(_, info) => {
               const t = 70; // Optimized threshold
               const velocity = info.velocity.x;
-              if (info.offset.y < -85 || info.velocity.y < -500) handleSwipe("up");
+              if (info.offset.y > 85 || info.velocity.y > 500 || info.offset.y < -95 || info.velocity.y < -550) handleSwipe("up");
               else if (info.offset.x > t || velocity > 400) handleSwipe("right");
               else if (info.offset.x < -t || velocity < -400) handleSwipe("left");
               else x.set(0);
@@ -263,21 +247,16 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                     <span className="text-4xl font-black uppercase text-red-500 sm:text-5xl">PASS</span>
                   </motion.div>
 
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-via-black/75" />
+                  <div className="absolute inset-x-0 bottom-0 h-44 bg-via-black/45" />
                   <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-via-white pointer-events-none">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h2 className="font-grotesk text-4xl font-black leading-none uppercase italic">
+                      <div>
+                          <h2 className="font-grotesk text-4xl font-black leading-none uppercase italic sm:text-5xl">
                             {currentCity.name}
                           </h2>
-                          <p className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-via-white/90">
+                          <p className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-via-white">
                             <MapPin size={12} />
                             {currentCity.country} / {currentCity.region}
                           </p>
-                        </div>
-                        <span className="border border-via-white px-2 py-1 font-mono text-[10px] uppercase">
-                          {currentCity.costIndex <= 35 ? "Budget" : currentCity.costIndex <= 70 ? "Balanced" : "Premium"}
-                        </span>
                       </div>
                       
                       <div className="mt-4 flex items-center justify-between">
@@ -299,28 +278,12 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
         </AnimatePresence>
       </div>
 
-      <div className="mt-3 grid shrink-0 grid-cols-[1fr_auto_auto] gap-2 overflow-hidden">
-        {previews.slice(0, 3).map((image, index) => (
-          <div key={image} className={`relative h-16 border border-via-black bg-via-off-white ${index === 0 ? "col-span-1" : "w-16"}`}>
-            <Image src={image} alt={`${currentCity.name} preview ${index + 1}`} fill className="object-cover" />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-3 shrink-0 border border-via-black bg-via-white p-3 shadow-brutalist-sm">
-        <div className="grid grid-cols-3 gap-2 text-center font-mono text-[9px] uppercase text-via-grey-dark">
-          <span className="flex items-center justify-center gap-1"><Plane size={11} /> Fly</span>
-          <span className="flex items-center justify-center gap-1"><CalendarDays size={11} /> 3-5 days</span>
-          <span className="flex items-center justify-center gap-1"><WalletCards size={11} /> {currentCity.costIndex}/100</span>
-        </div>
-      </div>
-
       {/* Main Action Buttons */}
-      <div className="flex shrink-0 items-center justify-center gap-6 py-6">
+      <div className="flex shrink-0 items-center justify-center gap-5 py-5">
         <button
           type="button"
           onClick={() => handleSwipe("left")}
-          className="flex h-16 w-16 items-center justify-center border border-via-black bg-via-white text-red-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
+          className="flex h-14 w-14 items-center justify-center border border-via-black bg-via-white text-red-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
           aria-label="Pass destination"
         >
           <X size={32} strokeWidth={4} />
@@ -338,7 +301,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
         <button
           type="button"
           onClick={() => handleSwipe("right")}
-          className="flex h-16 w-16 items-center justify-center border border-via-black bg-via-white text-green-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
+          className="flex h-14 w-14 items-center justify-center border border-via-black bg-via-white text-green-500 shadow-brutalist transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
           aria-label="Like destination"
         >
           <Heart size={32} strokeWidth={4} fill="currentColor" />
@@ -373,26 +336,6 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                       className={`text-[10px] font-mono py-1.5 border ${filters.region === r ? 'bg-via-black text-via-white border-via-black' : 'bg-via-off-white border-via-grey-light'}`}
                     >
                       {r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase text-via-grey-mid">
-                  <WalletCards size={11} /> Budget
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {["All", "Budget", "Balanced", "Premium"].map((cost) => (
-                    <button
-                      key={cost}
-                      type="button"
-                      onClick={() => {
-                        resetDeckPosition();
-                        setFilters((f) => ({ ...f, cost }));
-                      }}
-                      className={`border py-1.5 font-mono text-[10px] ${filters.cost === cost ? "border-via-black bg-via-black text-via-white" : "border-via-grey-light bg-via-off-white text-via-black"}`}
-                    >
-                      {cost}
                     </button>
                   ))}
                 </div>

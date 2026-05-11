@@ -16,6 +16,15 @@ export default async function ProfilePage() {
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, homeCountry: true, genderPreference: true, travelStyle: true, createdAt: true },
+  }).catch(async (error) => {
+    console.error("Profile extended fields unavailable", error);
+    const fallbackUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, avatarUrl: true, language: true, homeCity: true, createdAt: true },
+    });
+    return fallbackUser
+      ? { ...fallbackUser, homeCountry: null, genderPreference: null, travelStyle: null }
+      : null;
   });
   if (!dbUser) redirect("/auth/login");
 

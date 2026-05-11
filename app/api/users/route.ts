@@ -49,8 +49,8 @@ const patchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   language: z.string().min(2).max(10).optional(),
   avatarUrl: z.string().url().or(z.string().length(0)).optional().nullable(),
-  homeCity: z.string().min(1).optional(),
-  homeCountry: z.string().min(1).optional(),
+  homeCity: z.string().min(1).nullable().optional(),
+  homeCountry: z.string().min(1).nullable().optional(),
   genderPreference: z.enum(["ANY", "MALE", "FEMALE", "MIXED"]).optional(),
   travelStyle: z.enum(["SOLO", "COUPLE", "FRIENDS", "FAMILY"]).optional(),
   currentPassword: z.string().optional(),
@@ -73,8 +73,8 @@ export async function PATCH(req: Request) {
   if (name) updateData.name = name;
   if (language) updateData.language = language;
   if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl;
-  if (parsed.data.homeCity) updateData.homeCity = parsed.data.homeCity;
-  if (parsed.data.homeCountry) updateData.homeCountry = parsed.data.homeCountry;
+  if (parsed.data.homeCity !== undefined) updateData.homeCity = parsed.data.homeCity;
+  if (parsed.data.homeCountry !== undefined) updateData.homeCountry = parsed.data.homeCountry;
   if (parsed.data.genderPreference) updateData.genderPreference = parsed.data.genderPreference;
   if (parsed.data.travelStyle) updateData.travelStyle = parsed.data.travelStyle;
 
