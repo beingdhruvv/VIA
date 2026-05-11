@@ -48,13 +48,13 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-11 13:38 IST (session: Profile Root Fix + UI Simplification) |
+| Last updated    | 2026-05-11 13:46 IST (session: Profile Client Crash Fix)            |
 | Last updated by | Codex                                                              |
 | Build status    | PASSING (`npm.cmd run build`, 41 routes)                           |
 | Active branch   | main                                                                |
 | Last commit     | (pending commit this session)                                       |
 | Blockers        | None                                                                |
-| Next step       | Verify live `/profile`, Explore card swipe, and Memories banner after deploy |
+| Next step       | Verify live `/profile` after deploy; profile client no longer depends on SessionProvider |
 
 ## What was done this session
 - **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once; **`proxy.ts`** — allow **`/api/config/*`** without session.
@@ -68,6 +68,7 @@
 - **Explore / Memories / Admin follow-up:** Removed landing sign-in CTA, rebuilt Explore around a fixed Bumble-style swipe card for mobile touch, removed white metadata box and dollar marker, made filters reset/apply reliably, stopped reused preview fallbacks, added Memories summary/control redesign and link/photo share mode, and wired admin Add City/Create Template forms.
 - **Explore/Profile hotfix:** Removed Explore bottom preview strip, removed budget pill/filter, lightened the card text overlay, redesigned Explore/Saved tabs, enabled vertical drag-to-save, and made `/profile` render defensively if production preference columns lag during deploy.
 - **Profile root fix / UI simplification:** Profile page now queries only stable user fields and tolerates trip-count failure so production schema drift cannot hard-crash the route. Explore/Taste icon tabs restored, bottom action buttons removed, card info reduced to city/country-region/rating, and Memories stats merged into one banner card.
+- **Profile client crash fix:** Removed `useSession()` from `ProfileClient`; the app does not provide a global `SessionProvider`, so the profile client route could crash after navigation even when server data loaded.
 
 ## What reliably works
 - Prisma + seed (SQLite dev / PostgreSQL prod)
@@ -380,6 +381,7 @@ Pre-ship checklist:
 | 2026-05-11 | Offer memory sharing as link or photo payload | Native share targets differ; users need both copyable URLs and direct image sharing where supported |
 | 2026-05-11 | Remove Explore budget filtering from the swipe surface | It added visual noise and was called out as confusing in mobile review |
 | 2026-05-11 | Query stable profile fields only on `/profile` | Production page was still failing; avoiding newer optional columns at render time prevents schema-drift route crashes |
+| 2026-05-11 | Remove `useSession()` from ProfileClient instead of adding a global provider | Smallest root fix for the inaccessible profile tab; avoids changing auth behavior across the whole app |
 
 # VALIDATION LOG
 
@@ -402,6 +404,7 @@ Pre-ship checklist:
 | 2026-05-11 | Codex        | npm.cmd run build            | pass    | Production build passed after Explore/Memories/Admin UI fixes; 41 routes |
 | 2026-05-11 | Codex        | targeted eslint + npm.cmd run build | pass | Explore/Profile hotfix lint clean on touched files; production build passed with 41 routes |
 | 2026-05-11 | Codex        | targeted eslint + npm.cmd run build | pass | Stable profile query + Explore/Memories UI simplification; production build passed with 41 routes |
+| 2026-05-11 | Codex        | targeted eslint + npm.cmd run build | pass | Removed ProfileClient SessionProvider dependency; production build passed with 41 routes |
 
 ---
 
@@ -448,3 +451,4 @@ Pre-ship checklist:
 | 2026-05-11 | Codex         | FIX: mobile Explore swipe/card redesign, Memories layout/share modes, landing CTA cleanup, admin create forms |
 | 2026-05-11 | Codex         | HOTFIX: Explore overlay/tabs/vertical swipe cleanup and defensive profile render |
 | 2026-05-11 | Codex         | HOTFIX: stable `/profile` query, restored Explore/Taste icons, removed bottom swipe action buttons, merged Memories stats banner |
+| 2026-05-11 | Codex         | HOTFIX: removed `useSession()` dependency from ProfileClient to fix profile tab crash |

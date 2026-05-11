@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin, Loader2, HeartHandshake } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -42,7 +42,6 @@ const LANGUAGES = [
 ];
 
 export function ProfileClient({ profile, tripCount }: Props) {
-  const { update } = useSession();
   const [name, setName] = useState(profile.name);
   const [language, setLanguage] = useState(profile.language ?? "en");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
@@ -94,7 +93,6 @@ export function ProfileClient({ profile, tripCount }: Props) {
         return;
       }
       setSaved(true);
-      await update({ name: name.trim() });
       setTimeout(() => setSaved(false), 2500);
     } finally {
       setSaving(false);
@@ -119,7 +117,6 @@ export function ProfileClient({ profile, tripCount }: Props) {
       const data = await res.json();
       setAvatarUrl(data.avatarUrl);
       setTempAvatar(null);
-      await update({ image: data.avatarUrl });
     } catch (err) {
       console.error(err);
       setProfileError("An error occurred during upload.");
@@ -262,7 +259,6 @@ export function ProfileClient({ profile, tripCount }: Props) {
                       className="px-3 text-via-red border-via-red hover:bg-via-red hover:text-via-white h-10"
                       onClick={() => {
                         setAvatarUrl(null);
-                        update({ image: null });
                       }}
                     >
                       <Trash2 size={14} />
@@ -285,7 +281,6 @@ export function ProfileClient({ profile, tripCount }: Props) {
                       key={opt.id}
                       onClick={() => {
                         setAvatarUrl(url);
-                        update({ image: url });
                       }}
                       className={`relative aspect-square border-2 transition-all p-1 hover:scale-105 ${isSelected ? 'border-via-black bg-via-off-white' : 'border-via-grey-light opacity-60 hover:opacity-100'}`}
                     >
