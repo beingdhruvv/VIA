@@ -18,7 +18,9 @@ import {
   Image as ImageIcon,
   MapPin,
   Navigation,
-  Square
+  Square,
+  Link as LinkIcon,
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -64,6 +66,7 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
   const [shareEmails, setShareEmails] = useState("");
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
+  const [shareMode, setShareMode] = useState<"link" | "photo">("link");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const ownedMemories = memories.filter((memory) => memory.userId !== "" && memory.canDelete !== false);
@@ -219,7 +222,20 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
 
   const handleShareMemory = async (memory: MemoryData) => {
     const url = `${window.location.origin}${imageSrc(memory.imageUrl)}`;
-    if (navigator.share) {
+    if (shareMode === "photo" && navigator.share) {
+      try {
+        const response = await fetch(imageSrc(memory.imageUrl));
+        const blob = await response.blob();
+        const file = new File([blob], memory.fileName, { type: blob.type || "image/jpeg" });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ title: memory.caption || memory.fileName, files: [file] });
+          return;
+        }
+      } catch {
+        setShareStatus("Photo share unavailable. Link copied instead.");
+      }
+    }
+    if (navigator.share && shareMode === "link") {
       await navigator.share({
         title: memory.caption || memory.fileName,
         url,
@@ -231,8 +247,23 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-6 pb-20">
+      <section className="grid gap-3 md:grid-cols-4">
+        <div className="border border-via-black bg-via-black p-4 text-via-white shadow-brutalist md:col-span-2">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-via-white/70">Memory vault</p>
+          <h2 className="mt-2 font-grotesk text-3xl font-black uppercase italic">{filteredMemories.length} moments</h2>
+        </div>
+        <div className="border border-via-black bg-via-white p-4 shadow-brutalist-sm">
+          <p className="font-mono text-[10px] uppercase text-via-grey-mid">Shared with you</p>
+          <p className="mt-2 font-mono text-2xl font-bold">{memories.filter((memory) => memory.sharedBy).length}</p>
+        </div>
+        <div className="border border-via-black bg-via-white p-4 shadow-brutalist-sm">
+          <p className="font-mono text-[10px] uppercase text-via-grey-mid">Mapped photos</p>
+          <p className="mt-2 font-mono text-2xl font-bold">{mapMemories.length}</p>
+        </div>
+      </section>
       {/* Controls & Stats */}
+      <div className="sticky top-0 z-20 -mx-2 border-y border-via-black bg-via-off-white px-2 py-3 md:top-4">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 flex-1">
           <div className="flex items-center gap-4">
@@ -311,6 +342,7 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
             <Upload size={18} /> Upload Memories
           </Button>
         </div>
+      </div>
       </div>
 
       {uploadNotice && (
@@ -526,7 +558,7 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-via-white border-2 border-via-black p-4 flex justify-between items-center shadow-brutalist"
+              className="absolute bottom-6 left-1/2 flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 flex-col gap-4 border-2 border-via-black bg-via-white p-4 shadow-brutalist md:flex-row md:items-center md:justify-between"
               onClick={e => e.stopPropagation()}
             >
               <div className="min-w-0">
@@ -540,7 +572,23 @@ export function MemoriesClient({ initialMemories, trips, storageLimit = DEFAULT_
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex border border-via-black bg-via-off-white p-1">
+                  <button
+                    type="button"
+                    onClick={() => setShareMode("link")}
+                    className={`flex items-center gap-1 px-2 py-1 font-mono text-[9px] uppercase ${shareMode === "link" ? "bg-via-black text-via-white" : "text-via-black"}`}
+                  >
+                    <LinkIcon size={12} /> Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShareMode("photo")}
+                    className={`flex items-center gap-1 px-2 py-1 font-mono text-[9px] uppercase ${shareMode === "photo" ? "bg-via-black text-via-white" : "text-via-black"}`}
+                  >
+                    <Copy size={12} /> Photo
+                  </button>
+                </div>
                 <a
                   href={imageSrc(fullImage.imageUrl)}
                   download={fullImage.fileName}

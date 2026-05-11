@@ -52,6 +52,19 @@ function Avatar({ name, src, size = "md", className = "" }: AvatarProps) {
   };
 
   if (src) {
+    if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
+      return (
+        <Image
+          src={src}
+          alt={name ?? "User avatar"}
+          width={px}
+          height={px}
+          className={["object-cover", className].filter(Boolean).join(" ")}
+          style={{ ...sharedStyle, border: "1px solid #D6D6D6" }}
+        />
+      );
+    }
+
     const formattedSrc = protectedUploadUrl(src);
     const isPrivateUpload = formattedSrc.startsWith("/api/uploads/");
     return (

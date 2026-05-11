@@ -115,6 +115,10 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
   const [trips, setTrips] = useState<AdminTrip[]>([]);
   const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [mgmtLoading, setMgmtLoading] = useState(false);
+  const [showCityForm, setShowCityForm] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [cityDraft, setCityDraft] = useState({ name: "", country: "", region: "", latitude: "", longitude: "", imageUrl: "" });
+  const [activityDraft, setActivityDraft] = useState({ cityId: "", name: "", category: "SIGHTSEEING", estimatedCost: "1000", durationHours: "2", imageUrl: "" });
 
   const fetchData = useCallback(async () => {
     try {
@@ -203,6 +207,46 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
     }
   };
 
+  const handleCreateCity = async () => {
+    if (!cityDraft.name || !cityDraft.country || !cityDraft.region) return;
+    const res = await fetch("/api/admin/cities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...cityDraft,
+        latitude: Number(cityDraft.latitude || 0),
+        longitude: Number(cityDraft.longitude || 0),
+        imageUrl: cityDraft.imageUrl || null,
+      }),
+    });
+    if (res.ok) {
+      setCityDraft({ name: "", country: "", region: "", latitude: "", longitude: "", imageUrl: "" });
+      setShowCityForm(false);
+      await fetchManagementData("cities");
+      await fetchData();
+    }
+  };
+
+  const handleCreateActivity = async () => {
+    if (!activityDraft.cityId || !activityDraft.name) return;
+    const res = await fetch("/api/admin/activities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...activityDraft,
+        estimatedCost: Number(activityDraft.estimatedCost || 0),
+        durationHours: Number(activityDraft.durationHours || 1),
+        imageUrl: activityDraft.imageUrl || null,
+      }),
+    });
+    if (res.ok) {
+      setActivityDraft({ cityId: activityDraft.cityId, name: "", category: "SIGHTSEEING", estimatedCost: "1000", durationHours: "2", imageUrl: "" });
+      setShowActivityForm(false);
+      await fetchManagementData("activities");
+      await fetchData();
+    }
+  };
+
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -269,6 +313,9 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
         onValueChange={(value) => {
           if (["cities", "trips", "activities"].includes(value)) {
             void fetchManagementData(value);
+          }
+          if (value === "activities" && cities.length === 0) {
+            void fetchManagementData("cities");
           }
         }}
       >
@@ -518,8 +565,22 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                 <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">City Database</h3>
                 <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Add, edit or remove world cities</p>
               </div>
-              <Button variant="primary" size="sm" className="font-mono text-xs uppercase">+ Add City</Button>
+              <Button variant="primary" size="sm" onClick={() => setShowCityForm((value) => !value)} className="font-mono text-xs uppercase">+ Add City</Button>
             </div>
+            {showCityForm && (
+              <div className="grid gap-3 border-b-2 border-via-black bg-via-off-white p-4 md:grid-cols-3">
+                {(["name", "country", "region", "latitude", "longitude", "imageUrl"] as const).map((field) => (
+                  <input
+                    key={field}
+                    value={cityDraft[field]}
+                    onChange={(e) => setCityDraft((prev) => ({ ...prev, [field]: e.target.value }))}
+                    placeholder={field}
+                    className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none"
+                  />
+                ))}
+                <Button variant="primary" size="sm" onClick={handleCreateCity} className="font-mono text-xs uppercase">Create City</Button>
+              </div>
+            )}
             
             {mgmtLoading ? (
               <div className="p-12 text-center">
@@ -646,8 +707,28 @@ export default function AdminDashboardClient({ currentUserRole }: { currentUserR
                   <h3 className="font-bold uppercase tracking-wider text-sm font-space-grotesk">Activity Library</h3>
                   <p className="text-[10px] text-via-grey-mid font-mono uppercase mt-1">Manage global activity templates</p>
                 </div>
-                <Button variant="primary" size="sm" className="font-mono text-xs uppercase">+ Create Template</Button>
+                <Button variant="primary" size="sm" onClick={() => setShowActivityForm((value) => !value)} className="font-mono text-xs uppercase">+ Create Template</Button>
              </div>
+             {showActivityForm && (
+              <div className="grid gap-3 border-b-2 border-via-black bg-via-off-white p-4 md:grid-cols-3">
+                <select
+                  value={activityDraft.cityId}
+                  onChange={(e) => setActivityDraft((prev) => ({ ...prev, cityId: e.target.value }))}
+                  className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none"
+                >
+                  <option value="">Select city</option>
+                  {cities.map((city) => <option key={city.id} value={city.id}>{city.name}, {city.country}</option>)}
+                </select>
+                <input value={activityDraft.name} onChange={(e) => setActivityDraft((prev) => ({ ...prev, name: e.target.value }))} placeholder="name" className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none" />
+                <select value={activityDraft.category} onChange={(e) => setActivityDraft((prev) => ({ ...prev, category: e.target.value }))} className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none">
+                  {["SIGHTSEEING", "FOOD", "ADVENTURE", "CULTURE", "NATURE", "SHOPPING", "NIGHTLIFE", "WELLNESS"].map((category) => <option key={category} value={category}>{category}</option>)}
+                </select>
+                <input value={activityDraft.estimatedCost} onChange={(e) => setActivityDraft((prev) => ({ ...prev, estimatedCost: e.target.value }))} placeholder="estimatedCost" className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none" />
+                <input value={activityDraft.durationHours} onChange={(e) => setActivityDraft((prev) => ({ ...prev, durationHours: e.target.value }))} placeholder="durationHours" className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none" />
+                <input value={activityDraft.imageUrl} onChange={(e) => setActivityDraft((prev) => ({ ...prev, imageUrl: e.target.value }))} placeholder="imageUrl" className="border border-via-black bg-via-white px-3 py-2 font-mono text-xs outline-none" />
+                <Button variant="primary" size="sm" onClick={handleCreateActivity} className="font-mono text-xs uppercase">Create Template</Button>
+              </div>
+             )}
              {mgmtLoading ? (
               <div className="p-12 text-center">
                 <Loader2 className="animate-spin mx-auto text-via-black" size={24} />

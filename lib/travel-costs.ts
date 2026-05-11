@@ -23,9 +23,10 @@ export function googleMapsUrl(query: string) {
 
 export function estimateTravelCosts(destination: City, origin?: City | null) {
   const originCity = origin ?? { name: "Delhi", country: "India", latitude: 28.6139, longitude: 77.2090 };
+  const isDomestic = originCity.country === destination.country;
   const km = distanceKm(originCity, destination);
   const roadKm = km ? Math.round(km * 1.22) : null;
-  const multiplier = destination.country === "India" ? 1 : 3.5;
+  const multiplier = isDomestic && destination.country === "India" ? 1 : 3.5;
   const busLow = roadKm ? Math.max(500, Math.round(roadKm * 2.2 * multiplier)) : 900;
   const busHigh = roadKm ? Math.max(busLow + 400, Math.round(roadKm * 4.5 * multiplier)) : 1800;
   const trainLow = km ? Math.max(300, Math.round(km * 1.1 * multiplier)) : 500;
@@ -35,11 +36,16 @@ export function estimateTravelCosts(destination: City, origin?: City | null) {
 
   return {
     originLabel: `${originCity.name}, ${originCity.country}`,
-    distanceLabel: roadKm ? `~${roadKm.toLocaleString("en-IN")} km road distance` : "Distance unknown",
-    modes: [
-      { mode: "Bus / cab", estimate: `${INR.format(busLow)}-${INR.format(busHigh)}`, note: "Road estimate including hill premium where relevant." },
-      { mode: "Train + road", estimate: `${INR.format(trainLow)}-${INR.format(trainHigh)}`, note: "Works when destination has no direct railhead." },
-      { mode: "Flight + transfer", estimate: `${INR.format(flightLow)}-${INR.format(flightHigh)}`, note: "Indicative fare band; live fares vary by date." },
-    ],
+    distanceLabel: isDomestic && roadKm ? `~${roadKm.toLocaleString("en-IN")} km road distance` : km ? `~${km.toLocaleString("en-IN")} km air distance` : "Distance unknown",
+    modes: isDomestic
+      ? [
+          { mode: "Bus / cab", estimate: `${INR.format(busLow)}-${INR.format(busHigh)}`, note: "Road estimate including hill premium where relevant." },
+          { mode: "Train + road", estimate: `${INR.format(trainLow)}-${INR.format(trainHigh)}`, note: "Works when destination has no direct railhead." },
+          { mode: "Flight + transfer", estimate: `${INR.format(flightLow)}-${INR.format(flightHigh)}`, note: "Indicative fare band; live fares vary by date." },
+        ]
+      : [
+          { mode: "International flight", estimate: `${INR.format(flightLow)}-${INR.format(flightHigh)}`, note: "Indicative international fare band; live fares vary by date." },
+          { mode: "Airport transfer", estimate: `${INR.format(Math.max(1200, Math.round((km ?? 800) * 0.9)))}-${INR.format(Math.max(2500, Math.round((km ?? 800) * 1.8)))}`, note: "Local city transfer estimate after arrival." },
+        ],
   };
 }

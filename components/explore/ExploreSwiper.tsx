@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Bookmark, Globe, Heart, RotateCcw, SlidersHorizontal, Star, WalletCards, X } from "lucide-react";
+import { Bookmark, CalendarDays, Globe, Heart, MapPin, Plane, RotateCcw, SlidersHorizontal, Star, WalletCards, X } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -12,14 +12,6 @@ function exploreCityImageSrc(city: City): string {
   const key = cityImageKey(city.name, city.country);
   return CITY_IMAGES[key] ?? FALLBACK_CITY_IMAGE;
 }
-
-const PREVIEW_FALLBACKS = [
-  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600&h=400&fit=crop",
-];
 
 interface ExploreCity extends City {
   activities?: Array<{
@@ -30,6 +22,15 @@ interface ExploreCity extends City {
     imageUrl?: string | null;
   }>;
   moreImages?: string[];
+}
+
+function cityPreviews(city: ExploreCity) {
+  const own = exploreCityImageSrc(city);
+  const activityImages = (city.activities ?? [])
+    .map((activity) => activity.imageUrl)
+    .filter((image): image is string => Boolean(image && image !== own));
+  const curated = [own, ...(city.moreImages ?? []), ...activityImages];
+  return Array.from(new Set(curated)).slice(0, 4);
 }
 
 interface ExploreSwiperProps {
@@ -45,6 +46,10 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     region: "All",
     cost: "All",
   });
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+  const likeOpacity = useTransform(x, [50, 150], [0, 1]);
+  const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
 
   const regions = useMemo(() => {
     return ["All", ...Array.from(new Set(cities.map((city) => city.region))).sort()];
@@ -63,10 +68,11 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
     });
   }, [cities, filters]);
 
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const likeOpacity = useTransform(x, [50, 150], [0, 1]);
-  const nopeOpacity = useTransform(x, [-50, -150], [0, 1]);
+  useEffect(() => {
+    setCurrentIndex(0);
+    setHistory([]);
+    x.set(0);
+  }, [filters.cost, filters.region, x]);
 
   const handleSwipe = async (direction: "left" | "right" | "up") => {
     const city = filteredCities[currentIndex];
@@ -165,20 +171,39 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
 
   const currentCity = filteredCities[currentIndex];
   const nextCity = filteredCities[currentIndex + 1];
-  const priceLevel = Math.max(1, Math.min(4, Math.ceil(currentCity.costIndex / 25)));
   const popularity = (currentCity.popularityScore / 20).toFixed(1);
+  const previews = cityPreviews(currentCity);
 
   return (
-    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[min(100%,22rem)] flex-1 flex-col sm:max-w-md">
-      <div className="mb-2 flex shrink-0 justify-center gap-1.5">
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-[min(100%,24rem)] flex-1 flex-col sm:max-w-md">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={handleUndo}
+          disabled={history.length === 0}
+          className="border border-via-black bg-via-white p-2 shadow-brutalist-sm disabled:opacity-30"
+          aria-label="Undo last swipe"
+        >
+          <RotateCcw size={16} />
+        </button>
+        <div className="flex justify-center gap-1.5">
         {filteredCities.slice(currentIndex, currentIndex + 5).map((city, index) => (
           <span
             key={city.id}
             className={`h-1.5 rounded-full border border-via-black ${index === 0 ? "w-8 bg-via-black" : "w-3 bg-via-white"}`}
           />
         ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowFilters(!showFilters)}
+          className="border border-via-black bg-via-white p-2 shadow-brutalist-sm"
+          aria-label="Open explore filters"
+        >
+          <SlidersHorizontal size={16} />
+        </button>
       </div>
-      <div className="relative min-h-[220px] flex-1 perspective-1000 sm:min-h-[280px]">
+      <div className="relative h-[min(62dvh,620px)] min-h-[430px] shrink-0 perspective-1000 sm:min-h-[560px]">
         {nextCity && (
           <div
             className="absolute inset-x-3 top-4 bottom-0 overflow-hidden border border-via-black bg-via-white opacity-80"
@@ -195,7 +220,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
           <motion.div
             key={currentCity.id}
             style={{ x, rotate }}
-            drag
+            drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.8}
             onDragEnd={(_, info) => {
@@ -206,14 +231,13 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
               else if (info.offset.x < -t || velocity < -400) handleSwipe("left");
               else x.set(0);
             }}
-            className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing"
+            className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing"
           >
               <div
-                className="relative h-full w-full overflow-y-auto border border-via-black bg-via-white scrollbar-hide"
+                className="relative h-full w-full overflow-hidden border border-via-black bg-via-white"
                 style={{ boxShadow: "3px 3px 0px var(--foreground)" }}
               >
-                {/* Image Section */}
-                <div className="relative aspect-[4/5] w-full shrink-0 border-b border-via-black">
+                <div className="relative h-full w-full">
                   <div className="relative h-full w-full">
                     <Image
                       src={exploreCityImageSrc(currentCity)}
@@ -239,131 +263,56 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                     <span className="text-4xl font-black uppercase text-red-500 sm:text-5xl">PASS</span>
                   </motion.div>
 
-                  {/* Corner Controls */}
-                  <div className="absolute top-4 left-4 z-20">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleUndo(); }}
-                      disabled={history.length === 0}
-                      className="border border-via-black bg-via-white p-2 shadow-brutalist-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-30"
-                      aria-label="Undo last swipe"
-                    >
-                      <RotateCcw size={18} />
-                    </button>
-                  </div>
-
-                  <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setShowFilters(!showFilters); }}
-                      className="border border-via-black bg-via-white p-2 shadow-brutalist-sm transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-                      aria-label="Open explore filters"
-                    >
-                      <SlidersHorizontal size={18} />
-                    </button>
-                  </div>
-
-                  {/* BOTTOM METADATA OVERLAY */}
-                  <div className="absolute bottom-0 left-0 right-0 z-10 p-3 pointer-events-none">
-                    <div className="bg-via-white border border-via-black p-4 shadow-brutalist pointer-events-auto">
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-via-black/75" />
+                  <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-via-white pointer-events-none">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h2 className="font-grotesk text-2xl font-black leading-none text-via-black uppercase italic">
+                          <h2 className="font-grotesk text-4xl font-black leading-none uppercase italic">
                             {currentCity.name}
                           </h2>
-                          <p className="font-mono text-[10px] uppercase text-via-grey-mid tracking-tighter mt-1">
+                          <p className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-via-white/90">
+                            <MapPin size={12} />
                             {currentCity.country} / {currentCity.region}
                           </p>
                         </div>
-                        <div className="bg-via-black text-via-white px-2 py-1 font-mono text-[10px] font-bold">
-                          {"$".repeat(priceLevel)}
-                        </div>
+                        <span className="border border-via-white px-2 py-1 font-mono text-[10px] uppercase">
+                          {currentCity.costIndex <= 35 ? "Budget" : currentCity.costIndex <= 70 ? "Balanced" : "Premium"}
+                        </span>
                       </div>
                       
-                      <div className="mt-3 flex items-center justify-between border-t border-via-grey-light pt-2">
-                        <div className="flex items-center gap-1.5 text-via-black font-mono text-[10px] uppercase font-bold">
-                          <Star size={12} fill="currentColor" className="text-yellow-500" />
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase font-bold">
+                          <Star size={12} fill="currentColor" />
                           {popularity} Popularity
                         </div>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleSwipe("up"); }}
-                          className="flex items-center gap-1 font-mono text-[10px] uppercase font-bold hover:text-via-navy underline decoration-2 underline-offset-2"
+                          className="pointer-events-auto flex items-center gap-1 border border-via-white px-3 py-2 font-mono text-[10px] uppercase font-bold hover:bg-via-white hover:text-via-black"
                         >
                           <Bookmark size={12} /> Save
                         </button>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Simplified Content Section (only for details scroll) */}
-                <div className="p-5 space-y-6">
-                  <div>
-                    <h4 className="font-mono text-[10px] uppercase text-via-grey-mid mb-2 border-b border-via-black pb-1 font-bold">The Vibe</h4>
-                    <p className="font-inter text-sm text-via-black leading-snug">
-                      Known for its stunning {currentCity.region} landscapes and vibrant culture, {currentCity.name} offers a perfect blend of history and modern amenities.
-                    </p>
-                  </div>
-
-                  {/* Gallery */}
-                  <div className="space-y-2">
-                    <h4 className="font-mono text-[10px] uppercase text-via-grey-mid mb-2 border-b border-via-grey-light pb-1">Previews</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white">
-                         <Image 
-                           src={currentCity.moreImages?.[0] || currentCity.activities?.[0]?.imageUrl || PREVIEW_FALLBACKS[currentIndex % PREVIEW_FALLBACKS.length]} 
-                           alt="preview 1" fill className="object-cover" 
-                         />
-                      </div>
-                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white">
-                         <Image 
-                           src={currentCity.moreImages?.[1] || currentCity.activities?.[1]?.imageUrl || PREVIEW_FALLBACKS[(currentIndex + 1) % PREVIEW_FALLBACKS.length]} 
-                           alt="preview 2" fill className="object-cover" 
-                         />
-                      </div>
-                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white col-span-2">
-                         <Image 
-                           src={currentCity.moreImages?.[2] || currentCity.activities?.[2]?.imageUrl || PREVIEW_FALLBACKS[(currentIndex + 2) % PREVIEW_FALLBACKS.length]} 
-                           alt="preview 3" fill className="object-cover" 
-                         />
-                      </div>
-                    </div>
-                  </div>
-
-                    {/* Activities Preview (if available) */}
-                    {currentCity.activities && currentCity.activities.length > 0 && (
-                      <div>
-                        <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Top Activities</h4>
-                        <div className="space-y-3">
-                          {currentCity.activities.map((act) => (
-                            <div key={act.id} className="flex gap-3 items-center">
-                              <div className="w-12 h-12 shrink-0 border border-via-black bg-via-off-white flex items-center justify-center">
-                                <Star size={16} className="text-via-black" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-bold text-xs truncate uppercase">{act.name}</p>
-                                <p className="text-[10px] font-mono text-via-grey-mid uppercase tracking-wide">INR {act.estimatedCost.toLocaleString()} / {act.category}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  <div className="pt-4 flex flex-col gap-2">
-                    <button 
-                      onClick={() => handleSwipe("up")}
-                      className="w-full flex items-center justify-center gap-2 py-4 bg-via-black text-via-white font-mono text-xs uppercase tracking-widest hover:bg-via-navy transition-all border-2 border-via-black"
-                    >
-                      <Bookmark size={16} />
-                      Save to Wishlist
-                    </button>
-                    <p className="text-[10px] font-mono text-via-grey-mid text-center uppercase tracking-widest py-2">
-                      End of details
-                    </p>
                   </div>
                 </div>
               </div>
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      <div className="mt-3 grid shrink-0 grid-cols-[1fr_auto_auto] gap-2 overflow-hidden">
+        {previews.slice(0, 3).map((image, index) => (
+          <div key={image} className={`relative h-16 border border-via-black bg-via-off-white ${index === 0 ? "col-span-1" : "w-16"}`}>
+            <Image src={image} alt={`${currentCity.name} preview ${index + 1}`} fill className="object-cover" />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 shrink-0 border border-via-black bg-via-white p-3 shadow-brutalist-sm">
+        <div className="grid grid-cols-3 gap-2 text-center font-mono text-[9px] uppercase text-via-grey-dark">
+          <span className="flex items-center justify-center gap-1"><Plane size={11} /> Fly</span>
+          <span className="flex items-center justify-center gap-1"><CalendarDays size={11} /> 3-5 days</span>
+          <span className="flex items-center justify-center gap-1"><WalletCards size={11} /> {currentCity.costIndex}/100</span>
+        </div>
       </div>
 
       {/* Main Action Buttons */}
@@ -411,9 +360,9 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             </div>
             <div className="space-y-4">
               <div>
-                <p className="font-mono text-[10px] uppercase text-via-grey-mid mb-2">Region</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {regions.slice(0, 8).map(r => (
+              <p className="font-mono text-[10px] uppercase text-via-grey-mid mb-2">Region</p>
+                <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto">
+                  {regions.map(r => (
                     <button 
                       key={r}
                       type="button"

@@ -2,15 +2,24 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, LogIn } from "lucide-react";
+import { ArrowRight, BarChart3, Camera, MapPinned, ShieldCheck, Users, WalletCards } from "lucide-react";
 
 const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1534430480872-3498386e7a56?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1493246507139-91e8bef99c02?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Solang_Valley.jpg/960px-Solang_Valley.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/960px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Basilica_of_Bom_Jesus_GOA.jpg/960px-Basilica_of_Bom_Jesus_GOA.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Hagia_Sophia_Mars_2013.jpg/960px-Hagia_Sophia_Mars_2013.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Rice_terraces_on_Bali_-_Tegalalang_Rice_Terrace_-_Indonesia_05.jpg/960px-Rice_terraces_on_Bali_-_Tegalalang_Rice_Terrace_-_Indonesia_05.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tokyo_Shibuya_Scramble_Crossing_2018-10-09.jpg/960px-Tokyo_Shibuya_Scramble_Crossing_2018-10-09.jpg",
+];
+
+const FEATURES = [
+  { label: "Swipe discovery", icon: MapPinned },
+  { label: "Trip collaboration", icon: Users },
+  { label: "Split budgets", icon: WalletCards },
+  { label: "Private memories", icon: Camera },
+  { label: "Analytics ready", icon: BarChart3 },
+  { label: "Secure hosting", icon: ShieldCheck },
 ];
 
 export default function LandingPage() {
@@ -49,28 +58,30 @@ export default function LandingPage() {
           
           <div className="max-w-sm border-2 border-via-black bg-via-white p-4 shadow-brutalist">
             <p className="mb-3 font-mono text-[10px] font-bold uppercase tracking-widest text-via-grey-mid">
-              To start planning, create an account or sign in.
+              To start planning, create your VIA account.
             </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Link
-                href="/auth/signup"
-                className="group relative inline-flex items-center justify-center gap-2 border-2 border-via-black bg-via-black px-5 py-3 text-xs font-bold uppercase text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#C1121F]"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Start Planning
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/auth/login"
-                className="inline-flex items-center justify-center gap-2 border-2 border-via-black bg-via-white px-5 py-3 text-xs font-bold uppercase text-via-black transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#1B2A41]"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                <LogIn size={15} /> Sign In
-              </Link>
-            </div>
+            <Link
+              href="/auth/signup"
+              className="group relative inline-flex w-full items-center justify-center gap-2 border-2 border-via-black bg-via-black px-5 py-3 text-xs font-bold uppercase text-via-white transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#C1121F]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Start Planning
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </main>
+
+      <section className="border-y-2 border-via-black bg-via-black px-5 py-6 text-via-white md:px-16 lg:px-24">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+          {FEATURES.map(({ label, icon: Icon }) => (
+            <div key={label} className="flex items-center gap-2 border border-via-white/30 px-3 py-3">
+              <Icon size={16} />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider">{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
 
       {/* ─── Image Carousel (Marquee) ────────────────────────────────────────── */}
