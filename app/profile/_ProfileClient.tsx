@@ -191,21 +191,21 @@ export function ProfileClient({ profile, tripCount }: Props) {
           <div className="absolute inset-0 bg-via-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
             <Camera size={20} className="text-via-white" />
           </div>
-          <input 
-            type="file" 
-            id="avatar-input" 
-            className="hidden" 
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setPendingFile(file);
-                const url = URL.createObjectURL(file);
-                setTempAvatar(url);
-                setShowEditor(true);
-              }
-            }}
-          />
+            <input 
+              type="file" 
+              id="avatar-input" 
+              className="hidden" 
+              accept="image/*"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setPendingFile(file);
+                  const url = URL.createObjectURL(file);
+                  setTempAvatar(url);
+                  setShowEditor(true);
+                }
+              }}
+            />
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-grotesk font-bold text-xl text-via-black">{profile.name}</p>

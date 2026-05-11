@@ -114,14 +114,28 @@ export default async function DashboardPage() {
   const recentTrips = allTrips.slice(0, 3) as unknown as TripCardType[];
 
   // ── Compute stats ──
+  const now = new Date();
   const totalTrips = allTrips.length;
   const countries = new Set(
     allTrips.flatMap((t) => t.stops.map((s) => s.city.country))
   );
-  const totalDays = allTrips.reduce(
-    (sum, t) => sum + diffInDays(t.startDate, t.endDate),
-    0
-  );
+  
+  const totalDays = allTrips.reduce((sum, t) => {
+    const start = new Date(t.startDate);
+    const end = new Date(t.endDate);
+    
+    // If trip hasn't started yet, don't count any days
+    if (start > now) return sum;
+    
+    // If trip is active, count days from start to now
+    if (end > now) {
+      return sum + Math.max(0, diffInDays(start, now));
+    }
+    
+    // If trip is finished, count total days from start to end
+    return sum + diffInDays(start, end);
+  }, 0);
+
   const totalBudget = allTrips.reduce(
     (sum, t) => sum + t.expenses.reduce((es, e) => es + e.amount, 0),
     0
@@ -191,22 +205,6 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* ── Primary CTA ── */}
-        <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-via-black bg-via-white p-5 md:p-6" style={{ boxShadow: "3px 3px 0px #111111" }}>
-          <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-via-grey-mid mb-1">Next step</p>
-            <p className="font-grotesk font-bold text-lg md:text-xl text-via-black">Plan a new journey</p>
-            <p className="font-inter text-sm text-via-grey-mid mt-1 max-w-xl">Set dates, budget, and build stops in the itinerary builder.</p>
-          </div>
-          <Link
-            href="/trips/new"
-            className="inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-widest border border-via-black bg-via-black text-via-white px-6 py-3 hover:bg-via-navy transition-colors shrink-0"
-            style={{ boxShadow: "2px 2px 0px #111111" }}
-          >
-            Plan a New Trip
-            <ArrowRight size={14} strokeWidth={1.5} />
-          </Link>
-        </section>
 
         {/* ── Stats ── */}
         <section>

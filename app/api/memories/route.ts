@@ -6,6 +6,13 @@ import { join } from "path";
 
 const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
 
+interface MemoryMetadata {
+  takenAt?: string;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,10 +31,12 @@ export async function POST(req: NextRequest) {
     // Check storage limit
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { storageUsed: true } as any
+      // @ts-ignore
+      select: { storageUsed: true }
     });
 
-    if (user && (user as any).storageUsed + file.size > MAX_STORAGE) {
+    // @ts-ignore
+    if (user && user.storageUsed + file.size > MAX_STORAGE) {
       return NextResponse.json({ error: "Storage limit exceeded (200MB)" }, { status: 400 });
     }
 
@@ -45,9 +54,10 @@ export async function POST(req: NextRequest) {
 
     await writeFile(absolutePath, buffer);
 
-    const metadata = metadataStr ? JSON.parse(metadataStr) : {};
+    const metadata: MemoryMetadata = metadataStr ? JSON.parse(metadataStr) : {};
 
-    const memory = await (prisma as any).memory.create({
+    // @ts-ignore
+    const memory = await prisma.memory.create({
       data: {
         userId: session.user.id,
         tripId: tripId || null,
@@ -66,7 +76,8 @@ export async function POST(req: NextRequest) {
     // Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { storageUsed: { increment: file.size } } as any
+      // @ts-ignore
+      data: { storageUsed: { increment: file.size } }
     });
 
     return NextResponse.json(memory);
@@ -84,7 +95,8 @@ export async function GET(req: NextRequest) {
   const tripId = searchParams.get("tripId");
 
   try {
-    const memories = await (prisma as any).memory.findMany({
+    // @ts-ignore
+    const memories = await prisma.memory.findMany({
       where: { 
         userId: session.user.id,
         ...(tripId ? { tripId } : {})
@@ -115,9 +127,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     // 1. Get memories to find file paths and sizes
-    const memories = await (prisma as any).memory.findMany({
+    // @ts-ignore
+    const memories = await prisma.memory.findMany({
       where: {
-        id: { in: ids },
+        id: { in: ids as string[] },
         userId: session.user.id,
       },
       select: {
@@ -131,10 +144,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: true, count: 0 });
     }
 
-    let totalSizeRemoved = 0;
-    const deletedIds = (memories as any[]).map((m: any) => m.id);
+    const deletedIds = memories.map((m: { id: string }) => m.id);
 
     // 2. Delete physical files
+    let totalSizeRemoved = 0;
     for (const memory of memories) {
       try {
         const absolutePath = join(process.cwd(), "public", memory.imageUrl);
@@ -146,14 +159,16 @@ export async function DELETE(req: NextRequest) {
     }
 
     // 3. Delete from DB
-    await (prisma as any).memory.deleteMany({
+    // @ts-ignore
+    await prisma.memory.deleteMany({
       where: { id: { in: deletedIds } }
     });
 
     // 4. Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { storageUsed: { decrement: totalSizeRemoved } } as any
+      // @ts-ignore
+      data: { storageUsed: { decrement: totalSizeRemoved } }
     });
 
     return NextResponse.json({ success: true, count: deletedIds.length });

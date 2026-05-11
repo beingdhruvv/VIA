@@ -25,7 +25,7 @@ function ModalContent({ children, className = "" }: ModalContentProps) {
       <Dialog.Content
         className={[
           "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
-          "w-full max-w-md mx-4",
+          "w-[calc(100%-2rem)] max-w-md",
           "bg-via-white border border-via-black rounded-none",
           "focus:outline-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",

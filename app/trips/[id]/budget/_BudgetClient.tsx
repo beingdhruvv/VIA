@@ -226,303 +226,151 @@ export function BudgetClient({
         }}
         initialSplits={pendingSplits}
       />
-
-      {/* ── Splitwise Style Dashboard ── */}
-      {collaborators.length > 0 && (
-        <section className="bg-via-white border-2 border-via-black overflow-hidden shadow-brutalist">
-          <div className="bg-via-black px-4 py-2 flex items-center justify-between">
-            <span className="font-mono text-[10px] text-via-white uppercase tracking-[0.2em] font-bold">Group Balances</span>
-            <Users size={14} className="text-via-white/60" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x-2 divide-via-black">
-            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
-              <p className="font-mono text-[10px] uppercase text-via-grey-mid">Total Balance</p>
-              <p className={`text-2xl font-grotesk font-bold ${myBalance >= 0 ? 'text-emerald-600' : 'text-via-red'}`}>
-                {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.round(myBalance))}
-              </p>
-            </div>
-            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
-              <p className="font-mono text-[10px] uppercase text-via-grey-mid">You Owe</p>
-              <p className="text-2xl font-grotesk font-bold text-via-red">
-                {formatCurrency(Math.round(youOwe))}
-              </p>
-            </div>
-            <div className="p-6 flex flex-col items-center justify-center text-center space-y-1">
-              <p className="font-mono text-[10px] uppercase text-via-grey-mid">You Are Owed</p>
-              <p className="text-2xl font-grotesk font-bold text-emerald-600">
-                {formatCurrency(Math.round(myBalance > 0 ? myBalance : 0))}
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t-2 border-via-black bg-via-off-white">
-            <div className="divide-y divide-via-black/10">
-              {Object.entries(detailedBalances).map(([id, amount]) => {
-                const user = collaborators.find(c => c.user.id === id)?.user || (id === currentUserId ? { name: "You", avatarUrl: null } : null);
-                if (!user || id === currentUserId) return null;
-                return (
-                  <div key={id} className="px-5 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar src={user.avatarUrl} name={user.name} size="xs" />
-                      <span className="font-grotesk font-bold text-xs uppercase">{user.name}</span>
-                    </div>
-                    <p className={`font-mono text-xs font-bold ${amount >= 0 ? 'text-emerald-600' : 'text-via-red'}`}>
-                      {amount >= 0 ? 'owes you ' : 'you owe '}
-                      {formatCurrency(Math.abs(Math.round(amount)))}
+      {/* ── Dashboard Grid ── */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Column 1: Core Stats & Group Balances (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Summary Stats */}
+          <div className="bg-via-white border-2 border-via-black p-5 shadow-brutalist-sm">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Financial Summary</p>
+            <div className="space-y-4">
+              <div>
+                <p className="font-mono text-[10px] text-via-grey-mid uppercase">Total Budget</p>
+                <p className="text-2xl font-grotesk font-bold text-via-black">
+                  {totalBudget != null ? formatCurrency(totalBudget) : "—"}
+                </p>
+              </div>
+              <div className="pt-2 border-t border-via-grey-light">
+                <p className="font-mono text-[10px] text-via-grey-mid uppercase">Logged Spend</p>
+                <p className={`text-xl font-grotesk font-bold ${overBudget ? 'text-via-red' : 'text-via-black'}`}>
+                  {formatCurrency(totalSpend)}
+                </p>
+                {totalBudget != null && (
+                  <div className="mt-2 space-y-1">
+                    <ProgressBar value={budgetPct} color={overBudget ? "red" : "default"} />
+                    <p className="font-mono text-[9px] uppercase text-via-grey-mid flex justify-between">
+                      <span>{budgetPct.toFixed(0)}% used</span>
+                      <span>{overBudget ? `Over by ${formatCurrency(totalSpend - totalBudget)}` : `${formatCurrency(totalBudget - totalSpend)} left`}</span>
                     </p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Budget Overview ── */}
-      <section
-        className="bg-via-white border border-via-black p-6"
-        style={{ boxShadow: "3px 3px 0px #111111" }}
-      >
-        <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
-          Budget Overview
-        </p>
-
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-6">
-          {/* Total budget */}
-          <div>
-            <p className="font-mono text-xs text-via-grey-mid uppercase mb-1">Total Budget</p>
-            {totalBudget != null ? (
-              <p
-                className="font-mono text-[36px] font-bold text-via-black leading-none"
-                style={{ fontFamily: "var(--font-space-grotesk, sans-serif)" }}
-              >
-                {formatCurrency(totalBudget)}
-              </p>
-            ) : (
-              <p className="font-mono text-[20px] text-via-grey-mid">—</p>
-            )}
-          </div>
-
-          <div className="w-px h-10 bg-via-grey-light hidden sm:block" />
-
-          {/* Estimated spend */}
-          <div>
-            <p className="font-mono text-xs text-via-grey-mid uppercase mb-1">Logged Spend</p>
-            <p
-              className="font-mono text-[24px] font-semibold leading-none"
-              style={{
-                fontFamily: "var(--font-space-grotesk, sans-serif)",
-                color: overBudget ? "#C1121F" : "#111111",
-              }}
-            >
-              {formatCurrency(totalSpend)}
-            </p>
-          </div>
-
-          <div className="w-px h-10 bg-via-grey-light hidden sm:block" />
-
-          {/* Avg per day */}
-          <div>
-            <p className="font-mono text-xs text-via-grey-mid uppercase mb-1">Avg / Day</p>
-            <p className="font-mono text-[18px] text-via-black leading-none">
-              {formatCurrency(Math.round(avgPerDay))}
-            </p>
-          </div>
-        </div>
-
-        {/* Progress bar — only if budget is set */}
-        {totalBudget != null && (
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <p className="font-mono text-xs text-via-grey-mid">
-                {budgetPct.toFixed(0)}% of budget used
-              </p>
-              {overBudget && (
-                <p className="font-mono text-xs text-via-red font-medium flex items-center gap-1">
-                  <TrendingUp size={12} />
-                  Over by {formatCurrency(totalSpend - totalBudget)}
-                </p>
-              )}
-              {!overBudget && totalBudget != null && (
-                <p className="font-mono text-xs text-via-grey-mid flex items-center gap-1">
-                  <TrendingDown size={12} />
-                  {formatCurrency(totalBudget - totalSpend)} remaining
-                </p>
-              )}
-            </div>
-            <ProgressBar
-              value={budgetPct}
-              color={overBudget ? "red" : "default"}
-            />
-          </div>
-        )}
-
-        {/* Over-budget banner */}
-        {overBudget && totalBudget != null && (
-          <div className="mt-4 bg-via-red text-via-white px-4 py-2 font-mono text-xs font-medium flex items-center gap-2">
-            <TrendingUp size={14} />
-            OVER BUDGET BY {formatCurrency(totalSpend - totalBudget)}
-          </div>
-        )}
-      </section>
-
-      {/* ── Charts Row ── */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div
-          className="bg-via-white border border-via-black p-4"
-          style={{ boxShadow: "3px 3px 0px #111111" }}
-        >
-          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
-            By Category
-          </p>
-          {pieData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    dataKey="amount"
-                    nameKey="category"
-                    paddingAngle={2}
-                  >
-                    {pieData.map((entry) => (
-                      <Cell
-                        key={entry.category}
-                        fill={CHART_COLORS[entry.category as ExpenseCategory]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
-                    contentStyle={{
-                      border: "1px solid #111111",
-                      borderRadius: 0,
-                      fontFamily: "var(--font-ibm-plex-mono, monospace)",
-                      fontSize: 12,
-                      background: "#F5F5F2",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
-                {pieData.map((entry) => (
-                  <div key={entry.category} className="flex items-center gap-2">
-                    <div
-                      className="w-2.5 h-2.5 shrink-0"
-                      style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }}
-                    />
-                    <span className="font-mono text-[10px] uppercase text-via-grey-dark truncate">
-                      {entry.category}
-                    </span>
-                    <span className="font-mono text-[10px] text-via-grey-mid ml-auto">
-                      {formatCurrency(entry.amount)}
-                    </span>
-                  </div>
-                ))}
+                )}
               </div>
-            </>
-          ) : (
-            <div className="h-[200px] flex flex-col items-center justify-center border border-dashed border-via-grey-light bg-via-off-white px-4 text-center">
-              <p className="font-mono text-xs text-via-grey-mid uppercase tracking-wider mb-1">No spend data</p>
-              <p className="text-sm text-via-grey-dark">Add expenses below to populate the pie chart.</p>
-            </div>
-          )}
-        </div>
-
-        <div
-          className="bg-via-white border border-via-black p-4"
-          style={{ boxShadow: "3px 3px 0px #111111" }}
-        >
-          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid mb-4">
-            Daily Spend
-          </p>
-          {barData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={barData} barSize={14}>
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={formatShortDate}
-                  tick={{ fontSize: 10, fontFamily: "var(--font-ibm-plex-mono, monospace)" }}
-                  tickLine={false}
-                  axisLine={{ stroke: "#D6D6D6" }}
-                />
-                <YAxis
-                  tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
-                  tick={{ fontSize: 10, fontFamily: "var(--font-ibm-plex-mono, monospace)" }}
-                  tickLine={false}
-                  axisLine={false}
-                  width={42}
-                />
-                <Tooltip
-                  formatter={(value) => [formatCurrency(Number(value ?? 0)), "Spend"]}
-                  contentStyle={{
-                    border: "1px solid #111111",
-                    borderRadius: 0,
-                    fontFamily: "var(--font-ibm-plex-mono, monospace)",
-                    fontSize: 12,
-                    background: "#F5F5F2",
-                  }}
-                />
-                <Bar dataKey="amount" fill="#111111" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[240px] flex flex-col items-center justify-center border border-dashed border-via-grey-light bg-via-off-white px-4 text-center">
-              <p className="font-mono text-xs text-via-grey-mid uppercase tracking-wider mb-1">No timeline yet</p>
-              <p className="text-sm text-via-grey-dark">Daily bars appear once expenses have dates logged.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Category Breakdown Table ── */}
-      <section
-        className="bg-via-white border border-via-black"
-        style={{ boxShadow: "3px 3px 0px #111111" }}
-      >
-        <div className="px-5 py-3 border-b border-via-grey-light">
-          <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid">
-            Category Breakdown
-          </p>
-        </div>
-        <div className="divide-y divide-via-grey-light">
-          {categoryTotals.map((row) => (
-            <div key={row.category} className="px-5 py-3 flex items-center gap-4">
-              <div className="w-24 shrink-0">
-                <ExpenseBadge category={row.category} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="h-2 bg-via-off-white border border-via-grey-light">
-                  <div
-                    className="h-full bg-via-black transition-all duration-300"
-                    style={{
-                      width: `${(row.amount / maxCategoryAmount) * 100}%`,
-                      background: CHART_COLORS[row.category],
-                    }}
-                  />
+              <div className="pt-2 border-t border-via-grey-light flex justify-between items-end">
+                <div>
+                  <p className="font-mono text-[10px] text-via-grey-mid uppercase">Avg / Day</p>
+                  <p className="text-lg font-grotesk font-bold text-via-black">{formatCurrency(Math.round(avgPerDay))}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-[10px] text-via-grey-mid uppercase">Days</p>
+                  <p className="text-lg font-grotesk font-bold text-via-black">{tripDays}</p>
                 </div>
               </div>
-              <p className="font-mono text-[13px] text-via-black w-24 text-right shrink-0">
-                {row.amount > 0 ? formatCurrency(row.amount) : "—"}
-              </p>
             </div>
-          ))}
-          {/* Total row */}
-          <div className="px-5 py-3 flex items-center gap-4 bg-via-off-white">
-            <div className="w-24 shrink-0">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-via-black">
-                TOTAL
-              </span>
+          </div>
+
+          {/* Group Balances (Compact) */}
+          {collaborators.length > 0 && (
+            <div className="bg-via-black text-via-white p-5 border-2 border-via-black shadow-brutalist-sm">
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-mono text-[10px] uppercase tracking-widest font-bold">Group Squad</p>
+                <Users size={14} className="text-via-white/40" />
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] uppercase opacity-60">Net Balance</span>
+                  <span className={`font-grotesk font-bold ${myBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.round(myBalance))}
+                  </span>
+                </div>
+                <div className="space-y-1 mt-2 pt-2 border-t border-via-white/10">
+                  {Object.entries(detailedBalances).map(([id, amount]) => {
+                    const user = collaborators.find(c => c.user.id === id)?.user;
+                    if (!user || id === currentUserId) return null;
+                    return (
+                      <div key={id} className="flex items-center justify-between gap-2">
+                        <span className="font-grotesk text-[11px] uppercase truncate">{user.name}</span>
+                        <span className={`font-mono text-[10px] shrink-0 ${amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {amount >= 0 ? 'Owes you ' : 'You owe '}
+                          {formatCurrency(Math.abs(Math.round(amount)))}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-            <div className="flex-1" />
-            <p className="font-mono text-[14px] font-bold text-via-black w-24 text-right shrink-0">
-              {formatCurrency(totalSpend)}
-            </p>
+          )}
+        </div>
+
+        {/* Column 2: Charts (8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+            {/* Pie Chart */}
+            <div className="bg-via-white border-2 border-via-black p-4 shadow-brutalist-sm flex flex-col">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Category Mix</p>
+              {pieData.length > 0 ? (
+                <div className="flex-1 flex flex-col justify-center">
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="amount" nameKey="category">
+                        {pieData.map((entry) => <Cell key={entry.category} fill={CHART_COLORS[entry.category as ExpenseCategory]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "2px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "10px" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
+                    {pieData.slice(0, 4).map((entry) => (
+                      <div key={entry.category} className="flex items-center gap-1.5 min-w-0">
+                        <div className="w-2 h-2 shrink-0" style={{ background: CHART_COLORS[entry.category as ExpenseCategory] }} />
+                        <span className="font-mono text-[9px] uppercase truncate opacity-70">{entry.category}</span>
+                        <span className="font-mono text-[9px] ml-auto">{formatCurrency(entry.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center border border-dashed border-via-grey-light bg-via-off-white font-mono text-[10px] text-via-grey-mid uppercase italic">No Data</div>
+              )}
+            </div>
+
+            {/* Daily Bar Chart */}
+            <div className="bg-via-white border-2 border-via-black p-4 shadow-brutalist-sm flex flex-col">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid mb-4">Daily Spend</p>
+              {barData.length > 0 ? (
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart data={barData} barSize={10}>
+                      <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 9, fontFamily: "monospace" }} axisLine={false} tickLine={false} />
+                      <YAxis hide />
+                      <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ border: "2px solid #111", background: "#fff", fontFamily: "monospace", fontSize: "10px" }} />
+                      <Bar dataKey="amount" fill="#111" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center border border-dashed border-via-grey-light bg-via-off-white font-mono text-[10px] text-via-grey-mid uppercase italic">Timeline empty</div>
+              )}
+            </div>
+          </div>
+
+          {/* Compact Category Progress */}
+          <div className="bg-via-white border-2 border-via-black overflow-hidden shadow-brutalist-sm">
+            <div className="px-4 py-2 border-b border-via-black bg-via-off-white">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid font-bold">Category Breakdown</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 divide-x divide-y divide-via-black/10">
+              {categoryTotals.map((row) => (
+                <div key={row.category} className="p-3 space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-[9px] uppercase font-bold tracking-tighter">{row.category}</span>
+                    <span className="font-mono text-[10px] font-bold">{row.amount > 0 ? formatCurrency(row.amount) : "—"}</span>
+                  </div>
+                  <div className="h-1 bg-via-off-white overflow-hidden">
+                    <div className="h-full transition-all" style={{ width: `${(row.amount / maxCategoryAmount) * 100}%`, background: CHART_COLORS[row.category] }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

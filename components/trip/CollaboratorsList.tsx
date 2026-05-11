@@ -132,13 +132,31 @@ export function CollaboratorsList({ tripId }: { tripId: string }) {
               </div>
               <div className="flex items-center gap-2">
                 {collab.role === "OWNER" ? (
-                  <div className="p-1.5 bg-via-navy text-via-white">
+                  <div className="p-1.5 bg-via-navy text-via-white" title="Trip Owner">
                     <ShieldCheck size={12} />
                   </div>
                 ) : (
-                  <div className="p-1.5 bg-via-off-white text-via-grey-mid border border-via-grey-light">
-                    <Shield size={12} />
-                  </div>
+                  <>
+                    <div className="p-1.5 bg-via-off-white text-via-grey-mid border border-via-grey-light" title="Editor">
+                      <Shield size={12} />
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (confirm(`Remove ${collab.user.name} from trip?`)) {
+                          const res = await fetch(`/api/trips/${tripId}/collaborators?collaboratorId=${collab.id}`, { method: "DELETE" });
+                          if (res.ok) fetchCollaborators();
+                          else {
+                            const d = await res.json();
+                            alert(d.error || "Failed to remove");
+                          }
+                        }
+                      }}
+                      className="p-1.5 text-via-grey-mid hover:text-via-red hover:bg-via-red/10 transition-colors border border-transparent hover:border-via-red/20"
+                      title="Remove Member"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </>
                 )}
               </div>
             </div>

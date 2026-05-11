@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { MapPin, DollarSign, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
+import { MapPin, IndianRupee, ChevronRight, ArrowLeft, Calendar } from "lucide-react";
 import Image from "next/image";
 import {
   Modal,
@@ -181,7 +181,7 @@ export function AddStopModal({
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-xs font-mono text-via-grey-mid flex items-center gap-0.5">
-                            <DollarSign size={10} />
+                            <IndianRupee size={10} />
                             {city.costIndex.toFixed(1)}
                           </p>
                           <ChevronRight size={14} className="text-via-grey-mid ml-auto mt-1" />

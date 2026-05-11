@@ -248,9 +248,10 @@ export function PackingClient({ tripId, initialItems }: Props) {
               </span>
               <button
                 onClick={() => remove(item.id)}
-                className="text-via-grey-light hover:text-via-red transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                className="text-via-red/40 hover:text-via-red transition-colors shrink-0 px-2"
+                aria-label="Delete item"
               >
-                <Trash2 size={14} strokeWidth={1.5} />
+                <Trash2 size={14} strokeWidth={2} />
               </button>
             </li>
           ))}
