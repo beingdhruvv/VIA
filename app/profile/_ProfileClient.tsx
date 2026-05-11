@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
-import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, ShieldAlert, X, MapPin } from "lucide-react";
+import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, X, MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
@@ -54,6 +54,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -65,6 +66,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   async function saveProfile() {
     setSaving(true);
@@ -184,7 +186,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
         className="bg-via-white border border-via-black p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5"
         style={{ boxShadow: "3px 3px 0px #111111" }}
       >
-        <div className="relative group cursor-pointer" onClick={() => document.getElementById('avatar-input')?.click()}>
+        <div className="relative group cursor-pointer" onClick={() => setShowAvatarModal(true)}>
           <Avatar name={profile.name} src={avatarUrl ?? undefined} size="lg" className="border-2 border-via-black" />
           <div className="absolute inset-0 bg-via-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
             <Camera size={20} className="text-via-white" />
@@ -197,8 +199,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
-                // Store the actual file for uploading later
-                (window as any)._pendingAvatarFile = file;
+                setPendingFile(file);
                 const url = URL.createObjectURL(file);
                 setTempAvatar(url);
                 setShowEditor(true);
@@ -215,42 +216,80 @@ export function ProfileClient({ profile, tripCount }: Props) {
           </div>
         </div>
       </div>
-      {/* Avatar Picker */}
-      <div
-        className="bg-via-white border border-via-black p-5 space-y-4"
-        style={{ boxShadow: "3px 3px 0px #111111" }}
-      >
-        <p className="font-mono text-xs uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5">
-          <ImageIcon size={11} strokeWidth={1.5} /> Choose Avatar
-        </p>
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-          {AVATAR_OPTIONS.map((opt) => {
-            const url = getDicebearUrl(opt.seed);
-            const isSelected = avatarUrl === url;
-            return (
-              <button
-                key={opt.id}
-                onClick={() => setAvatarUrl(url)}
-                className={`relative aspect-square border-2 transition-all p-1 hover:scale-105 ${isSelected ? 'border-via-black bg-via-off-white' : 'border-via-grey-light opacity-60 hover:opacity-100'}`}
-              >
-                <div className="relative w-full h-full">
-                  <Image 
-                    src={url} 
-                    alt={`Avatar ${opt.id}`} 
-                    fill
-                    className="object-cover" 
-                  />
-                </div>
-                {isSelected && (
-                  <div className="absolute -top-1.5 -right-1.5 bg-via-black text-via-white rounded-full p-0.5 border border-via-white">
-                    <Check size={8} />
-                  </div>
-                )}
+      {/* Avatar Modal */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-via-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-via-white border-2 border-via-black p-6 shadow-brutalist flex flex-col gap-6">
+            <div className="flex items-center justify-between border-b-2 border-via-black pb-4">
+              <h3 className="font-grotesk font-bold text-xl uppercase italic">Customize Avatar</h3>
+              <button onClick={() => setShowAvatarModal(false)} className="hover:bg-via-off-white p-1 border border-via-black">
+                <X size={20} />
               </button>
-            );
-          })}
+            </div>
+
+            <div className="flex flex-col items-center gap-4">
+              <Avatar name={profile.name} src={avatarUrl ?? undefined} size="xl" className="border-2 border-via-black" />
+              <div className="flex gap-3">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => document.getElementById('avatar-input')?.click()}
+                >
+                  <Camera size={14} className="mr-2" /> Upload Photo
+                </Button>
+                {avatarUrl && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="text-via-red border-via-red hover:bg-via-red hover:text-via-white"
+                    onClick={() => {
+                      setAvatarUrl(null);
+                      update({ image: null });
+                    }}
+                  >
+                    <Trash2 size={14} className="mr-2" /> Remove
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid flex items-center gap-1.5">
+                <ImageIcon size={11} strokeWidth={1.5} /> Preset Avatars
+              </p>
+              <div className="grid grid-cols-4 gap-3">
+                {AVATAR_OPTIONS.map((opt) => {
+                  const url = getDicebearUrl(opt.seed);
+                  const isSelected = avatarUrl === url;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        setAvatarUrl(url);
+                        update({ image: url });
+                      }}
+                      className={`relative aspect-square border-2 transition-all p-1 hover:scale-105 ${isSelected ? 'border-via-black bg-via-off-white' : 'border-via-grey-light opacity-60 hover:opacity-100'}`}
+                    >
+                      <div className="relative w-full h-full">
+                        <Image src={url} alt={`Avatar ${opt.id}`} fill className="object-cover" />
+                      </div>
+                      {isSelected && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-via-black text-via-white rounded-full p-0.5 border border-via-white">
+                          <Check size={8} />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Button variant="primary" className="w-full" onClick={() => setShowAvatarModal(false)}>
+              Done
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Account details */}
       <div
@@ -425,16 +464,39 @@ export function ProfileClient({ profile, tripCount }: Props) {
           <Button variant="secondary" size="sm" onClick={() => signOut({ callbackUrl: "/auth/login" })}>
             Sign Out
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowDelete(true)}
-            className="text-via-red hover:bg-via-red hover:text-via-white"
-          >
-            <Trash2 size={13} className="mr-1.5" /> Delete Account
-          </Button>
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-via-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-via-white border-2 border-via-black p-6 shadow-brutalist">
+            <h3 className="font-grotesk font-bold text-xl uppercase italic mb-4">Delete Account</h3>
+            <p className="font-inter text-sm text-via-grey-dark mb-4">
+              This action is permanent. All your trips, memories, and data will be erased.
+              Type <span className="font-mono font-bold text-via-black">DELETE</span> to confirm.
+            </p>
+            <input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="Type DELETE"
+              className="w-full border-2 border-via-black px-3 py-2 font-mono text-sm mb-4 outline-none focus:bg-via-off-white"
+            />
+            <div className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setShowDelete(false)}>Cancel</Button>
+              <Button 
+                variant="destructive" 
+                className="flex-1" 
+                loading={deleting}
+                disabled={deleteConfirm !== "DELETE"}
+                onClick={deleteAccount}
+              >
+                Delete Forever
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {showEditor && (
@@ -487,12 +549,11 @@ export function ProfileClient({ profile, tripCount }: Props) {
                   className="flex-1"
                   loading={saving}
                   onClick={() => {
-                    const file = (window as any)._pendingAvatarFile;
-                    if (file) {
-                      uploadAvatar(file).then(() => {
+                    if (pendingFile) {
+                      uploadAvatar(pendingFile).then(() => {
                         setShowEditor(false);
                         setZoom(1);
-                        delete (window as any)._pendingAvatarFile;
+                        setPendingFile(null);
                       });
                     } else {
                       setShowEditor(false);

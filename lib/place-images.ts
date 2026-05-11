@@ -50,6 +50,16 @@ export const CITY_IMAGES: Record<string, string> = {
     "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Kempty_Falls_Mussoorie.jpg/960px-Kempty_Falls_Mussoorie.jpg",
   "Manali|India":
     "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Solang_Valley.jpg/960px-Solang_Valley.jpg",
+  "Kasol|India":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Kasol_-_Parvati_Valley.jpg/960px-Kasol_-_Parvati_Valley.jpg",
+  "Rohtang Pass|India":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Rohtang_Pass_01.jpg/960px-Rohtang_Pass_01.jpg",
+  "Solang Valley|India":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Solang_Valley_HP.jpg/960px-Solang_Valley_HP.jpg",
+  "Naggar|India":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Naggar_Castle_01.jpg/960px-Naggar_Castle_01.jpg",
+  "Gulaba|India":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Gulaba_Manali.jpg/960px-Gulaba_Manali.jpg",
   "Shimla|India":
     "https://upload.wikimedia.org/wikipedia/commons/2/2c/The_Ridge_Shimla.jpg",
   "Chandigarh|India":

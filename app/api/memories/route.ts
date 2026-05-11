@@ -24,10 +24,10 @@ export async function POST(req: NextRequest) {
     // Check storage limit
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { storageUsed: true }
+      select: { storageUsed: true } as any
     });
 
-    if (user && user.storageUsed + file.size > MAX_STORAGE) {
+    if (user && (user as any).storageUsed + file.size > MAX_STORAGE) {
       return NextResponse.json({ error: "Storage limit exceeded (200MB)" }, { status: 400 });
     }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const metadata = metadataStr ? JSON.parse(metadataStr) : {};
 
-    const memory = await prisma.memory.create({
+    const memory = await (prisma as any).memory.create({
       data: {
         userId: session.user.id,
         tripId: tripId || null,
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     // Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { storageUsed: { increment: file.size } }
+      data: { storageUsed: { increment: file.size } } as any
     });
 
     return NextResponse.json(memory);
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
   const tripId = searchParams.get("tripId");
 
   try {
-    const memories = await prisma.memory.findMany({
+    const memories = await (prisma as any).memory.findMany({
       where: { 
         userId: session.user.id,
         ...(tripId ? { tripId } : {})
@@ -115,7 +115,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // 1. Get memories to find file paths and sizes
-    const memories = await prisma.memory.findMany({
+    const memories = await (prisma as any).memory.findMany({
       where: {
         id: { in: ids },
         userId: session.user.id,
@@ -132,7 +132,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     let totalSizeRemoved = 0;
-    const deletedIds = memories.map(m => m.id);
+    const deletedIds = (memories as any[]).map((m: any) => m.id);
 
     // 2. Delete physical files
     for (const memory of memories) {
@@ -146,14 +146,14 @@ export async function DELETE(req: NextRequest) {
     }
 
     // 3. Delete from DB
-    await prisma.memory.deleteMany({
+    await (prisma as any).memory.deleteMany({
       where: { id: { in: deletedIds } }
     });
 
     // 4. Update user storage
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { storageUsed: { decrement: totalSizeRemoved } }
+      data: { storageUsed: { decrement: totalSizeRemoved } } as any
     });
 
     return NextResponse.json({ success: true, count: deletedIds.length });

@@ -50,8 +50,8 @@ function Sidebar({ user, onSearchClick }: SidebarProps) {
             VIA
           </span>
         </div>
-        <span className="block font-mono text-[10px] text-via-grey-mid mt-1.5 uppercase tracking-[0.1em]">
-          Travel Planner
+        <span className="block font-mono text-[9px] text-via-grey-mid mt-1.5 uppercase tracking-[0.1em] leading-tight">
+          PLAN THE JOURNEY.<br/>LIVE THE STORY.
         </span>
       </div>
 
@@ -142,7 +142,9 @@ function Sidebar({ user, onSearchClick }: SidebarProps) {
         {/* Version & Credits */}
         <div className="mt-4 pt-4 border-t border-via-grey-light flex items-center justify-between gap-2 min-w-0">
           <span className="text-[10px] font-mono text-via-grey-mid uppercase tracking-widest truncate" title={APP_PUBLIC_VERSION}>
-            {APP_PUBLIC_VERSION}
+            {APP_PUBLIC_VERSION.includes("-") 
+              ? `${APP_PUBLIC_VERSION.split("-")[0]}-${APP_PUBLIC_VERSION.split("-")[1].substring(0, 7)}` 
+              : APP_PUBLIC_VERSION}
           </span>
           <span className="text-[10px] font-mono text-via-black font-bold uppercase tracking-widest shrink-0">
             StormLabs

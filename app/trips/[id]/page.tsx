@@ -53,7 +53,7 @@ export default async function TripPage({ params }: TripPageProps) {
       notes: { orderBy: { createdAt: "desc" } },
       sharedLinks: true,
       memories: { orderBy: { createdAt: "desc" } },
-    },
+    } as any,
   });
 
 
@@ -69,11 +69,11 @@ export default async function TripPage({ params }: TripPageProps) {
     totalBudget: trip.totalBudget,
     isPublic: trip.isPublic,
     publicSlug: trip.publicSlug,
-    shareMemories: trip.shareMemories,
+    shareMemories: (trip as any).shareMemories,
     status: trip.status as TripFull["status"],
     createdAt: trip.createdAt.toISOString(),
     updatedAt: trip.updatedAt.toISOString(),
-    stops: trip.stops.map((s) => ({
+    stops: (trip as any).stops.map((s: any) => ({
       id: s.id,
       tripId: s.tripId,
       cityId: s.cityId,
@@ -92,7 +92,7 @@ export default async function TripPage({ params }: TripPageProps) {
         latitude: s.city.latitude,
         longitude: s.city.longitude,
       },
-      activities: s.activities.map((a) => ({
+      activities: (s.activities as any[]).map((a: any) => ({
         id: a.id,
         stopId: a.stopId,
         activityId: a.activityId,
@@ -112,7 +112,7 @@ export default async function TripPage({ params }: TripPageProps) {
         },
       })),
     })),
-    expenses: trip.expenses.map((e) => ({
+    expenses: (trip as any).expenses.map((e: any) => ({
       id: e.id,
       tripId: e.tripId,
       stopId: e.stopId,
@@ -126,13 +126,13 @@ export default async function TripPage({ params }: TripPageProps) {
         name: e.payer.name,
         avatarUrl: e.payer.avatarUrl
       } : undefined,
-      splits: e.splits.map(s => ({
+      splits: (e.splits as any[]).map((s: any) => ({
         userId: s.userId,
         amount: s.amount,
         user: { name: s.user.name }
       }))
     })),
-    packingItems: trip.packingItems.map((p) => ({
+    packingItems: (trip as any).packingItems.map((p: any) => ({
       id: p.id,
       tripId: p.tripId,
       name: p.name,
@@ -140,7 +140,7 @@ export default async function TripPage({ params }: TripPageProps) {
       isPacked: p.isPacked,
       createdAt: p.createdAt.toISOString(),
     })),
-    notes: trip.notes.map((n) => ({
+    notes: (trip as any).notes.map((n: any) => ({
       id: n.id,
       tripId: n.tripId,
       stopId: n.stopId,
@@ -148,12 +148,12 @@ export default async function TripPage({ params }: TripPageProps) {
       createdAt: n.createdAt.toISOString(),
       updatedAt: n.updatedAt.toISOString(),
     })),
-    sharedLinks: trip.sharedLinks.map((l) => ({
+    sharedLinks: (trip as any).sharedLinks.map((l: any) => ({
       id: l.id,
       slug: l.slug,
       views: l.views,
     })),
-    collaborators: trip.collaborators.map(c => ({
+    collaborators: (trip as any).collaborators?.map((c: any) => ({
       id: c.id,
       userId: c.userId,
       role: c.role,
@@ -164,7 +164,7 @@ export default async function TripPage({ params }: TripPageProps) {
         avatarUrl: c.user.avatarUrl
       }
     })),
-    memories: trip.memories.map(m => ({
+    memories: (trip as any).memories?.map((m: any) => ({
       id: m.id,
       userId: m.userId,
       tripId: m.tripId,
@@ -190,7 +190,7 @@ export default async function TripPage({ params }: TripPageProps) {
     "description": trip.description,
     "startDate": trip.startDate.toISOString(),
     "endDate": trip.endDate.toISOString(),
-    "itinerary": trip.stops.map(s => ({
+    "itinerary": (trip as any).stops.map((s: any) => ({
       "@type": "City",
       "name": s.city.name
     }))

@@ -44,11 +44,11 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
     totalBudget: trip.totalBudget,
     isPublic: trip.isPublic,
     publicSlug: trip.publicSlug,
-    shareMemories: trip.shareMemories,
+    shareMemories: (trip as any).shareMemories,
     status: trip.status as TripFull["status"],
     createdAt: trip.createdAt.toISOString(),
     updatedAt: trip.updatedAt.toISOString(),
-    stops: trip.stops.map((s) => ({
+    stops: (trip as any).stops.map((s: any) => ({
       id: s.id,
       tripId: s.tripId,
       cityId: s.cityId,
@@ -67,7 +67,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
         latitude: s.city.latitude,
         longitude: s.city.longitude,
       },
-      activities: s.activities.map((a) => ({
+      activities: (s.activities as any[]).map((a: any) => ({
         id: a.id,
         stopId: a.stopId,
         activityId: a.activityId,
@@ -87,7 +87,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
         },
       })),
     })),
-    expenses: trip.expenses.map((e) => ({
+    expenses: (trip as any).expenses.map((e: any) => ({
       id: e.id,
       tripId: e.tripId,
       stopId: e.stopId,
@@ -96,7 +96,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
       description: e.description,
       date: e.date.toISOString(),
     })),
-    packingItems: trip.packingItems.map((p) => ({
+    packingItems: (trip as any).packingItems.map((p: any) => ({
       id: p.id,
       tripId: p.tripId,
       name: p.name,
@@ -104,7 +104,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
       isPacked: p.isPacked,
       createdAt: p.createdAt.toISOString(),
     })),
-    notes: trip.notes.map((n) => ({
+    notes: (trip as any).notes.map((n: any) => ({
       id: n.id,
       tripId: n.tripId,
       stopId: n.stopId,
@@ -112,7 +112,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
       createdAt: n.createdAt.toISOString(),
       updatedAt: n.updatedAt.toISOString(),
     })),
-    sharedLinks: trip.sharedLinks.map((l) => ({
+    sharedLinks: (trip as any).sharedLinks.map((l: any) => ({
       id: l.id,
       slug: l.slug,
       views: l.views,

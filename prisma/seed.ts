@@ -50,6 +50,11 @@ const cities: CityData[] = [
   { name: "Dehradun", country: "India", region: "Uttarakhand", costIndex: 3.0, popularityScore: 65, latitude: 30.3165, longitude: 78.0322 },
   { name: "Mussoorie", country: "India", region: "Uttarakhand", costIndex: 3.8, popularityScore: 71, latitude: 30.4598, longitude: 78.0664 },
   { name: "Manali", country: "India", region: "Himachal Pradesh", costIndex: 4.2, popularityScore: 88, latitude: 32.2432, longitude: 77.1892 },
+  { name: "Kasol", country: "India", region: "Himachal Pradesh", costIndex: 3.5, popularityScore: 85, latitude: 32.0100, longitude: 77.3150 },
+  { name: "Rohtang Pass", country: "India", region: "Himachal Pradesh", costIndex: 5.0, popularityScore: 92, latitude: 32.3716, longitude: 77.2466 },
+  { name: "Solang Valley", country: "India", region: "Himachal Pradesh", costIndex: 4.5, popularityScore: 89, latitude: 32.3166, longitude: 77.1578 },
+  { name: "Naggar", country: "India", region: "Himachal Pradesh", costIndex: 3.2, popularityScore: 76, latitude: 32.1130, longitude: 77.1700 },
+  { name: "Gulaba", country: "India", region: "Himachal Pradesh", costIndex: 3.8, popularityScore: 72, latitude: 32.3200, longitude: 77.2000 },
   { name: "Shimla", country: "India", region: "Himachal Pradesh", costIndex: 3.7, popularityScore: 80, latitude: 31.1048, longitude: 77.1734 },
   { name: "Chandigarh", country: "India", region: "Punjab", costIndex: 3.5, popularityScore: 66, latitude: 30.7333, longitude: 76.7794 },
   { name: "Amritsar", country: "India", region: "Punjab", costIndex: 2.9, popularityScore: 83, latitude: 31.6340, longitude: 74.8723 },
@@ -270,6 +275,30 @@ const activitiesData: Record<string, ActivityData[]> = {
     { name: "Old Manali Village Walk", description: "Explore the hippie haven with cafes, art galleries, and mountain views.", category: "SIGHTSEEING", estimatedCost: 0, durationHours: 2, rating: 4.5 },
     { name: "River Rafting — Beas River", description: "White water rafting through grade 3-4 rapids.", category: "ADVENTURE", estimatedCost: 800, durationHours: 2, rating: 4.7 },
     { name: "Vashisht Hot Springs", description: "Natural sulphur hot springs with open-air and private bathing pools.", category: "WELLNESS", estimatedCost: 50, durationHours: 1.5, rating: 4.3 },
+  ],
+  Kasol: [
+    { name: "Manikaran Sahib", description: "Sacred Sikh gurudwara with natural hot springs and legendary community kitchen.", category: "CULTURE", estimatedCost: 0, durationHours: 3, rating: 4.8 },
+    { name: "Kheerganga Trek", description: "Famous 12km trek through Parvati Valley to natural hot springs in the clouds.", category: "ADVENTURE", estimatedCost: 500, durationHours: 8, rating: 4.9 },
+    { name: "Parvati River Walk", description: "Gentle stroll along the turquoise Parvati river past pine forests and cafes.", category: "NATURE", estimatedCost: 0, durationHours: 2, rating: 4.6 },
+    { name: "Café Hopping in Old Kasol", description: "Explore Kasol's famous Israeli-influenced culinary scene.", category: "FOOD", estimatedCost: 800, durationHours: 3, rating: 4.5 },
+  ],
+  "Rohtang Pass": [
+    { name: "Snow Point Activities", description: "Sledding, skiing, and playing in perennial snow at 13,000 ft.", category: "ADVENTURE", estimatedCost: 1500, durationHours: 4, rating: 4.7 },
+    { name: "Beas Kund Trek Start", description: "Walk towards the source of the Beas river among massive glaciers.", category: "ADVENTURE", estimatedCost: 0, durationHours: 3, rating: 4.6 },
+  ],
+  "Solang Valley": [
+    { name: "Paragliding", description: "Tandem paragliding with panoramic views of the Pir Panjal range.", category: "ADVENTURE", estimatedCost: 3500, durationHours: 1, rating: 4.8 },
+    { name: "Anjani Mahadev Temple Hike", description: "Short trek to a sacred waterfall that freezes into a natural lingam in winter.", category: "CULTURE", estimatedCost: 0, durationHours: 2, rating: 4.5 },
+    { name: "Zorbing & ATV Rides", description: "Roll down the valley slopes in a giant transparent ball.", category: "ADVENTURE", estimatedCost: 1000, durationHours: 2, rating: 4.2 },
+  ],
+  Naggar: [
+    { name: "Naggar Castle", description: "Stunning 15th-century wood-and-stone castle built in the Kathkuni style.", category: "CULTURE", estimatedCost: 50, durationHours: 2, rating: 4.7 },
+    { name: "Nicholas Roerich Art Gallery", description: "Museum and gallery dedicated to the famous Russian artist who lived here.", category: "CULTURE", estimatedCost: 100, durationHours: 1.5, rating: 4.6 },
+    { name: "Jana Waterfall Lunch", description: "Traditional Himachali siddu and local trout by a scenic waterfall.", category: "FOOD", estimatedCost: 400, durationHours: 2, rating: 4.5 },
+  ],
+  Gulaba: [
+    { name: "Meadow Exploration", description: "Walk through high-altitude meadows famous as a filming location.", category: "NATURE", estimatedCost: 0, durationHours: 3, rating: 4.6 },
+    { name: "Winter Snow Activities", description: "Alternative to Rohtang when the pass is closed — great for skiing.", category: "ADVENTURE", estimatedCost: 1000, durationHours: 4, rating: 4.4 },
   ],
 
   // ─── Shimla ──────────────────────────────────────────────────────────────────

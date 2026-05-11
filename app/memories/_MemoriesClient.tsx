@@ -293,7 +293,7 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
             >
               <div className="relative w-full h-full">
                 <Image 
-                  src={fullImage.imageUrl} 
+                  src={fullImage.imageUrl.startsWith('/') ? fullImage.imageUrl : `/${fullImage.imageUrl}`} 
                   alt={fullImage.fileName}
                   fill
                   className="object-contain"

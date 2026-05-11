@@ -6,8 +6,8 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "VIA — Travel Planner",
-  description: "Plan multi-city trips, build day-wise itineraries, track budgets, and share your journeys.",
+  title: "VIA — PLAN THE JOURNEY. LIVE THE STORY.",
+  description: "Plan the journey. Live the story. VIA is your premium, collaborative travel planner for multi-city itineraries, shared memories, and smart budgeting.",
   appleWebApp: {
     capable: true,
     title: "VIA",

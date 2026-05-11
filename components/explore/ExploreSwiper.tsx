@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Heart, X, Star, Globe, MapPin, Bookmark, RotateCcw, SlidersHorizontal } from "lucide-react";
+import { Heart, X, Star, Globe, Bookmark, RotateCcw, SlidersHorizontal } from "lucide-react";
 import type { City } from "@prisma/client";
 import { CITY_IMAGES, cityImageKey, FALLBACK_CITY_IMAGE } from "@/lib/place-images";
 
@@ -125,7 +125,7 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={(_, info) => {
-              const t = typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches ? 72 : 100;
+              const t = 70; // Lower threshold
               if (info.offset.x > t) handleSwipe("right");
               else if (info.offset.x < -t) handleSwipe("left");
             }}
@@ -225,20 +225,19 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                   </div>
 
                   {/* Gallery */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      exploreCityImageSrc(currentCity),
-                      `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&h=300&fit=crop`,
-                    ].map((img, i) => (
-                      <div key={i} className="relative aspect-square border-2 border-via-black overflow-hidden bg-via-off-white">
-                         <Image 
-                           src={img} 
-                           alt="preview" 
-                           fill
-                           className="object-cover" 
-                         />
+                  <div className="space-y-2">
+                    <h4 className="font-mono text-[10px] uppercase text-via-grey-mid mb-2 border-b border-via-grey-light pb-1">Previews</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white">
+                         <Image src={exploreCityImageSrc(currentCity)} alt="preview 1" fill className="object-cover" />
                       </div>
-                    ))}
+                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white">
+                         <Image src={`https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&h=300&fit=crop`} alt="preview 2" fill className="object-cover" />
+                      </div>
+                      <div className="relative aspect-[4/3] border-2 border-via-black overflow-hidden bg-via-off-white col-span-2">
+                         <Image src={`https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=800&h=300&fit=crop`} alt="preview 3" fill className="object-cover" />
+                      </div>
+                    </div>
                   </div>
 
                     {/* Activities Preview (if available) */}

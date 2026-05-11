@@ -189,10 +189,6 @@ export default async function DashboardPage() {
               </span>
             </div>
           )}
-          <div className="font-mono text-[10px] uppercase tracking-widest text-via-grey-mid px-3 py-2 border border-dashed border-via-grey-light flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Trip Planning Mode
-          </div>
         </div>
 
         {/* ── Primary CTA ── */}

@@ -62,8 +62,7 @@ export function GlobalCitySearch() {
   return (
     <div className="relative w-full max-w-2xl" ref={containerRef}>
       <div 
-        className="group relative flex min-w-0 items-center bg-via-white border-2 border-via-black transition-all"
-        style={{ boxShadow: isOpen ? "0px 0px 0px #111111" : "4px 4px 0px #111111" }}
+        className="group relative flex min-w-0 items-center bg-via-white border-2 border-via-black transition-all focus-within:ring-0 focus-within:outline-none shadow-[4px_4px_0px_#111111]"
       >
         <div className="pl-4 text-via-grey-mid">
           {searching ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
