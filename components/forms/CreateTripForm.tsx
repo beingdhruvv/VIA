@@ -23,6 +23,8 @@ const schema = z
     endDate: z.string().min(1, "End date is required"),
     description: z.string().max(500, "Description must be 500 characters or fewer").optional(),
     totalBudget: z.string().optional(),
+    collaborators: z.string().optional(),
+    shareMemories: z.boolean().optional(),
   })
   .refine(
     (data) => {
@@ -66,6 +68,8 @@ export function CreateTripForm({ defaultName }: CreateTripFormProps) {
       endDate: "",
       description: "",
       totalBudget: "",
+      collaborators: "",
+      shareMemories: false,
     },
   });
 
@@ -110,6 +114,10 @@ export function CreateTripForm({ defaultName }: CreateTripFormProps) {
         ? parseFloat(form.totalBudget)
         : null;
 
+    const emails = form.collaborators
+      ? form.collaborators.split(",").map(e => e.trim()).filter(e => e.includes("@"))
+      : [];
+
     const res = await fetch("/api/trips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -119,6 +127,8 @@ export function CreateTripForm({ defaultName }: CreateTripFormProps) {
         endDate: form.endDate,
         description: form.description || undefined,
         totalBudget: budgetNum && !isNaN(budgetNum) ? budgetNum : null,
+        collaborators: emails,
+        shareMemories: form.shareMemories,
       }),
     });
 
@@ -218,6 +228,31 @@ export function CreateTripForm({ defaultName }: CreateTripFormProps) {
                 />
               </div>
               {errors.totalBudget && <p className="text-xs text-via-red">{errors.totalBudget.message}</p>}
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-via-black">
+                  Invite People <span className="text-via-grey-mid font-normal">(comma-separated emails)</span>
+                </label>
+                <input
+                  placeholder="friend@example.com, partner@via.com"
+                  className="w-full bg-via-off-white border border-via-grey-light px-3 py-2 text-sm font-mono outline-none focus:border-2 focus:border-via-black placeholder:text-via-grey-mid"
+                  {...register("collaborators")}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 p-3 border border-via-black bg-via-white">
+                <input
+                  type="checkbox"
+                  id="shareMemories"
+                  className="w-4 h-4 accent-via-black cursor-pointer"
+                  {...register("shareMemories")}
+                />
+                <label htmlFor="shareMemories" className="text-xs font-mono uppercase font-bold cursor-pointer select-none">
+                  Auto-share memories with people in this trip
+                </label>
+              </div>
             </div>
           </>
         )}

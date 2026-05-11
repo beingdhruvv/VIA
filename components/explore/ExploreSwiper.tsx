@@ -148,83 +148,97 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
                     />
                   </div>
                   
-                  {/* Overlays */}
+                  {/* Overlays for swipe direction */}
                   <motion.div
                     style={{ opacity: likeOpacity }}
-                    className="absolute left-3 top-4 rotate-[-16deg] border-4 border-green-500 px-2 py-1 z-10"
+                    className="absolute left-6 top-12 rotate-[-12deg] border-4 border-green-500 bg-white/80 px-4 py-1 z-30 pointer-events-none"
                   >
-                    <span className="text-2xl font-bold uppercase text-green-500 sm:text-4xl">LIKE</span>
+                    <span className="text-4xl font-black uppercase text-green-500 sm:text-5xl">KEEP</span>
                   </motion.div>
                   <motion.div
                     style={{ opacity: nopeOpacity }}
-                    className="absolute right-3 top-4 rotate-[16deg] border-4 border-red-500 px-2 py-1 z-10"
+                    className="absolute right-6 top-12 rotate-[12deg] border-4 border-red-500 bg-white/80 px-4 py-1 z-30 pointer-events-none"
                   >
-                    <span className="text-2xl font-bold uppercase text-red-500 sm:text-4xl">NOPE</span>
+                    <span className="text-4xl font-black uppercase text-red-500 sm:text-5xl">PASS</span>
                   </motion.div>
+
+                  {/* Corner Controls */}
+                  <div className="absolute top-4 left-4 z-20">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleUndo(); }}
+                      disabled={history.length === 0}
+                      className="bg-white border-2 border-via-black p-2 shadow-[2px_2px_0px_#111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all disabled:opacity-30"
+                    >
+                      <RotateCcw size={18} />
+                    </button>
+                  </div>
+
+                  <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowFilters(!showFilters); }}
+                      className="bg-white border-2 border-via-black p-2 shadow-[2px_2px_0px_#111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                    >
+                      <SlidersHorizontal size={18} />
+                    </button>
+                  </div>
+
+                  {/* BOTTOM METADATA OVERLAY */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none">
+                    <div className="bg-via-white border-2 border-via-black p-4 shadow-[4px_4px_0px_#111] pointer-events-auto">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h2 className="font-grotesk text-2xl font-black leading-none text-via-black uppercase italic">
+                            {currentCity.name}
+                          </h2>
+                          <p className="font-mono text-[10px] uppercase text-via-grey-mid tracking-tighter mt-1">
+                            {currentCity.country} · {currentCity.region}
+                          </p>
+                        </div>
+                        <div className="bg-via-black text-via-white px-2 py-1 font-mono text-[10px] font-bold">
+                          {"$".repeat(Math.ceil(currentCity.costIndex / 25))}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 flex items-center justify-between border-t border-via-grey-light pt-2">
+                        <div className="flex items-center gap-1.5 text-via-black font-mono text-[10px] uppercase font-bold">
+                          <Star size={12} fill="currentColor" className="text-yellow-500" />
+                          {currentCity.popularityScore / 20} Popularity
+                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleSwipe("up"); }}
+                          className="flex items-center gap-1 font-mono text-[10px] uppercase font-bold hover:text-via-navy underline decoration-2 underline-offset-2"
+                        >
+                          <Bookmark size={12} /> Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Content Section */}
-                <div className="p-4 sm:p-6 space-y-6">
+                {/* Simplified Content Section (only for details scroll) */}
+                <div className="p-5 space-y-6">
                   <div>
-                    <h2 className="font-grotesk text-2xl font-bold leading-tight text-via-black sm:text-3xl">
-                      {currentCity.name},{" "}
-                      <span className="font-normal text-via-grey-mid">{currentCity.country}</span>
-                    </h2>
-                    <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        <Star size={16} fill="currentColor" />
-                        <span className="text-sm font-bold text-via-black">{currentCity.popularityScore / 20}</span>
-                      </div>
-                      <div className="w-px h-3 bg-via-grey-light" />
-                      <div className="flex items-center gap-1 text-via-grey-mid text-xs font-mono">
-                        <MapPin size={14} />
-                        {currentCity.region}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 border border-via-black bg-via-off-white">
-                      <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Cost Index</span>
-                      <span className="font-bold text-via-black">
-                        {"$".repeat(Math.ceil(currentCity.costIndex / 25))}
-                      </span>
-                    </div>
-                    <div className="p-3 border border-via-black bg-via-off-white">
-                      <span className="block font-mono text-[10px] uppercase text-via-grey-mid mb-1">Region</span>
-                      <span className="font-bold text-via-black truncate block">
-                        {currentCity.region}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-2 border-b border-via-grey-light pb-1">About</h4>
-                    <p className="font-inter text-sm text-via-black leading-relaxed">
-                      Known for its stunning {currentCity.region} landscapes and vibrant culture, {currentCity.name} offers a perfect blend of history and modern amenities. Explore the local architecture, cuisine, and hidden gems.
+                    <h4 className="font-mono text-[10px] uppercase text-via-grey-mid mb-2 border-b-2 border-via-black pb-1 font-bold">The Vibe</h4>
+                    <p className="font-inter text-sm text-via-black leading-snug">
+                      Known for its stunning {currentCity.region} landscapes and vibrant culture, {currentCity.name} offers a perfect blend of history and modern amenities.
                     </p>
                   </div>
 
-                  {/* Gallery Carousel */}
-                  <div>
-                    <h4 className="font-mono text-xs uppercase text-via-grey-mid mb-3 border-b border-via-grey-light pb-1">Gallery</h4>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-                      {[
-                        exploreCityImageSrc(currentCity),
-                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-2`,
-                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-3`,
-                        `https://api.dicebear.com/7.x/initials/svg?seed=${currentCity.name}-4`,
-                      ].map((img, i) => (
-                        <div key={i} className="relative w-32 aspect-square shrink-0 border border-via-black overflow-hidden bg-via-off-white">
-                           <Image 
-                             src={img} 
-                             alt={`${currentCity.name} preview ${i+1}`} 
-                             fill
-                             className="object-cover" 
-                           />
-                        </div>
-                      ))}
-                    </div>
+                  {/* Gallery */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      exploreCityImageSrc(currentCity),
+                      `https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=300&h=300&fit=crop`,
+                    ].map((img, i) => (
+                      <div key={i} className="relative aspect-square border-2 border-via-black overflow-hidden bg-via-off-white">
+                         <Image 
+                           src={img} 
+                           alt="preview" 
+                           fill
+                           className="object-cover" 
+                         />
+                      </div>
+                    ))}
                   </div>
 
                     {/* Activities Preview (if available) */}
@@ -266,44 +280,30 @@ export function ExploreSwiper({ initialCities }: ExploreSwiperProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex shrink-0 items-center justify-center gap-4 py-3 sm:gap-6 sm:py-6">
-        <button
-          type="button"
-          onClick={handleUndo}
-          disabled={history.length === 0}
-          className={`flex h-11 w-11 items-center justify-center border-2 border-via-black bg-via-white transition-all hover:scale-105 active:scale-95 ${history.length === 0 ? 'opacity-30 cursor-not-allowed' : 'text-via-black'}`}
-          style={{ boxShadow: history.length > 0 ? "2px 2px 0px #111111" : "none" }}
-          title="Undo last swipe"
-        >
-          <RotateCcw size={18} strokeWidth={2} />
-        </button>
-
+      {/* Main Action Buttons */}
+      <div className="flex shrink-0 items-center justify-center gap-6 py-6">
         <button
           type="button"
           onClick={() => handleSwipe("left")}
-          className="flex h-14 w-14 items-center justify-center border-2 border-via-black bg-via-white text-red-500 transition-all hover:scale-105 active:scale-95 sm:h-16 sm:w-16"
-          style={{ boxShadow: "3px 3px 0px #111111" }}
+          className="flex h-16 w-16 items-center justify-center border-4 border-via-black bg-via-white text-red-500 shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
         >
-          <X size={26} strokeWidth={3} className="sm:h-8 sm:w-8" />
+          <X size={32} strokeWidth={4} />
         </button>
 
         <button
           type="button"
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex h-11 w-11 items-center justify-center border-2 border-via-black bg-via-white text-via-navy transition-all hover:scale-105 active:scale-95 sm:h-12 sm:w-12"
-          style={{ boxShadow: "2px 2px 0px #111111" }}
-          title="Filter places"
+          onClick={() => handleSwipe("up")}
+          className="flex h-12 w-12 items-center justify-center border-2 border-via-black bg-via-white text-via-navy shadow-[2px_2px_0px_#111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95"
         >
-          <SlidersHorizontal size={18} strokeWidth={2} />
+          <Bookmark size={20} strokeWidth={3} />
         </button>
 
         <button
           type="button"
           onClick={() => handleSwipe("right")}
-          className="flex h-14 w-14 items-center justify-center border-2 border-via-black bg-via-white text-green-500 transition-all hover:scale-105 active:scale-95 sm:h-16 sm:w-16"
-          style={{ boxShadow: "3px 3px 0px #111111" }}
+          className="flex h-16 w-16 items-center justify-center border-4 border-via-black bg-via-white text-green-500 shadow-[4px_4px_0px_#111] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
         >
-          <Heart size={26} strokeWidth={3} fill="currentColor" className="sm:h-8 sm:w-8" />
+          <Heart size={32} strokeWidth={4} fill="currentColor" />
         </button>
       </div>
 

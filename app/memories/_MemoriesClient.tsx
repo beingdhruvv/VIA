@@ -10,7 +10,9 @@ import {
   X, 
   Trash2,
   Maximize2,
-  HardDrive
+  HardDrive,
+  CheckSquare,
+  Square
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -31,6 +33,8 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
   const [uploading, setUploading] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<string>("all");
   const [fullImage, setFullImage] = useState<MemoryData | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectMode, setIsSelectMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentStorage = memories.reduce((acc, m) => acc + m.fileSize, 0);
@@ -80,6 +84,33 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} memories? This cannot be undone.`)) return;
+
+    try {
+      const res = await fetch("/api/memories", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      if (res.ok) {
+        setMemories(prev => prev.filter(m => !selectedIds.has(m.id)));
+        setSelectedIds(new Set());
+        setIsSelectMode(false);
+      }
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
+  };
+
   return (
     <div className="space-y-8 pb-20">
       {/* Controls & Stats */}
@@ -100,6 +131,17 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 <MapIcon size={14} /> Map
               </button>
             </div>
+
+            <button 
+              onClick={() => {
+                setIsSelectMode(!isSelectMode);
+                setSelectedIds(new Set());
+              }}
+              className={`border-2 border-via-black px-3 py-1.5 flex items-center gap-2 font-mono text-xs uppercase transition-all shadow-brutalist-sm ${isSelectMode ? 'bg-via-black text-via-white translate-x-[1px] translate-y-[1px] shadow-none' : 'bg-via-white text-via-black hover:bg-via-off-white'}`}
+            >
+              {isSelectMode ? <CheckSquare size={14} /> : <Square size={14} />} 
+              {isSelectMode ? "Cancel Select" : "Select"}
+            </button>
 
             <select 
               value={selectedTrip}
@@ -175,22 +217,39 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                     <motion.div 
                       key={m.id}
                       layoutId={m.id}
-                      onClick={() => setFullImage(m)}
-                      className="aspect-square relative group cursor-pointer border-2 border-transparent hover:border-via-black transition-all overflow-hidden bg-via-off-white"
+                      onClick={() => isSelectMode ? toggleSelect(m.id) : setFullImage(m)}
+                      className={`aspect-square relative group cursor-pointer border-2 transition-all overflow-hidden bg-via-off-white ${selectedIds.has(m.id) ? 'border-via-black ring-4 ring-via-black/20' : 'border-transparent hover:border-via-black'}`}
                     >
                       <Image 
-                        src={m.imageUrl} 
+                        src={m.imageUrl.startsWith('/') ? m.imageUrl : `/${m.imageUrl}`} 
                         alt={m.caption || m.fileName}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className={`object-cover transition-transform duration-500 ${selectedIds.has(m.id) ? 'scale-90' : 'group-hover:scale-105'}`}
                       />
-                      <div className="absolute inset-0 bg-via-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                        {m.trip && (
-                          <span className="bg-via-white border border-via-black px-1.5 py-0.5 font-mono text-[8px] uppercase truncate">
-                            {m.trip.name}
-                          </span>
-                        )}
-                      </div>
+                      
+                      {isSelectMode && (
+                        <div className="absolute top-2 left-2 z-10">
+                          {selectedIds.has(m.id) ? (
+                            <div className="bg-via-black text-via-white p-0.5 border border-via-white">
+                              <CheckSquare size={14} />
+                            </div>
+                          ) : (
+                            <div className="bg-via-white/80 p-0.5 border border-via-black">
+                              <Square size={14} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {!isSelectMode && (
+                        <div className="absolute inset-0 bg-via-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                          {m.trip && (
+                            <span className="bg-via-white border border-via-black px-1.5 py-0.5 font-mono text-[8px] uppercase truncate">
+                              {m.trip.name}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -269,6 +328,47 @@ export function MemoriesClient({ initialMemories, trips }: Props) {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Action Bar */}
+      <AnimatePresence>
+        {isSelectMode && selectedIds.size > 0 && (
+          <motion.div 
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-via-white border-2 border-via-black p-4 flex items-center gap-6 shadow-brutalist min-w-[300px]"
+          >
+            <div className="font-mono text-xs uppercase font-bold">
+              {selectedIds.size} items selected
+            </div>
+            <div className="h-6 w-[1px] bg-via-grey-light" />
+            <div className="flex gap-2">
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={() => setSelectedIds(new Set())}
+                className="font-mono text-[10px]"
+              >
+                Clear
+              </Button>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                onClick={handleDeleteSelected}
+                className="bg-via-red border-via-red hover:bg-via-black hover:border-via-black font-mono text-[10px]"
+              >
+                <Trash2 size={14} className="mr-2" /> Delete
+              </Button>
+            </div>
+            <button 
+              onClick={() => setIsSelectMode(false)}
+              className="ml-auto p-1 hover:bg-via-off-white"
+            >
+              <X size={20} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

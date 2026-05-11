@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, name: user.name });
-  } catch {
+  } catch (error) {
+    console.error("Firebase auth sync error:", error);
     return NextResponse.json({ error: "server error" }, { status: 500 });
   }
 }

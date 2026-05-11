@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Printer,
   Share2,
@@ -14,6 +15,9 @@ import {
   Calendar,
   Pencil,
   Wrench,
+  Trash2,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ActivityBadge, StatusBadge } from "@/components/ui/Badge";
@@ -85,6 +89,11 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
   );
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareMemories, setShareMemories] = useState(trip.shareMemories ?? false);
+  const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   const daySchedule = buildDaySchedule(trip.stops);
 
@@ -113,6 +122,37 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
     navigator.clipboard.writeText(`${window.location.origin}/trip/${shareSlug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function toggleShareMemories() {
+    setUpdatingSettings(true);
+    try {
+      const newVal = !shareMemories;
+      const res = await fetch(`/api/trips/${trip.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shareMemories: newVal }),
+      });
+      if (res.ok) {
+        setShareMemories(newVal);
+        router.refresh();
+      }
+    } finally {
+      setUpdatingSettings(false);
+    }
+  }
+
+  async function handleDeleteTrip() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/trips/${trip.id}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/trips");
+        router.refresh();
+      }
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const totalDays = diffInDays(trip.startDate, trip.endDate);
@@ -203,7 +243,35 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
               <Share2 size={13} />
               <span className="hidden sm:inline">Share</span>
             </Button>
+
+            <div className="h-8 w-px bg-via-grey-light hidden sm:block mx-1" />
+
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setDeleteModalOpen(true)}
+              className="text-via-red hover:bg-via-red hover:text-via-white hidden sm:flex"
+            >
+              <Trash2 size={13} />
+            </Button>
           </div>
+        </div>
+
+        {/* Settings Bar */}
+        <div className="max-w-3xl mx-auto px-4 pb-2 flex items-center justify-between border-t border-via-grey-light pt-2">
+           <div className="flex items-center gap-4">
+              <button 
+                onClick={toggleShareMemories}
+                disabled={updatingSettings}
+                className={`flex items-center gap-2 font-mono text-[10px] uppercase font-bold transition-all px-2 py-1 border-2 border-via-black shadow-[2px_2px_0px_#111] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] ${shareMemories ? 'bg-via-black text-via-white' : 'bg-via-white text-via-black'}`}
+              >
+                {shareMemories ? <Unlock size={10} /> : <Lock size={10} />}
+                {shareMemories ? "Auto-sharing ON" : "Auto-sharing OFF"}
+              </button>
+              <span className="font-mono text-[9px] text-via-grey-mid uppercase hidden md:inline">
+                Photos are shared with collaborators
+              </span>
+           </div>
         </div>
 
         {/* Tab nav */}
@@ -432,6 +500,32 @@ export function TripItineraryClient({ trip }: TripItineraryClientProps) {
           <ModalFooter>
             <Button size="sm" onClick={copyShareLink}>
               {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy Link</>}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <ModalContent>
+          <ModalHeader title="Delete Trip" />
+          <div className="px-5 py-5">
+            <p className="text-sm text-via-black">
+              Are you sure you want to delete <strong>{trip.name}</strong>?
+            </p>
+            <p className="text-xs text-via-red mt-2 font-mono uppercase">
+              All stops, activities, and data for this trip will be permanently removed.
+            </p>
+          </div>
+          <ModalFooter>
+            <Button variant="ghost" size="sm" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              loading={deleting}
+              onClick={handleDeleteTrip}
+            >
+              Delete Permanently
             </Button>
           </ModalFooter>
         </ModalContent>

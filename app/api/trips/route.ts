@@ -10,6 +10,8 @@ const createTripSchema = z.object({
   endDate: z.string().refine((d) => !isNaN(Date.parse(d)), "Invalid end date"),
   totalBudget: z.number().positive().optional().nullable(),
   coverUrl: z.string().url().optional().nullable(),
+  shareMemories: z.boolean().optional(),
+  collaborators: z.array(z.string().email()).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -61,12 +63,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const { name, description, startDate, endDate, totalBudget, coverUrl } = parsed.data;
+  const { name, description, startDate, endDate, totalBudget, coverUrl, shareMemories, collaborators } = parsed.data;
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   if (end <= start) {
     return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
+  }
+
+  // Resolve collaborator emails to user IDs
+  const collaboratorUserIds: string[] = [];
+  if (collaborators && collaborators.length > 0) {
+    const users = await prisma.user.findMany({
+      where: { email: { in: collaborators } },
+      select: { id: true }
+    });
+    users.forEach(u => collaboratorUserIds.push(u.id));
   }
 
   const trip = await prisma.trip.create({
@@ -78,6 +90,13 @@ export async function POST(req: NextRequest) {
       endDate: end,
       totalBudget: totalBudget ?? null,
       coverUrl: coverUrl ?? null,
+      shareMemories: shareMemories ?? false,
+      collaborators: {
+        create: collaboratorUserIds.map(uid => ({
+          userId: uid,
+          role: "EDITOR" // Default to editor for people added during creation
+        }))
+      }
     },
   });
 

@@ -152,7 +152,7 @@ export default function SignupForm({
       const user = result.user;
       
       // 1. Sync with backend (Upsert user + DP)
-      await fetch("/api/auth/firebase", {
+      const syncRes = await fetch("/api/auth/firebase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,6 +162,11 @@ export default function SignupForm({
         }),
       });
 
+      if (!syncRes.ok) {
+        const errorData = await syncRes.json().catch(() => ({}));
+        throw new Error(errorData.error || "Backend synchronization failed.");
+      }
+
       // 2. Create NextAuth session
       const signInResult = await signIn("credentials", {
         email: user.email,
@@ -170,7 +175,8 @@ export default function SignupForm({
       });
 
       if (signInResult?.error) {
-        throw new Error("NextAuth session creation failed.");
+        console.error("NextAuth signIn error:", signInResult.error);
+        throw new Error(`Session creation failed: ${signInResult.error}`);
       }
       
       router.push("/dashboard");

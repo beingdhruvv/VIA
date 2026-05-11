@@ -50,6 +50,7 @@ model Trip {
   totalBudget Float?   @map("total_budget")
   isPublic    Boolean  @default(false) @map("is_public")
   publicSlug  String?  @unique @map("public_slug")
+  shareMemories Boolean  @default(false) @map("share_memories")
   /// TripStatus: PLANNING | ACTIVE | COMPLETED
   status      String   @default("PLANNING")
   createdAt   DateTime @default(now()) @map("created_at")

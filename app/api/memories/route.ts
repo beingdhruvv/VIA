@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 
 const MAX_STORAGE = 200 * 1024 * 1024; // 200MB
@@ -101,5 +101,64 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Fetch Memories Error:", error);
     return NextResponse.json({ error: "Failed to fetch memories" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { ids } = await req.json();
+    if (!ids || !Array.isArray(ids)) {
+      return NextResponse.json({ error: "Invalid IDs" }, { status: 400 });
+    }
+
+    // 1. Get memories to find file paths and sizes
+    const memories = await prisma.memory.findMany({
+      where: {
+        id: { in: ids },
+        userId: session.user.id,
+      },
+      select: {
+        id: true,
+        imageUrl: true,
+        fileSize: true,
+      }
+    });
+
+    if (memories.length === 0) {
+      return NextResponse.json({ success: true, count: 0 });
+    }
+
+    let totalSizeRemoved = 0;
+    const deletedIds = memories.map(m => m.id);
+
+    // 2. Delete physical files
+    for (const memory of memories) {
+      try {
+        const absolutePath = join(process.cwd(), "public", memory.imageUrl);
+        await unlink(absolutePath).catch(() => {}); // Ignore errors if file already gone
+        totalSizeRemoved += memory.fileSize;
+      } catch (err) {
+        console.warn(`Failed to delete file: ${memory.imageUrl}`, err);
+      }
+    }
+
+    // 3. Delete from DB
+    await prisma.memory.deleteMany({
+      where: { id: { in: deletedIds } }
+    });
+
+    // 4. Update user storage
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { storageUsed: { decrement: totalSizeRemoved } }
+    });
+
+    return NextResponse.json({ success: true, count: deletedIds.length });
+  } catch (error) {
+    console.error("Delete Memories Error:", error);
+    return NextResponse.json({ error: "Failed to delete memories" }, { status: 500 });
   }
 }

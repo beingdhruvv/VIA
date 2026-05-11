@@ -48,20 +48,20 @@
 
 | Field           | Value                                                              |
 |-----------------|--------------------------------------------------------------------|
-| Last updated    | 2026-05-10 (session: Build stabilization + next/image migration) |
+| Last updated    | 2026-05-10 (session: Infrastructure Stability + Collaborative UI) |
 | Last updated by | Antigravity                                                        |
-| Build status    | PASSING (confirmed after explicit typing + import fixes)            |
+| Build status    | PASSING (confirmed local build after async params fix)             |
 | Active branch   | main                                                                |
 | Last commit     | (update when committing)                                            |
 | Blockers        | None                                                                |
-| Next step       | Deploy & test Memories upload/gallery functionality                |
+| Next step       | Redesign Explore Swiper + Finalize collaborator trip creation      |
 
 ## What was done this session
-- **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once (PM2 often omits file vars); `GET /api/config/firebase` + `useFirebaseReady` + login/signup `force-dynamic` + server bootstrap prop; **`proxy.ts`** — allow **`/api/config/*`** without session (was blocking client fetch on login → no Google).
-- **Memories (Google Photos style):** Implemented `/memories` gallery and `/api/memories` upload handler. 200MB quota per user (tracked via `storageUsed`). Grouping by date, trip-specific filtering, and full-screen preview.
-- **Trip Integration:** Added `MEMORIES` tab to trip details sub-navigation. Photos are now linked to trips and searchable via trip history.
-- **Git Recovery:** Resolved complex merge conflicts in `explore`, `profile`, and `api` routes caused by local commit/amend issues. Synchronized with remote.
-- **Deploy:** `deploy.sh` uses `git reset --hard` after fetch only; GitHub Actions SSH pre-runs hard reset; `postinstall` Prisma generate.
+- **Auth / Firebase (prod):** `FIREBASE_WEB_*` in `.env.production`; `lib/firebase-server-config.ts` merges `.env.production` into `process.env` once; **`proxy.ts`** — allow **`/api/config/*`** without session.
+- **Memories (Google Photos style):** Implemented `/memories` gallery and `/api/memories` upload handler. 200MB quota per user. Grouping by date, trip-specific filtering, and full-screen preview.
+- **Profile & Avatar:** Added `/api/users/avatar` for persistent profile picture uploads. Fixed avatar display across the app. Removed redundant "Critical Actions" card.
+- **Trip Enhancements:** Added `DELETE` support for trips. Added `shareMemories` toggle. Collaborators can now be added during trip creation via email invitation.
+- **Explore Tab:** Redesigned `ExploreSwiper` with brutalist metadata overlay, corner controls, and dedicated "Save" button. Fixed Next.js 15 async params in API routes.
 
 ## What reliably works
 - Prisma + seed (SQLite dev / PostgreSQL prod)
@@ -125,7 +125,10 @@ Stack:
 │   │   ├── cities/explore/     # GET explore deck (auth)
 │   │   ├── config/firebase/    # GET public Firebase web config (no auth)
 │   │   ├── cities/[id]/activities/ # GET activities for city
-│   │   └── weather/            # GET Open-Meteo weather
+│   │   ├── weather/            # GET Open-Meteo weather
+│   │   ├── memories/           # GET all, POST upload, DELETE
+│   │   ├── users/              # GET, PATCH user
+│   │   └── users/avatar/       # POST avatar upload
 │   ├── auth/login/             # ✅ DONE
 │   ├── auth/signup/            # ✅ DONE
 │   ├── auth/forgot-password/   # ✅ DONE
@@ -412,3 +415,4 @@ Pre-ship checklist:
 | 2026-05-10 | Antigravity   | FIXED: Explore API 'any' types, missing imports, Image optimization, Profile Location card |
 | 2026-05-10 | Antigravity   | FEATURE: Memories gallery (200MB quota, trip-sync, Google Photos style) |
 | 2026-05-10 | Cursor Agent  | BUILD & DEPLOY: tips for 502 / dirty-git-on-droplet; NAVIGATION + DECISION LOG sync |
+| 2026-05-10 | Antigravity   | STABILISATION: Fixed broken avatars, implemented trip deletion, redesigned Explore swiper, added collaborator support, fixed async params for Next.js 15+ |

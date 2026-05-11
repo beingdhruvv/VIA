@@ -51,9 +51,10 @@ function Avatar({ name, src, size = "md", className = "" }: AvatarProps) {
   };
 
   if (src) {
+    const formattedSrc = src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
     return (
       <Image
-        src={src}
+        src={formattedSrc}
         alt={name ?? "User avatar"}
         width={px}
         height={px}

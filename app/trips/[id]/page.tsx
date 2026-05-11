@@ -69,6 +69,7 @@ export default async function TripPage({ params }: TripPageProps) {
     totalBudget: trip.totalBudget,
     isPublic: trip.isPublic,
     publicSlug: trip.publicSlug,
+    shareMemories: trip.shareMemories,
     status: trip.status as TripFull["status"],
     createdAt: trip.createdAt.toISOString(),
     updatedAt: trip.updatedAt.toISOString(),

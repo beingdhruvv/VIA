@@ -127,6 +127,7 @@ export interface TripCard {
   totalBudget: number | null;
   isPublic: boolean;
   publicSlug: string | null;
+  shareMemories: boolean;
   status: TripStatus;
   createdAt: string;
   updatedAt: string;

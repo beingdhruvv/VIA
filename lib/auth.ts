@@ -23,10 +23,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         console.log("Authorize attempt:", credentials?.email, "isFirebase:", credentials?.isFirebase);
         // Check if it's a Firebase login bypass
         if (credentials?.isFirebase === "true" && credentials?.email) {
+          console.log("Firebase bypass for:", credentials.email);
           const user = await prisma.user.findUnique({ 
             where: { email: credentials.email as string } 
           });
-          if (!user) return null;
+          if (!user) {
+            console.error("Firebase bypass failed: User not found in DB for", credentials.email);
+            return null;
+          }
+          console.log("Firebase bypass success for:", user.email, "Role:", user.role);
           return {
             id: user.id,
             name: user.name,

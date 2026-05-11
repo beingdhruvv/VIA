@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { User, Mail, Calendar, Globe, Lock, LogOut, Trash2, Check, Camera, Image as ImageIcon, ShieldAlert, X, MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +42,7 @@ const LANGUAGES = [
 ];
 
 export function ProfileClient({ profile, tripCount }: Props) {
+  const { update } = useSession();
   const [name, setName] = useState(profile.name);
   const [language, setLanguage] = useState(profile.language ?? "en");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
@@ -76,7 +77,7 @@ export function ProfileClient({ profile, tripCount }: Props) {
         body: JSON.stringify({ 
           name: name.trim(), 
           language, 
-          avatarUrl,
+          // avatarUrl is now handled separately by the dedicated API
           homeCity: homeCity.trim() || null,
           homeCountry: homeCountry.trim() || null
         }),
@@ -87,7 +88,35 @@ export function ProfileClient({ profile, tripCount }: Props) {
         return;
       }
       setSaved(true);
+      await update({ name: name.trim() });
       setTimeout(() => setSaved(false), 2500);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function uploadAvatar(file: File) {
+    setSaving(true);
+    setProfileError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/users/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setProfileError(data.error ?? "Failed to upload avatar.");
+        return;
+      }
+      const data = await res.json();
+      setAvatarUrl(data.avatarUrl);
+      setTempAvatar(null);
+      await update({ image: data.avatarUrl });
+    } catch (err) {
+      console.error(err);
+      setProfileError("An error occurred during upload.");
     } finally {
       setSaving(false);
     }
@@ -168,6 +197,8 @@ export function ProfileClient({ profile, tripCount }: Props) {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
+                // Store the actual file for uploading later
+                (window as any)._pendingAvatarFile = file;
                 const url = URL.createObjectURL(file);
                 setTempAvatar(url);
                 setShowEditor(true);
@@ -405,56 +436,6 @@ export function ProfileClient({ profile, tripCount }: Props) {
         </div>
       </div>
 
-      {/* Critical Actions */}
-      <div
-        className="bg-via-white border border-via-red p-5 space-y-4"
-        style={{ boxShadow: "3px 3px 0px #C1121F" }}
-      >
-        <p className="font-mono text-xs uppercase tracking-widest text-via-red flex items-center gap-1.5">
-          <ShieldAlert size={11} strokeWidth={1.5} /> Critical Actions
-        </p>
-
-        {!showDelete ? (
-          <div>
-            <p className="font-mono text-xs text-via-grey-mid mb-3">
-              Permanently delete your account and all trip data. This cannot be undone.
-            </p>
-            <button
-              onClick={() => setShowDelete(true)}
-              className="font-mono text-xs border border-via-red text-via-red px-4 py-2 hover:bg-via-red hover:text-via-white transition-colors"
-            >
-              Delete Account
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="font-mono text-xs text-via-red">
-              Type <strong>DELETE</strong> to confirm permanent account deletion.
-            </p>
-            <input
-              value={deleteConfirm}
-              onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder='Type "DELETE"'
-              className="w-full border border-via-red px-3 py-2 text-sm font-mono outline-none focus:border-via-red bg-via-off-white"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={deleteAccount}
-                disabled={deleteConfirm !== "DELETE" || deleting}
-                className="font-mono text-xs border border-via-red bg-via-red text-via-white px-4 py-2 disabled:opacity-50 hover:bg-via-black hover:border-via-black transition-colors"
-              >
-                {deleting ? "Deleting..." : "Delete My Account"}
-              </button>
-              <button
-                onClick={() => { setShowDelete(false); setDeleteConfirm(""); }}
-                className="font-mono text-xs border border-via-grey-light px-4 py-2 hover:border-via-black transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
 
       {showEditor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-via-black/80 backdrop-blur-sm animate-in fade-in duration-300">
@@ -504,10 +485,18 @@ export function ProfileClient({ profile, tripCount }: Props) {
                 <Button 
                   variant="primary" 
                   className="flex-1"
+                  loading={saving}
                   onClick={() => {
-                    setAvatarUrl(tempAvatar);
-                    setShowEditor(false);
-                    setZoom(1);
+                    const file = (window as any)._pendingAvatarFile;
+                    if (file) {
+                      uploadAvatar(file).then(() => {
+                        setShowEditor(false);
+                        setZoom(1);
+                        delete (window as any)._pendingAvatarFile;
+                      });
+                    } else {
+                      setShowEditor(false);
+                    }
                   }}
                 >
                   Set Profile Picture
